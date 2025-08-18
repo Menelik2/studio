@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useActionState, useEffect, useState } from 'react';
+import { useActionState, useEffect, useState, useTransition } from 'react';
 import { useFormStatus } from 'react-dom';
 import { useToast } from '@/hooks/use-toast';
 import { createBookAction, updateBookAction } from '@/lib/actions';
@@ -108,15 +108,13 @@ export function BookFormDialog() {
   const { isOpen, book, onClose } = useBookDialog();
   const { toast } = useToast();
   const isEdit = !!book;
-
-  const action = isEdit ? updateBookAction : createBookAction;
   
-  const [formState, formAction] = useActionState(action, {
-    message: '',
-    errors: {},
-  });
+  const [formState, formAction] = useActionState(
+    isEdit ? updateBookAction : createBookAction,
+    { message: '', errors: {} }
+  );
 
-  const { register, handleSubmit, reset, control, formState: { errors, isSubmitting } } = useForm<BookFormValues>({
+  const { register, reset, control, formState: { errors } } = useForm<BookFormValues>({
     resolver: zodResolver(bookSchema),
     defaultValues: {
         title: '',
@@ -125,7 +123,7 @@ export function BookFormDialog() {
         year: new Date().getFullYear(),
         description: '',
         filePath: '',
-    }
+    },
   });
 
   useEffect(() => {
@@ -141,7 +139,7 @@ export function BookFormDialog() {
         filePath: '',
       });
     }
-  }, [book, reset]);
+  }, [book, reset, isOpen]);
 
   useEffect(() => {
     if (formState.message && !formState.errors) {
@@ -151,20 +149,16 @@ export function BookFormDialog() {
       toast({ variant: 'destructive', title: 'Error', description: formState.message });
     }
   }, [formState, toast, onClose, isEdit]);
-
-  const onSubmit = (data: BookFormValues) => {
-    const formData = new FormData();
-    if(isEdit && book) formData.append('id', book.id);
-    Object.entries(data).forEach(([key, value]) => {
-      formData.append(key, String(value));
-    });
-    formAction(formData);
-  };
   
   if (!isOpen) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      if(!open) {
+        reset();
+        onClose();
+      }
+    }}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="font-headline">{isEdit ? 'Edit Book' : 'Add New Book'}</DialogTitle>
@@ -172,19 +166,20 @@ export function BookFormDialog() {
             {isEdit ? 'Update the details of this book.' : 'Fill in the details for the new book.'}
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 py-4">
+        <form action={formAction} className="grid gap-4 py-4">
+          {isEdit && book && <input type="hidden" name="id" value={book.id} />}
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="title" className="text-right">Title</Label>
             <Input id="title" {...register('title')} className="col-span-3" />
-            {errors.title && <p className="col-span-4 text-red-500 text-xs">{errors.title.message}</p>}
-            {formState.errors?.title && <p className="col-span-4 text-red-500 text-xs">{formState.errors.title[0]}</p>}
+            {errors.title && <p className="col-span-4 text-red-500 text-xs text-right">{errors.title.message}</p>}
+            {formState.errors?.title && <p className="col-span-4 text-red-500 text-xs text-right">{formState.errors.title[0]}</p>}
           </div>
 
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="author" className="text-right">Author</Label>
             <Input id="author" {...register('author')} className="col-span-3" />
-            {errors.author && <p className="col-span-4 text-red-500 text-xs">{errors.author.message}</p>}
-            {formState.errors?.author && <p className="col-span-4 text-red-500 text-xs">{formState.errors.author[0]}</p>}
+            {errors.author && <p className="col-span-4 text-red-500 text-xs text-right">{errors.author.message}</p>}
+            {formState.errors?.author && <p className="col-span-4 text-red-500 text-xs text-right">{formState.errors.author[0]}</p>}
           </div>
 
           <div className="grid grid-cols-4 items-center gap-4">
@@ -193,7 +188,7 @@ export function BookFormDialog() {
               name="category"
               control={control}
               render={({ field }) => (
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select name={field.name} onValueChange={field.onChange} defaultValue={field.value}>
                   <SelectTrigger className="col-span-3">
                     <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
@@ -205,33 +200,36 @@ export function BookFormDialog() {
                 </Select>
               )}
             />
-            {errors.category && <p className="col-span-4 text-red-500 text-xs">{errors.category.message}</p>}
-            {formState.errors?.category && <p className="col-span-4 text-red-500 text-xs">{formState.errors.category[0]}</p>}
+            {errors.category && <p className="col-span-4 text-red-500 text-xs text-right">{errors.category.message}</p>}
+            {formState.errors?.category && <p className="col-span-4 text-red-500 text-xs text-right">{formState.errors.category[0]}</p>}
           </div>
 
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="year" className="text-right">Year</Label>
             <Input id="year" type="number" {...register('year')} className="col-span-3" />
-            {errors.year && <p className="col-span-4 text-red-500 text-xs">{errors.year.message}</p>}
-            {formState.errors?.year && <p className="col-span-4 text-red-500 text-xs">{formState.errors.year[0]}</p>}
+            {errors.year && <p className="col-span-4 text-red-500 text-xs text-right">{errors.year.message}</p>}
+            {formState.errors?.year && <p className="col-span-4 text-red-500 text-xs text-right">{formState.errors.year[0]}</p>}
           </div>
 
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="description" className="text-right">Description</Label>
             <Textarea id="description" {...register('description')} className="col-span-3" />
-            {errors.description && <p className="col-span-4 text-red-500 text-xs">{errors.description.message}</p>}
-            {formState.errors?.description && <p className="col-span-4 text-red-500 text-xs">{formState.errors.description[0]}</p>}
+            {errors.description && <p className="col-span-4 text-red-500 text-xs text-right">{errors.description.message}</p>}
+            {formState.errors?.description && <p className="col-span-4 text-red-500 text-xs text-right">{formState.errors.description[0]}</p>}
           </div>
           
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="filePath" className="text-right">File Path</Label>
             <Input id="filePath" {...register('filePath')} className="col-span-3" />
-            {errors.filePath && <p className="col-span-4 text-red-500 text-xs">{errors.filePath.message}</p>}
-            {formState.errors?.filePath && <p className="col-span-4 text-red-500 text-xs">{formState.errors.filePath[0]}</p>}
+            {errors.filePath && <p className="col-span-4 text-red-500 text-xs text-right">{errors.filePath.message}</p>}
+            {formState.errors?.filePath && <p className="col-span-4 text-red-500 text-xs text-right">{formState.errors.filePath[0]}</p>}
           </div>
           
           <DialogFooter>
-            <Button variant="outline" type="button" onClick={onClose}>Cancel</Button>
+            <Button variant="outline" type="button" onClick={() => {
+                reset();
+                onClose();
+            }}>Cancel</Button>
             <SubmitButton isEdit={isEdit} />
           </DialogFooter>
         </form>
