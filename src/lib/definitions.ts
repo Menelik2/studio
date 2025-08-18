@@ -24,3 +24,13 @@ export interface PlannerItem {
     year: string;
     months: Record<string, boolean>;
 }
+
+export interface Planner2Item {
+    id: string;
+    activity: string;
+    measure: string;
+    annualPlan: string;
+    approvedBudget: string;
+    performance: string;
+    executionPercentage: string;
+}

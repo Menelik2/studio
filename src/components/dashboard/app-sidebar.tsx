@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -12,6 +13,7 @@ import {
   Book,
   BookOpen,
   CalendarCheck,
+  ClipboardList,
   LayoutDashboard,
   LogOut,
   Settings,
@@ -22,6 +24,7 @@ const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/dashboard/books', icon: Book, label: 'Books' },
   { href: '/dashboard/planner', icon: CalendarCheck, label: 'Planner' },
+  { href: '/dashboard/planner-2', icon: ClipboardList, label: 'Planner 2' },
 ];
 
 export function AppSidebar() {
@@ -46,6 +49,7 @@ export function AppSidebar() {
                   href={item.href}
                   className={cn(
                     'flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8',
+                    pathname.startsWith(item.href) && item.href !== '/dashboard' && 'bg-accent text-accent-foreground',
                     pathname === item.href && 'bg-accent text-accent-foreground'
                   )}
                 >
