@@ -9,6 +9,9 @@ export default {
   ],
   theme: {
     extend: {
+      backgroundImage: {
+        'image-main': "url('/images/background.jpg')",
+      },
       fontFamily: {
         body: ['"Noto Sans Ethiopic"', 'sans-serif'],
         headline: ['"Noto Sans Ethiopic"', 'serif'],

@@ -39,8 +39,11 @@ export default function WelcomePage() {
   const currentContent = content[language];
 
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground">
-      <header className="flex items-center justify-between p-4 border-b">
+    <div className="relative flex flex-col min-h-screen bg-background text-foreground">
+      <div className="absolute inset-0 bg-cover bg-center bg-no-repeat bg-image-main opacity-20 blur-sm"></div>
+      <div className="absolute inset-0 bg-grid"></div>
+      
+      <header className="relative flex items-center justify-between p-4 border-b bg-background/80 backdrop-blur-sm">
         <div className="flex items-center gap-3">
           <BookOpen className="h-8 w-8 text-primary" />
           <div>
@@ -63,8 +66,8 @@ export default function WelcomePage() {
           </Button>
         </div>
       </header>
-      <main className="flex-grow flex flex-col items-center justify-center text-center p-8">
-        <div className="max-w-4xl">
+      <main className="relative flex-grow flex flex-col items-center justify-center text-center p-8">
+        <div className="max-w-4xl bg-background/80 backdrop-blur-sm p-8 rounded-lg shadow-xl">
           <h2 className="text-3xl md:text-4xl font-headline font-bold mb-4">
             {currentContent.title}
           </h2>
