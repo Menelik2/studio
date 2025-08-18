@@ -18,10 +18,10 @@ import { Checkbox } from '../ui/checkbox';
 import { Save } from 'lucide-react';
 
 const quarters = {
-    '1st Quarter': ['July', 'August', 'September'],
-    '2nd Quarter': ['October', 'November', 'December'],
-    '3rd Quarter': ['January', 'February', 'March'],
-    '4th Quarter': ['April', 'May', 'June'],
+    '1ኛ ሩብ ዓመት': ['ሐምሌ', 'ነሐሴ', 'መስከረም'],
+    '2ኛ ሩብ ዓመት': ['ጥቅምት', 'ህዳр', 'ታህሳс'],
+    '3ኛ ሩብ ዓመት': ['ጥር', 'የካቲት', 'መጋቢት'],
+    '4ኛ ሩብ ዓመት': ['ሚያዝያ', 'ግንቦት', 'ሰኔ'],
 };
 
 interface PlannerDialogState {

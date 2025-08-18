@@ -27,10 +27,10 @@ import { getPlanner1ItemsAction, savePlanner1ItemsAction } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 
 const quarters = {
-  '1st quarter': ['July', 'August', 'September'],
-  '2nd quarter': ['October', 'November', 'December'],
-  '3rd quarter': ['January', 'February', 'March'],
-  '4th quarter': ['April', 'May', 'June'],
+  '1ኛ ሩብ ዓመት': ['ሐምሌ', 'ነሐሴ', 'መስከረም'],
+  '2ኛ ሩብ ዓመት': ['ጥቅምት', 'ህዳር', 'ታህሳስ'],
+  '3ኛ ሩብ ዓመት': ['ጥር', 'የካቲት', 'መጋቢት'],
+  '4ኛ ሩብ ዓመት': ['ሚያዝያ', 'ግንቦት', 'ሰኔ'],
 };
 
 export function Planner() {
@@ -144,19 +144,19 @@ export function Planner() {
         <Table className="min-w-max whitespace-nowrap">
           <TableHeader>
             <TableRow className="bg-muted hover:bg-muted">
-              <TableHead rowSpan={2} className="border-r">No</TableHead>
-              <TableHead rowSpan={2} className="border-r">detailed task</TableHead>
-              <TableHead rowSpan={2} className="border-r">Measure</TableHead>
-              <TableHead rowSpan={2} className="border-r">Quantity</TableHead>
-              <TableHead rowSpan={2} className="border-r">Who will we work with?</TableHead>
+              <TableHead rowSpan={2} className="border-r">ተ.ቁ</TableHead>
+              <TableHead rowSpan={2} className="border-r">ዝርዝር ተግባር</TableHead>
+              <TableHead rowSpan={2} className="border-r">መለኪያ</TableHead>
+              <TableHead rowSpan={2} className="border-r">ብዛት</TableHead>
+              <TableHead rowSpan={2} className="border-r">ከማን ጋር እንሰራለን?</TableHead>
               {Object.keys(quarters).map((quarter) => (
                 <TableHead key={quarter} colSpan={3} className="text-center border-r">
                   {quarter}
                 </TableHead>
               ))}
-              <TableHead rowSpan={2} className="border-r">The budget requested by the department</TableHead>
-              <TableHead colSpan={2} className="text-center border-r">Approved budget</TableHead>
-              <TableHead rowSpan={2} className="print:hidden">Actions</TableHead>
+              <TableHead rowSpan={2} className="border-r">በመምሪያው የተጠየቀው በጀት</TableHead>
+              <TableHead colSpan={2} className="text-center border-r">የጸደቀ በጀት</TableHead>
+              <TableHead rowSpan={2} className="print:hidden">ድርጊቶች</TableHead>
             </TableRow>
             <TableRow className="bg-muted hover:bg-muted">
               {Object.values(quarters)
@@ -166,8 +166,8 @@ export function Planner() {
                     {month}
                   </TableHead>
                 ))}
-              <TableHead className="text-center bg-muted/60 border-r">Cost</TableHead>
-              <TableHead className="text-center bg-muted/60 border-r">Income</TableHead>
+              <TableHead className="text-center bg-muted/60 border-r">ወጪ</TableHead>
+              <TableHead className="text-center bg-muted/60 border-r">ገቢ</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
