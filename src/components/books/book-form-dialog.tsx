@@ -1,7 +1,8 @@
+
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState, useEffect, useState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { useToast } from '@/hooks/use-toast';
 import { createBookAction, updateBookAction } from '@/lib/actions';
 import type { Book, Category } from '@/lib/definitions';
@@ -96,7 +97,7 @@ export function BookFormDialog() {
 
   const action = isEdit ? updateBookAction : createBookAction;
   
-  const [formState, formAction] = useFormState(action, {
+  const [formState, formAction] = useActionState(action, {
     message: '',
     errors: {},
   });
