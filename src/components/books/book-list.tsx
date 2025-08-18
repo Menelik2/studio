@@ -9,7 +9,7 @@ import { PlusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { BookFormDialog, useBookDialog } from '@/components/books/book-form-dialog';
-import { DeleteBookDialog, useDeleteBookDialog } from '@/components/books/delete-book-dialog';
+import { DeleteBookDialog } from '@/components/books/delete-book-dialog';
 
 export function BookList({ initialBooks }: { initialBooks: Book[] }) {
   const searchParams = useSearchParams();
@@ -20,7 +20,6 @@ export function BookList({ initialBooks }: { initialBooks: Book[] }) {
   const [categoryFilter, setCategoryFilter] = useState<string | null>(initialCategory);
   
   const { onOpen } = useBookDialog();
-  const { bookToDelete } = useDeleteBookDialog();
 
   useEffect(() => {
     setFilteredBooks(
@@ -41,7 +40,7 @@ export function BookList({ initialBooks }: { initialBooks: Book[] }) {
   return (
     <div className="space-y-6">
       <BookFormDialog />
-      <DeleteBookDialog book={bookToDelete} />
+      <DeleteBookDialog />
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
             <h1 className="font-headline text-3xl font-bold tracking-tight">Book Management</h1>

@@ -22,37 +22,51 @@ import { Trash2 } from 'lucide-react';
 interface DeleteDialogState {
   isOpen: boolean;
   bookToDelete: Book | null;
+}
+
+interface DeleteBookDialogStore extends DeleteDialogState {
   onOpen: (book: Book) => void;
   onClose: () => void;
 }
 
-const useDeleteDialogStore = (
-  (set) => ({
+// Global store hack
+let state: DeleteDialogState = {
     isOpen: false,
     bookToDelete: null,
-    onOpen: (book) => set({ isOpen: true, bookToDelete: book }),
-    onClose: () => set({ isOpen: false, bookToDelete: null }),
-  })
-);
-
-// Global store hack
-let state: DeleteDialogState = useDeleteDialogStore(() => {});
-const listeners = new Set<(state: DeleteDialogState) => void>();
-const set = (updater: (state: DeleteDialogState) => Partial<DeleteDialogState>) => {
-  state = { ...state, ...updater(state) };
-  listeners.forEach((listener) => listener(state));
 };
-useDeleteDialogStore(set);
+const listeners = new Set<(state: DeleteDialogState) => void>();
 
-export const useDeleteBookDialog = () => {
-  const [dialogState, setDialogState] = useState(state);
+const store = {
+    getState: () => state,
+    setState: (updater: (state: DeleteDialogState) => Partial<DeleteDialogState>) => {
+        state = { ...state, ...updater(state) };
+        listeners.forEach((listener) => listener(state));
+    },
+    subscribe: (listener: (state: DeleteDialogState) => void) => {
+        listeners.add(listener);
+        return () => listeners.delete(listener);
+    },
+    onOpen: (book: Book) => {
+        store.setState(() => ({ isOpen: true, bookToDelete: book }));
+    },
+    onClose: () => {
+        store.setState(() => ({ isOpen: false, bookToDelete: null }));
+    }
+}
+
+
+export const useDeleteBookDialog = (): DeleteBookDialogStore => {
+  const [dialogState, setDialogState] = useState(store.getState());
   useEffect(() => {
-    listeners.add(setDialogState);
-    return () => {
-      listeners.delete(setDialogState);
-    };
+    const unsubscribe = store.subscribe(setDialogState);
+    return unsubscribe;
   }, []);
-  return dialogState;
+  
+  return {
+    ...dialogState,
+    onOpen: store.onOpen,
+    onClose: store.onClose
+  };
 };
 
 function DeleteButton() {
@@ -65,8 +79,8 @@ function DeleteButton() {
   );
 }
 
-export function DeleteBookDialog({ book }: { book: Book | null }) {
-  const { isOpen, onClose } = useDeleteBookDialog();
+export function DeleteBookDialog() {
+  const { isOpen, bookToDelete, onClose } = useDeleteBookDialog();
   const { toast } = useToast();
   
   const [state, action] = useActionState(deleteBookAction, {
@@ -80,11 +94,13 @@ export function DeleteBookDialog({ book }: { book: Book | null }) {
         description: state.message,
         variant: state.message.includes('Error') ? 'destructive' : 'default',
       });
-      onClose();
+      if (!state.message.includes('Error')) {
+        onClose();
+      }
     }
   }, [state, toast, onClose]);
 
-  if (!isOpen || !book) return null;
+  if (!isOpen || !bookToDelete) return null;
 
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
@@ -93,14 +109,14 @@ export function DeleteBookDialog({ book }: { book: Book | null }) {
           <AlertDialogTitle className="font-headline">Are you sure?</AlertDialogTitle>
           <AlertDialogDescription>
             This action cannot be undone. This will permanently delete the book
-            <span className="font-semibold"> "{book.title}"</span>.
+            <span className="font-semibold"> "{bookToDelete.title}"</span>.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <form action={action}>
-            <input type="hidden" name="id" value={book.id} />
+            <input type="hidden" name="id" value={bookToDelete.id} />
             <AlertDialogFooter>
                 <AlertDialogCancel asChild>
-                <Button variant="outline" type="button">Cancel</Button>
+                    <Button variant="outline" type="button" onClick={onClose}>Cancel</Button>
                 </AlertDialogCancel>
                 <DeleteButton />
             </AlertDialogFooter>

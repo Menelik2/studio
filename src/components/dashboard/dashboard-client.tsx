@@ -3,13 +3,12 @@
 
 import { Button } from '@/components/ui/button';
 import { BookFormDialog, useBookDialog } from '@/components/books/book-form-dialog';
-import { DeleteBookDialog, useDeleteBookDialog } from '@/components/books/delete-book-dialog';
+import { DeleteBookDialog } from '@/components/books/delete-book-dialog';
 import { PlusCircle } from 'lucide-react';
 
 
 export function DashboardClient() {
     const { onOpen } = useBookDialog();
-    const { bookToDelete } = useDeleteBookDialog();
 
     return (
         <>
@@ -20,7 +19,7 @@ export function DashboardClient() {
                 </Button>
             </div>
             <BookFormDialog />
-            <DeleteBookDialog book={bookToDelete} />
+            <DeleteBookDialog />
         </>
     )
 }

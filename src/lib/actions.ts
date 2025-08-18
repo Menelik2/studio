@@ -95,7 +95,8 @@ export async function deleteBookAction(prevState: any, formData: FormData) {
 
 // Planner 1 Actions
 export async function getPlanner1ItemsAction(): Promise<Planner1Item[]> {
-  return getPlanner1Items();
+  const items = await getPlanner1Items();
+  return items;
 }
 
 export async function savePlanner1ItemsAction(items: Planner1Item[]): Promise<{success: boolean}> {
@@ -111,7 +112,8 @@ export async function savePlanner1ItemsAction(items: Planner1Item[]): Promise<{s
 
 // Planner 2 Actions
 export async function getPlanner2ItemsAction(): Promise<Planner2Item[]> {
-  return getPlanner2Items();
+  const items = await getPlanner2Items();
+  return items;
 }
 
 export async function savePlanner2ItemsAction(items: Planner2Item[]): Promise<{success: boolean}> {
