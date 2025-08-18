@@ -1,12 +1,11 @@
-
 // @ts-nocheck
 'use server';
 
 import { z } from 'zod';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
-import { addBook, deleteBook, updateBook } from './data';
-import type { Book } from './definitions';
+import { addBook, deleteBook, updateBook, getPlanner1Items, savePlanner1Items, getPlanner2Items, savePlanner2Items } from './data';
+import type { Book, Planner1Item, Planner2Item } from './definitions';
 
 // Mock login action
 export async function loginAction() {
@@ -90,5 +89,37 @@ export async function deleteBookAction(id: string) {
     return { message: 'Book deleted successfully.' };
   } catch (error) {
     return { message: 'Database Error: Failed to delete book.' };
+  }
+}
+
+// Planner 1 Actions
+export async function getPlanner1ItemsAction(): Promise<Planner1Item[]> {
+  return getPlanner1Items();
+}
+
+export async function savePlanner1ItemsAction(items: Planner1Item[]): Promise<{success: boolean}> {
+  try {
+    await savePlanner1Items(items);
+    revalidatePath('/dashboard/planner');
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to save planner 1 items:', error);
+    return { success: false };
+  }
+}
+
+// Planner 2 Actions
+export async function getPlanner2ItemsAction(): Promise<Planner2Item[]> {
+  return getPlanner2Items();
+}
+
+export async function savePlanner2ItemsAction(items: Planner2Item[]): Promise<{success: boolean}> {
+  try {
+    await savePlanner2Items(items);
+    revalidatePath('/dashboard/planner-2');
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to save planner 2 items:', error);
+    return { success: false };
   }
 }

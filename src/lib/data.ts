@@ -1,3 +1,5 @@
+'use server';
+
 import type { Book, Planner1Item, Planner2Item } from './definitions';
 import fs from 'fs/promises';
 import path from 'path';

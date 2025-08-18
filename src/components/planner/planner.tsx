@@ -23,7 +23,7 @@ import { Edit, FileText, PlusCircle, Search, Trash2, Printer } from 'lucide-reac
 import { Checkbox } from '../ui/checkbox';
 import type { PlannerItem } from '@/lib/definitions';
 import { PlannerFormDialog, usePlannerDialog } from './planner-form-dialog';
-import { getPlanner1Items, savePlanner1Items } from '@/lib/data';
+import { getPlanner1ItemsAction, savePlanner1ItemsAction } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 
 const quarters = {
@@ -44,7 +44,7 @@ export function Planner() {
     async function loadItems() {
       setIsLoading(true);
       try {
-        const loadedItems = await getPlanner1Items();
+        const loadedItems = await getPlanner1ItemsAction();
         setItems(loadedItems);
       } catch (error) {
         toast({
@@ -60,14 +60,14 @@ export function Planner() {
   }, [toast]);
 
   const handleSaveItems = async (updatedItems: PlannerItem[]) => {
-    try {
-      await savePlanner1Items(updatedItems);
+    const result = await savePlanner1ItemsAction(updatedItems);
+    if (result.success) {
       setItems(updatedItems);
       toast({
         title: 'Planner Saved',
         description: 'Your changes have been saved successfully.',
       });
-    } catch (error) {
+    } else {
       toast({
         title: 'Error Saving Planner',
         description: 'Could not save your changes to the server.',
