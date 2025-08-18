@@ -100,8 +100,11 @@ export async function getBookById(id: string): Promise<Book | undefined> {
 export async function addBook(book: Omit<Book, 'id'>): Promise<Book> {
   await delay(300);
   const allBooks = await readBooksDb();
+  const numericIds = allBooks.map(b => parseInt(b.id, 10)).filter(id => !isNaN(id));
+  const newId = (Math.max(0, ...numericIds) + 1).toString();
+
   const newBook: Book = {
-    id: (Math.max(0, ...allBooks.map(b => parseInt(b.id, 10))) + 1).toString(),
+    id: newId,
     ...book,
   };
   const updatedBooks = [...allBooks, newBook];
