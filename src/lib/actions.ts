@@ -1,3 +1,4 @@
+
 // @ts-nocheck
 'use server';
 
@@ -16,7 +17,7 @@ const bookSchema = z.object({
   id: z.string().optional(),
   title: z.string().min(1, { message: 'Title is required' }),
   author: z.string().min(1, { message: 'Author is required' }),
-  category: z.enum(['Poetry', 'Tradition', 'Drama'], {
+  category: z.enum(['Poetry', 'Tradition', 'Drama', 'Reading', 'Folding'], {
     errorMap: () => ({ message: 'Please select a valid category.' }),
   }),
   year: z.coerce

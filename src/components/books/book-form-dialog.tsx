@@ -89,7 +89,7 @@ const bookSchema = z.object({
   id: z.string().optional(),
   title: z.string().min(1, 'Title is required'),
   author: z.string().min(1, 'Author is required'),
-  category: z.enum(['Poetry', 'Tradition', 'Drama']),
+  category: z.enum(['Poetry', 'Tradition', 'Drama', 'Reading', 'Folding']),
   year: z.coerce.number().int().min(1000).max(new Date().getFullYear()),
   description: z.string().min(1, 'Description is required'),
   filePath: z.string().min(1, 'File path is required').refine(val => val.startsWith('/pdfs/'), {
@@ -268,6 +268,8 @@ export function BookFormDialog() {
                         <SelectItem value="Poetry">Poetry</SelectItem>
                         <SelectItem value="Tradition">Tradition</SelectItem>
                         <SelectItem value="Drama">Drama</SelectItem>
+                        <SelectItem value="Reading">Reading</SelectItem>
+                        <SelectItem value="Folding">Folding</SelectItem>
                       </SelectContent>
                     </Select>
                   )}
@@ -350,5 +352,3 @@ export function BookFormDialog() {
     </Dialog>
   );
 }
-
-    

@@ -1,5 +1,5 @@
 
-export type Category = 'Poetry' | 'Tradition' | 'Drama';
+export type Category = 'Poetry' | 'Tradition' | 'Drama' | 'Reading' | 'Folding';
 
 export interface Book {
   id: string;
