@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useFormState, useFormStatus } from 'react-dom';
+import { useEffect, useState, useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -68,7 +68,7 @@ export function DeleteBookDialog({ book }: { book: Book | null }) {
   const { isOpen, onClose } = useDeleteBookDialog();
   const { toast } = useToast();
   
-  const [state, action] = useFormState(deleteBookAction.bind(null, book?.id ?? ''), {
+  const [state, action] = useActionState(deleteBookAction.bind(null, book?.id ?? ''), {
     message: '',
   });
 
