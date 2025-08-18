@@ -25,8 +25,8 @@ const bookSchema = z.object({
     .min(1000, { message: 'Year must be a valid year' })
     .max(new Date().getFullYear(), { message: 'Year cannot be in the future' }),
   description: z.string().min(1, { message: 'Description is required' }),
-  filePath: z.string().min(1, { message: 'File path is required' }).refine(val => val.startsWith('/pdfs/'), {
-    message: 'File path must start with /pdfs/',
+  filePath: z.string().min(1, { message: 'File path is required' }).refine(val => val.startsWith('/pdfs/') || val.startsWith('http'), {
+    message: 'Path must start with /pdfs/ or be a valid URL (http/https)',
   }),
   comment: z.string().optional(),
 });
@@ -81,7 +81,8 @@ export async function updateBookAction(prevState: FormState, formData: FormData)
   return handleBookAction(book as unknown as Book, 'update');
 }
 
-export async function deleteBookAction(id: string) {
+export async function deleteBookAction(prevState: any, formData: FormData) {
+  const id = formData.get('id') as string;
   try {
     await deleteBook(id);
     revalidatePath('/dashboard/books');

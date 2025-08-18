@@ -92,8 +92,8 @@ const bookSchema = z.object({
   category: z.enum(['Poetry', 'Tradition', 'Drama', 'Reading', 'Folding']),
   year: z.coerce.number().int().min(1000).max(new Date().getFullYear()),
   description: z.string().min(1, 'Description is required'),
-  filePath: z.string().min(1, 'File path is required').refine(val => val.startsWith('/pdfs/'), {
-    message: 'File path must start with /pdfs/',
+  filePath: z.string().min(1, 'File path is required').refine(val => val.startsWith('/pdfs/') || val.startsWith('http'), {
+    message: 'Path must start with /pdfs/ or be a valid URL (http/https)',
   }),
   comment: z.string().optional(),
 });
@@ -293,7 +293,7 @@ export function BookFormDialog() {
               </div>
               
               <div className="grid grid-cols-4 items-start gap-4">
-                <Label htmlFor="filePath" className="text-right pt-2">PDF File</Label>
+                <Label htmlFor="filePath" className="text-right pt-2">PDF File or URL</Label>
                 <div className="col-span-3 space-y-2">
                   <div
                     onDragEnter={handleDragEnter}
@@ -313,7 +313,7 @@ export function BookFormDialog() {
                   </div>
                   <Input
                     id="filePath"
-                    placeholder="/pdfs/example.pdf"
+                    placeholder="/pdfs/example.pdf or https://..."
                     {...register('filePath')}
                   />
                    {errors.filePath && <p className="text-red-500 text-xs text-right">{errors.filePath.message}</p>}

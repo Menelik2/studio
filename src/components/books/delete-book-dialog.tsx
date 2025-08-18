@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState, useActionState } from 'react';
@@ -68,7 +69,7 @@ export function DeleteBookDialog({ book }: { book: Book | null }) {
   const { isOpen, onClose } = useDeleteBookDialog();
   const { toast } = useToast();
   
-  const [state, action] = useActionState(deleteBookAction.bind(null, book?.id ?? ''), {
+  const [state, action] = useActionState(deleteBookAction, {
     message: '',
   });
 
@@ -95,14 +96,15 @@ export function DeleteBookDialog({ book }: { book: Book | null }) {
             <span className="font-semibold"> "{book.title}"</span>.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter>
-          <form action={action} className="flex gap-2">
-            <AlertDialogCancel asChild>
-              <Button variant="outline" type="button">Cancel</Button>
-            </AlertDialogCancel>
-            <DeleteButton />
-          </form>
-        </AlertDialogFooter>
+        <form action={action}>
+            <input type="hidden" name="id" value={book.id} />
+            <AlertDialogFooter>
+                <AlertDialogCancel asChild>
+                <Button variant="outline" type="button">Cancel</Button>
+                </AlertDialogCancel>
+                <DeleteButton />
+            </AlertDialogFooter>
+        </form>
       </AlertDialogContent>
     </AlertDialog>
   );
