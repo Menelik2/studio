@@ -1,12 +1,12 @@
 
 'use client';
 
-import { useActionState, useEffect, useState } from 'react';
+import { useActionState, useEffect, useState, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { createBookAction, updateBookAction } from '@/lib/actions';
 import type { Book } from '@/lib/definitions';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { z } from 'zod';
 import {
   Dialog,
@@ -27,9 +27,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Save } from 'lucide-react';
-import { Controller } from 'react-hook-form';
+import { Save, UploadCloud } from 'lucide-react';
 import { useFormStatus } from 'react-dom';
+import { cn } from '@/lib/utils';
 
 
 interface BookDialogState {
@@ -84,12 +84,15 @@ export const useBookDialog = (): BookDialogStore => {
 };
 
 const bookSchema = z.object({
+  id: z.string().optional(),
   title: z.string().min(1, 'Title is required'),
   author: z.string().min(1, 'Author is required'),
   category: z.enum(['Poetry', 'Tradition', 'Drama']),
   year: z.coerce.number().int().min(1000).max(new Date().getFullYear()),
   description: z.string().min(1, 'Description is required'),
-  filePath: z.string().min(1, 'File path is required'),
+  filePath: z.string().min(1, 'File path is required').refine(val => val.startsWith('/pdfs/'), {
+    message: 'File path must start with /pdfs/',
+  }),
 });
 
 type BookFormValues = z.infer<typeof bookSchema>;
@@ -109,6 +112,7 @@ export function BookFormDialog() {
   const { isOpen, book, onClose } = useBookDialog();
   const { toast } = useToast();
   const isEdit = !!book;
+  const [isDragging, setIsDragging] = useState(false);
   
   const action = isEdit ? updateBookAction : createBookAction;
   
@@ -117,7 +121,7 @@ export function BookFormDialog() {
     errors: {},
   });
 
-  const { register, reset, control, formState: { errors } } = useForm<BookFormValues>({
+  const { register, reset, control, formState: { errors }, setValue } = useForm<BookFormValues>({
     resolver: zodResolver(bookSchema),
     defaultValues: {
         title: '',
@@ -155,6 +159,47 @@ export function BookFormDialog() {
     }
   }, [formState, toast, onClose, isEdit]);
   
+  const handleDragEnter = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      if (file.type === 'application/pdf') {
+        setValue('filePath', `/pdfs/${file.name}`, { shouldValidate: true });
+        toast({
+          title: 'File selected',
+          description: `"${file.name}". Make sure to place this file in the public/pdfs folder.`,
+        });
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Invalid File Type',
+          description: 'Please drop a PDF file.',
+        });
+      }
+    }
+  }, [setValue, toast]);
+
   if (!isOpen) return null;
 
   return (
@@ -223,11 +268,33 @@ export function BookFormDialog() {
             {formState.errors?.description && <p className="col-span-4 text-red-500 text-xs text-right">{formState.errors.description[0]}</p>}
           </div>
           
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="filePath" className="text-right">File Path</Label>
-            <Input id="filePath" {...register('filePath')} className="col-span-3" />
-            {errors.filePath && <p className="col-span-4 text-red-500 text-xs text-right">{errors.filePath.message}</p>}
-            {formState.errors?.filePath && <p className="col-span-4 text-red-500 text-xs text-right">{formState.errors.filePath[0]}</p>}
+          <div className="grid grid-cols-4 items-start gap-4">
+            <Label htmlFor="filePath" className="text-right pt-2">PDF File</Label>
+            <div className="col-span-3 space-y-2">
+              <div
+                onDragEnter={handleDragEnter}
+                onDragLeave={handleDragLeave}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+                className={cn(
+                  'flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50 transition-colors',
+                  isDragging ? 'border-primary bg-muted/50' : 'border-input'
+                )}
+              >
+                <UploadCloud className="h-8 w-8 text-muted-foreground" />
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Drag & drop a PDF here
+                </p>
+                <p className="text-xs text-muted-foreground">(updates the path below)</p>
+              </div>
+              <Input
+                id="filePath"
+                placeholder="/pdfs/example.pdf"
+                {...register('filePath')}
+              />
+               {errors.filePath && <p className="text-red-500 text-xs text-right">{errors.filePath.message}</p>}
+               {formState.errors?.filePath && <p className="text-red-500 text-xs text-right">{formState.errors.filePath[0]}</p>}
+            </div>
           </div>
           
           <DialogFooter>

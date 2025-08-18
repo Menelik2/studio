@@ -25,7 +25,9 @@ const bookSchema = z.object({
     .min(1000, { message: 'Year must be a valid year' })
     .max(new Date().getFullYear(), { message: 'Year cannot be in the future' }),
   description: z.string().min(1, { message: 'Description is required' }),
-  filePath: z.string().min(1, { message: 'File path is required' }),
+  filePath: z.string().min(1, { message: 'File path is required' }).refine(val => val.startsWith('/pdfs/'), {
+    message: 'File path must start with /pdfs/',
+  }),
 });
 
 export type FormState = {
