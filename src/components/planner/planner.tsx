@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -18,7 +19,8 @@ import {
   TableBody,
   TableCell,
 } from '@/components/ui/table';
-import { FileText, PlusCircle, Search } from 'lucide-react';
+import { FileText, PlusCircle, Search, Trash2 } from 'lucide-react';
+import { Checkbox } from '../ui/checkbox';
 
 const quarters = {
   '1st quarter': ['July', 'August', 'September'],
@@ -27,9 +29,48 @@ const quarters = {
   '4th quarter': ['April', 'May', 'June'],
 };
 
+interface PlannerItem {
+    id: number;
+    task: string;
+    measure: string;
+    quantity: string;
+    collaborator: string;
+    budgetRequested: string;
+    approvedCost: string;
+    approvedIncome: string;
+    months: Record<string, boolean>;
+}
+
 export function Planner() {
   const [year, setYear] = useState(new Date().getFullYear());
-  const [items, setItems] = useState<any[]>([]);
+  const [items, setItems] = useState<PlannerItem[]>([]);
+
+  const handleAddItem = () => {
+    const newItem: PlannerItem = {
+      id: items.length + 1,
+      task: '',
+      measure: '',
+      quantity: '',
+      collaborator: '',
+      budgetRequested: '',
+      approvedCost: '',
+      approvedIncome: '',
+      months: Object.values(quarters).flat().reduce((acc, month) => ({...acc, [month]: false}), {})
+    };
+    setItems([...items, newItem]);
+  };
+
+  const handleItemChange = (id: number, field: keyof Omit<PlannerItem, 'id' | 'months'>, value: string) => {
+    setItems(items.map(item => item.id === id ? {...item, [field]: value} : item));
+  }
+
+  const handleMonthChange = (id: number, month: string, checked: boolean) => {
+    setItems(items.map(item => item.id === id ? {...item, months: {...item.months, [month]: checked}} : item));
+  }
+
+  const handleRemoveItem = (id: number) => {
+    setItems(items.filter(item => item.id !== id));
+  }
 
   return (
     <div className="space-y-4">
@@ -60,7 +101,7 @@ export function Planner() {
             </div>
           </div>
         </div>
-        <Button>
+        <Button onClick={handleAddItem}>
           <PlusCircle className="mr-2 h-4 w-4" />
           አዲስ ዝግጅት ጨምር
         </Button>
@@ -106,7 +147,7 @@ export function Planner() {
                     <p className="text-muted-foreground">
                       No items for {year}. Add items for this year.
                     </p>
-                    <Button>
+                    <Button onClick={handleAddItem}>
                       <PlusCircle className="mr-2 h-4 w-4" />
                       Add Your First Item
                     </Button>
@@ -114,7 +155,42 @@ export function Planner() {
                 </TableCell>
               </TableRow>
             ) : (
-              <></>
+                items.map((item, index) => (
+                    <TableRow key={item.id}>
+                        <TableCell className="border-r">{index + 1}</TableCell>
+                        <TableCell className="border-r">
+                            <Input value={item.task} onChange={(e) => handleItemChange(item.id, 'task', e.target.value)} />
+                        </TableCell>
+                        <TableCell className="border-r">
+                            <Input value={item.measure} onChange={(e) => handleItemChange(item.id, 'measure', e.target.value)} />
+                        </TableCell>
+                        <TableCell className="border-r">
+                            <Input value={item.quantity} onChange={(e) => handleItemChange(item.id, 'quantity', e.target.value)} />
+                        </TableCell>
+                        <TableCell className="border-r">
+                            <Input value={item.collaborator} onChange={(e) => handleItemChange(item.id, 'collaborator', e.target.value)} />
+                        </TableCell>
+                        {Object.values(quarters).flat().map(month => (
+                            <TableCell key={month} className="text-center border-r">
+                                <Checkbox checked={item.months[month]} onCheckedChange={(checked) => handleMonthChange(item.id, month, !!checked)} />
+                            </TableCell>
+                        ))}
+                        <TableCell className="border-r">
+                            <Input value={item.budgetRequested} onChange={(e) => handleItemChange(item.id, 'budgetRequested', e.target.value)} />
+                        </TableCell>
+                        <TableCell className="border-r">
+                            <Input value={item.approvedCost} onChange={(e) => handleItemChange(item.id, 'approvedCost', e.target.value)} />
+                        </TableCell>
+                        <TableCell className="border-r">
+                             <Input value={item.approvedIncome} onChange={(e) => handleItemChange(item.id, 'approvedIncome', e.target.value)} />
+                        </TableCell>
+                        <TableCell>
+                            <Button variant="destructive" size="icon" onClick={() => handleRemoveItem(item.id)}>
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                        </TableCell>
+                    </TableRow>
+                ))
             )}
           </TableBody>
         </Table>
