@@ -28,6 +28,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Save } from 'lucide-react';
+import { Controller } from 'react-hook-form';
+
 
 interface BookDialogState {
   isOpen: boolean;
@@ -37,10 +39,10 @@ interface BookDialogState {
 }
 
 const useBookDialogStore = (
-  (set) => ({
+  (set: any) => ({
     isOpen: false,
     book: null,
-    onOpen: (book) => set({ isOpen: true, book }),
+    onOpen: (book: Book | null) => set({ isOpen: true, book }),
     onClose: () => set({ isOpen: false, book: null }),
   })
 );
@@ -92,14 +94,23 @@ export function BookFormDialog() {
   const { toast } = useToast();
   const isEdit = !!book;
 
-  const [createState, createAction] = useFormState(createBookAction, { message: '', errors: {} });
-  const [updateState, updateAction] = useFormState(updateBookAction, { message: '', errors: {} });
+  const action = isEdit ? updateBookAction : createBookAction;
+  
+  const [formState, formAction] = useFormState(action, {
+    message: '',
+    errors: {},
+  });
 
-  const formAction = isEdit ? updateAction : createAction;
-  const formState = isEdit ? updateState : createState;
-
-  const { register, handleSubmit, reset, control, formState: { errors } } = useForm<BookFormValues>({
+  const { register, handleSubmit, reset, control, formState: { errors, isSubmitting } } = useForm<BookFormValues>({
     resolver: zodResolver(bookSchema),
+    defaultValues: {
+        title: '',
+        author: '',
+        category: 'Poetry',
+        year: new Date().getFullYear(),
+        description: '',
+        filePath: '',
+    }
   });
 
   useEffect(() => {
@@ -118,7 +129,7 @@ export function BookFormDialog() {
   }, [book, reset]);
 
   useEffect(() => {
-    if(formState.message && !formState.errors) {
+    if (formState.message && !formState.errors) {
       toast({ title: isEdit ? 'Book Updated' : 'Book Added', description: formState.message });
       onClose();
     } else if (formState.message && formState.errors) {
@@ -126,6 +137,15 @@ export function BookFormDialog() {
     }
   }, [formState, toast, onClose, isEdit]);
 
+  const onSubmit = (data: BookFormValues) => {
+    const formData = new FormData();
+    if(isEdit && book) formData.append('id', book.id);
+    Object.entries(data).forEach(([key, value]) => {
+      formData.append(key, String(value));
+    });
+    formAction(formData);
+  };
+  
   if (!isOpen) return null;
 
   return (
@@ -137,46 +157,61 @@ export function BookFormDialog() {
             {isEdit ? 'Update the details of this book.' : 'Fill in the details for the new book.'}
           </DialogDescription>
         </DialogHeader>
-        <form action={formAction} className="grid gap-4 py-4">
-          {isEdit && <input type="hidden" {...register('id')} value={book.id} name="id" />}
-          
+        <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="title" className="text-right">Title</Label>
-            <Input id="title" {...register('title')} className="col-span-3" name="title" defaultValue={book?.title}/>
+            <Input id="title" {...register('title')} className="col-span-3" />
+            {errors.title && <p className="col-span-4 text-red-500 text-xs">{errors.title.message}</p>}
             {formState.errors?.title && <p className="col-span-4 text-red-500 text-xs">{formState.errors.title[0]}</p>}
           </div>
 
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="author" className="text-right">Author</Label>
-            <Input id="author" {...register('author')} className="col-span-3" name="author" defaultValue={book?.author}/>
+            <Input id="author" {...register('author')} className="col-span-3" />
+            {errors.author && <p className="col-span-4 text-red-500 text-xs">{errors.author.message}</p>}
             {formState.errors?.author && <p className="col-span-4 text-red-500 text-xs">{formState.errors.author[0]}</p>}
           </div>
 
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="category" className="text-right">Category</Label>
-             <select name="category" defaultValue={book?.category} className="col-span-3 flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1">
-                <option value="Poetry">Poetry</option>
-                <option value="Tradition">Tradition</option>
-                <option value="Drama">Drama</option>
-            </select>
+            <Controller
+              name="category"
+              control={control}
+              render={({ field }) => (
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Poetry">Poetry</SelectItem>
+                    <SelectItem value="Tradition">Tradition</SelectItem>
+                    <SelectItem value="Drama">Drama</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            {errors.category && <p className="col-span-4 text-red-500 text-xs">{errors.category.message}</p>}
             {formState.errors?.category && <p className="col-span-4 text-red-500 text-xs">{formState.errors.category[0]}</p>}
           </div>
 
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="year" className="text-right">Year</Label>
-            <Input id="year" type="number" {...register('year')} className="col-span-3" name="year" defaultValue={book?.year}/>
+            <Input id="year" type="number" {...register('year')} className="col-span-3" />
+            {errors.year && <p className="col-span-4 text-red-500 text-xs">{errors.year.message}</p>}
             {formState.errors?.year && <p className="col-span-4 text-red-500 text-xs">{formState.errors.year[0]}</p>}
           </div>
 
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="description" className="text-right">Description</Label>
-            <Textarea id="description" {...register('description')} className="col-span-3" name="description" defaultValue={book?.description}/>
+            <Textarea id="description" {...register('description')} className="col-span-3" />
+            {errors.description && <p className="col-span-4 text-red-500 text-xs">{errors.description.message}</p>}
             {formState.errors?.description && <p className="col-span-4 text-red-500 text-xs">{formState.errors.description[0]}</p>}
           </div>
           
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="filePath" className="text-right">File Path</Label>
-            <Input id="filePath" {...register('filePath')} className="col-span-3" name="filePath" defaultValue={book?.filePath}/>
+            <Input id="filePath" {...register('filePath')} className="col-span-3" />
+            {errors.filePath && <p className="col-span-4 text-red-500 text-xs">{errors.filePath.message}</p>}
             {formState.errors?.filePath && <p className="col-span-4 text-red-500 text-xs">{formState.errors.filePath[0]}</p>}
           </div>
           
