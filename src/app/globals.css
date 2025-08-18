@@ -70,3 +70,31 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+@media print {
+  @page {
+    size: A4;
+    margin: 1cm;
+  }
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .print-container {
+    padding: 1rem;
+  }
+  .print-table-container {
+    overflow: visible !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+  .print-table {
+    width: 100%;
+    min-width: 0 !important;
+    font-size: 8px; /* Adjust font size for better fit on A4 */
+  }
+  .print-table th, .print-table td {
+    padding: 4px;
+    border: 1px solid #ccc;
+  }
+}

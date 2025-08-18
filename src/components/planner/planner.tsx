@@ -103,7 +103,7 @@ export function Planner() {
   const filteredItems = items.filter(item => item.year === year.toString());
 
   return (
-    <div className="space-y-4 print:space-y-0">
+    <div className="space-y-4 print:space-y-0 print-container">
       <PlannerFormDialog />
       <div className="flex flex-wrap items-center justify-between gap-4 print:hidden">
         <div className="flex flex-wrap items-center gap-2">
@@ -140,8 +140,8 @@ export function Planner() {
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border print:border-0 print:shadow-none">
-        <Table className="min-w-max whitespace-nowrap">
+      <div className="overflow-x-auto rounded-lg border print-table-container">
+        <Table className="min-w-max whitespace-nowrap print-table">
           <TableHeader>
             <TableRow className="bg-muted hover:bg-muted">
               <TableHead rowSpan={2} className="border-r">ተ.ቁ</TableHead>
@@ -191,6 +191,7 @@ export function Planner() {
                       Add Your First Item
                     </Button>
                   </div>
+                   <div className="hidden print:block text-center p-8">No items for this year.</div>
                 </TableCell>
               </TableRow>
             ) : (

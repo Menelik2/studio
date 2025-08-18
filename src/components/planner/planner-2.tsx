@@ -99,7 +99,7 @@ export function Planner2() {
   const filteredItems = items.filter((item) => item.year === year.toString());
 
   return (
-    <div className="space-y-4 print:space-y-2">
+    <div className="space-y-4 print:space-y-2 print-container">
         <Planner2FormDialog />
         <div className="text-center space-y-2 print:space-y-1">
             <h1 className="font-bold text-lg">የባህር ዳር ፈ/ገ/ቅ/ጊዮርጊስ ካ/ሰ/ት/ቤት በበጀት አመቱ የተከናወነ የስራ ተግባራት የሪፖርት ማሳወቂያ ቅጽ</h1>
@@ -136,8 +136,8 @@ export function Planner2() {
             </div>
         </div>
 
-      <div className="overflow-x-auto rounded-lg border print:border-0 print:shadow-none">
-        <Table className="min-w-max whitespace-nowrap">
+      <div className="overflow-x-auto rounded-lg border print-table-container">
+        <Table className="min-w-max whitespace-nowrap print-table">
           <TableHeader>
             <TableRow className="bg-muted hover:bg-muted">
               <TableHead className="border-r">ተ.ቁ</TableHead>
@@ -171,6 +171,7 @@ export function Planner2() {
                       Add Your First Item
                     </Button>
                   </div>
+                  <div className="hidden print:block text-center p-8">No items for this year.</div>
                 </TableCell>
               </TableRow>
             ) : (
