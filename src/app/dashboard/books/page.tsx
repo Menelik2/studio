@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -30,9 +31,14 @@ export default function BooksPage() {
 
   useEffect(() => {
     setFilteredBooks(
-      books.filter((book) =>
-        book.title.toLowerCase().includes(filter.toLowerCase())
-      )
+      books.filter((book) => {
+        const searchTerm = filter.toLowerCase();
+        return (
+          book.title.toLowerCase().includes(searchTerm) ||
+          book.author.toLowerCase().includes(searchTerm) ||
+          book.year.toString().includes(filter)
+        );
+      })
     );
   }, [filter, books]);
 
@@ -47,7 +53,7 @@ export default function BooksPage() {
         </div>
         <div className="flex gap-2">
             <Input
-              placeholder="Filter by title..."
+              placeholder="Filter by title, author, or year..."
               value={filter}
               onChange={(event) => setFilter(event.target.value)}
               className="max-w-sm"
