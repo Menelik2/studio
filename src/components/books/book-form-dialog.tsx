@@ -3,7 +3,7 @@
 
 import { useActionState, useEffect, useState, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { createBookAction, updateBookAction } from '@/lib/actions';
+import { updateBookAction, createBookAction } from '@/lib/actions';
 import type { Book } from '@/lib/definitions';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, Controller } from 'react-hook-form';
@@ -35,10 +35,11 @@ import { cn } from '@/lib/utils';
 interface BookDialogState {
   isOpen: boolean;
   book: Book | null;
+  mode: 'edit' | 'comment' | 'create';
 }
 
 interface BookDialogStore extends BookDialogState {
-  onOpen: (book: Book | null) => void;
+  onOpen: (book: Book | null, mode: 'edit' | 'comment' | 'create') => void;
   onClose: () => void;
 }
 
@@ -47,6 +48,7 @@ interface BookDialogStore extends BookDialogState {
 let state: BookDialogState = {
     isOpen: false,
     book: null,
+    mode: 'create',
 };
 const listeners = new Set<(state: BookDialogState) => void>();
 
@@ -60,11 +62,11 @@ const store = {
         listeners.add(listener);
         return () => listeners.delete(listener);
     },
-    onOpen: (book: Book | null) => {
-        store.setState(() => ({ isOpen: true, book }));
+    onOpen: (book: Book | null, mode: 'edit' | 'comment' | 'create') => {
+        store.setState(() => ({ isOpen: true, book, mode }));
     },
     onClose: () => {
-        store.setState(() => ({ isOpen: false, book: null }));
+        store.setState(() => ({ isOpen: false, book: null, mode: 'create' }));
     }
 }
 
@@ -110,7 +112,7 @@ function SubmitButton({ isEdit }: { isEdit: boolean }) {
 }
 
 export function BookFormDialog() {
-  const { isOpen, book, onClose } = useBookDialog();
+  const { isOpen, book, mode, onClose } = useBookDialog();
   const { toast } = useToast();
   const isEdit = !!book;
   const [isDragging, setIsDragging] = useState(false);
@@ -204,6 +206,19 @@ export function BookFormDialog() {
   }, [setValue, toast]);
 
   if (!isOpen) return null;
+  
+  const getTitle = () => {
+    if (mode === 'comment') return 'Add/Edit Comment';
+    if (mode === 'edit') return 'Edit Book';
+    return 'Add New Book';
+  }
+  
+  const getDescription = () => {
+    if (mode === 'comment') return 'Add or update the comment for this book.';
+    if (mode === 'edit') return 'Update the details of this book.';
+    return 'Fill in the details for the new book.';
+  }
+
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => {
@@ -214,99 +229,115 @@ export function BookFormDialog() {
     }}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle className="font-headline">{isEdit ? 'Edit Book' : 'Add New Book'}</DialogTitle>
+          <DialogTitle className="font-headline">{getTitle()}</DialogTitle>
           <DialogDescription>
-            {isEdit ? 'Update the details of this book.' : 'Fill in the details for the new book.'}
+            {getDescription()}
           </DialogDescription>
         </DialogHeader>
         <form action={formAction} className="grid gap-4 py-4">
-          {isEdit && <input type="hidden" {...register('id')} value={book.id} />}
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="title" className="text-right">Title</Label>
-            <Input id="title" {...register('title')} className="col-span-3" />
-            {errors.title && <p className="col-span-4 text-red-500 text-xs text-right">{errors.title.message}</p>}
-            {formState.errors?.title && <p className="col-span-4 text-red-500 text-xs text-right">{formState.errors.title[0]}</p>}
-          </div>
-
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="author" className="text-right">Author</Label>
-            <Input id="author" {...register('author')} className="col-span-3" />
-            {errors.author && <p className="col-span-4 text-red-500 text-xs text-right">{errors.author.message}</p>}
-            {formState.errors?.author && <p className="col-span-4 text-red-500 text-xs text-right">{formState.errors.author[0]}</p>}
-          </div>
-
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="category" className="text-right">Category</Label>
-            <Controller
-              name="category"
-              control={control}
-              render={({ field }) => (
-                <Select name={field.name} onValueChange={field.onChange} value={field.value}>
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Select a category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Poetry">Poetry</SelectItem>
-                    <SelectItem value="Tradition">Tradition</SelectItem>
-                    <SelectItem value="Drama">Drama</SelectItem>
-                  </SelectContent>
-                </Select>
-              )}
-            />
-            {errors.category && <p className="col-span-4 text-red-500 text-xs text-right">{errors.category.message}</p>}
-            {formState.errors?.category && <p className="col-span-4 text-red-500 text-xs text-right">{formState.errors.category[0]}</p>}
-          </div>
-
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="year" className="text-right">Year</Label>
-            <Input id="year" type="number" {...register('year')} className="col-span-3" />
-            {errors.year && <p className="col-span-4 text-red-500 text-xs text-right">{errors.year.message}</p>}
-            {formState.errors?.year && <p className="col-span-4 text-red-500 text-xs text-right">{formState.errors.year[0]}</p>}
-          </div>
-
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="description" className="text-right">Description</Label>
-            <Textarea id="description" {...register('description')} className="col-span-3" />
-            {errors.description && <p className="col-span-4 text-red-500 text-xs text-right">{errors.description.message}</p>}
-            {formState.errors?.description && <p className="col-span-4 text-red-500 text-xs text-right">{formState.errors.description[0]}</p>}
-          </div>
+          <input type="hidden" {...register('id')} value={book?.id ?? ''} />
           
-          <div className="grid grid-cols-4 items-start gap-4">
-            <Label htmlFor="filePath" className="text-right pt-2">PDF File</Label>
-            <div className="col-span-3 space-y-2">
-              <div
-                onDragEnter={handleDragEnter}
-                onDragLeave={handleDragLeave}
-                onDragOver={handleDragOver}
-                onDrop={handleDrop}
-                className={cn(
-                  'flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50 transition-colors',
-                  isDragging ? 'border-primary bg-muted/50' : 'border-input'
-                )}
-              >
-                <UploadCloud className="h-8 w-8 text-muted-foreground" />
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Drag & drop a PDF here
-                </p>
-                <p className="text-xs text-muted-foreground">(updates the path below)</p>
+          {mode !== 'comment' && (
+            <>
+              <input type="hidden" {...register('comment')} value={book?.comment ?? ''} />
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="title" className="text-right">Title</Label>
+                <Input id="title" {...register('title')} className="col-span-3" />
+                {errors.title && <p className="col-span-4 text-red-500 text-xs text-right">{errors.title.message}</p>}
+                {formState.errors?.title && <p className="col-span-4 text-red-500 text-xs text-right">{formState.errors.title[0]}</p>}
               </div>
-              <Input
-                id="filePath"
-                placeholder="/pdfs/example.pdf"
-                {...register('filePath')}
-              />
-               {errors.filePath && <p className="text-red-500 text-xs text-right">{errors.filePath.message}</p>}
-               {formState.errors?.filePath && <p className="text-red-500 text-xs text-right">{formState.errors.filePath[0]}</p>}
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="comment" className="text-right">Comment</Label>
-            <Textarea id="comment" {...register('comment')} className="col-span-3" placeholder="Add a comment..."/>
-            {errors.comment && <p className="col-span-4 text-red-500 text-xs text-right">{errors.comment.message}</p>}
-            {formState.errors?.comment && <p className="col-span-4 text-red-500 text-xs text-right">{formState.errors.comment[0]}</p>}
-          </div>
 
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="author" className="text-right">Author</Label>
+                <Input id="author" {...register('author')} className="col-span-3" />
+                {errors.author && <p className="col-span-4 text-red-500 text-xs text-right">{errors.author.message}</p>}
+                {formState.errors?.author && <p className="col-span-4 text-red-500 text-xs text-right">{formState.errors.author[0]}</p>}
+              </div>
+
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="category" className="text-right">Category</Label>
+                <Controller
+                  name="category"
+                  control={control}
+                  render={({ field }) => (
+                    <Select name={field.name} onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger className="col-span-3">
+                        <SelectValue placeholder="Select a category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Poetry">Poetry</SelectItem>
+                        <SelectItem value="Tradition">Tradition</SelectItem>
+                        <SelectItem value="Drama">Drama</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                {errors.category && <p className="col-span-4 text-red-500 text-xs text-right">{errors.category.message}</p>}
+                {formState.errors?.category && <p className="col-span-4 text-red-500 text-xs text-right">{formState.errors.category[0]}</p>}
+              </div>
+
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="year" className="text-right">Year</Label>
+                <Input id="year" type="number" {...register('year')} className="col-span-3" />
+                {errors.year && <p className="col-span-4 text-red-500 text-xs text-right">{errors.year.message}</p>}
+                {formState.errors?.year && <p className="col-span-4 text-red-500 text-xs text-right">{formState.errors.year[0]}</p>}
+              </div>
+
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="description" className="text-right">Description</Label>
+                <Textarea id="description" {...register('description')} className="col-span-3" />
+                {errors.description && <p className="col-span-4 text-red-500 text-xs text-right">{errors.description.message}</p>}
+                {formState.errors?.description && <p className="col-span-4 text-red-500 text-xs text-right">{formState.errors.description[0]}</p>}
+              </div>
+              
+              <div className="grid grid-cols-4 items-start gap-4">
+                <Label htmlFor="filePath" className="text-right pt-2">PDF File</Label>
+                <div className="col-span-3 space-y-2">
+                  <div
+                    onDragEnter={handleDragEnter}
+                    onDragLeave={handleDragLeave}
+                    onDragOver={handleDragOver}
+                    onDrop={handleDrop}
+                    className={cn(
+                      'flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50 transition-colors',
+                      isDragging ? 'border-primary bg-muted/50' : 'border-input'
+                    )}
+                  >
+                    <UploadCloud className="h-8 w-8 text-muted-foreground" />
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      Drag & drop a PDF here
+                    </p>
+                    <p className="text-xs text-muted-foreground">(updates the path below)</p>
+                  </div>
+                  <Input
+                    id="filePath"
+                    placeholder="/pdfs/example.pdf"
+                    {...register('filePath')}
+                  />
+                   {errors.filePath && <p className="text-red-500 text-xs text-right">{errors.filePath.message}</p>}
+                   {formState.errors?.filePath && <p className="text-red-500 text-xs text-right">{formState.errors.filePath[0]}</p>}
+                </div>
+              </div>
+            </>
+          )}
+
+          {mode === 'comment' && (
+             <>
+              <input type="hidden" {...register('title')} />
+              <input type="hidden" {...register('author')} />
+              <input type="hidden" {...register('category')} />
+              <input type="hidden" {...register('year')} />
+              <input type="hidden" {...register('description')} />
+              <input type="hidden" {...register('filePath')} />
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="comment" className="text-right">Comment</Label>
+                <Textarea id="comment" {...register('comment')} className="col-span-3" placeholder="Add a comment..."/>
+                {errors.comment && <p className="col-span-4 text-red-500 text-xs text-right">{errors.comment.message}</p>}
+                {formState.errors?.comment && <p className="col-span-4 text-red-500 text-xs text-right">{formState.errors.comment[0]}</p>}
+              </div>
+            </>
+          )}
+          
           <DialogFooter>
             <Button variant="outline" type="button" onClick={() => {
                 reset();
@@ -319,3 +350,5 @@ export function BookFormDialog() {
     </Dialog>
   );
 }
+
+    

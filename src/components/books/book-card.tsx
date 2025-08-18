@@ -15,11 +15,11 @@ import { Badge } from '@/components/ui/badge';
 import type { Book } from '@/lib/definitions';
 import { useBookDialog } from './book-form-dialog';
 import { useDeleteBookDialog } from './delete-book-dialog';
-import { Edit, Trash2, Eye, MessageSquareQuote } from 'lucide-react';
+import { Edit, Trash2, Eye, MessageSquareQuote, MessageSquarePlus } from 'lucide-react';
 import { Separator } from '../ui/separator';
 
 export function BookCard({ book }: { book: Book }) {
-  const { onOpen: onOpenEdit } = useBookDialog();
+  const { onOpen: onOpenDialog } = useBookDialog();
   const { onOpen: onOpenDelete } = useDeleteBookDialog();
 
   const category = book.category;
@@ -57,9 +57,13 @@ export function BookCard({ book }: { book: Book }) {
             <span className="sr-only">View</span>
           </Link>
         </Button>
-        <Button variant="outline" size="icon" title="Edit or Comment" onClick={() => onOpenEdit(book)}>
+        <Button variant="outline" size="icon" title="Edit" onClick={() => onOpenDialog(book, 'edit')}>
           <Edit className="h-4 w-4" />
-          <span className="sr-only">Edit or Comment</span>
+          <span className="sr-only">Edit</span>
+        </Button>
+         <Button variant="outline" size="icon" title="Comment" onClick={() => onOpenDialog(book, 'comment')}>
+          <MessageSquarePlus className="h-4 w-4" />
+          <span className="sr-only">Comment</span>
         </Button>
         <Button
           variant="destructive"
@@ -74,3 +78,5 @@ export function BookCard({ book }: { book: Book }) {
     </Card>
   );
 }
+
+    

@@ -45,7 +45,7 @@ export function BookList({ initialBooks }: { initialBooks: Book[] }) {
               onChange={(event) => setFilter(event.target.value)}
               className="max-w-sm"
             />
-            <Button onClick={() => onOpen(null)}>
+            <Button onClick={() => onOpen(null, 'create')}>
               <PlusCircle className="mr-2 h-4 w-4" />
               Add Book
             </Button>
@@ -66,3 +66,5 @@ export function BookList({ initialBooks }: { initialBooks: Book[] }) {
     </div>
   );
 }
+
+    
