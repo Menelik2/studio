@@ -75,12 +75,12 @@ body {
   .bg-grid {
     background-size: 200px 200px, 200px 200px, 100px 100px, 100px 100px, 50px 50px, 50px 50px;
     background-image: 
-      linear-gradient(to right, rgba(0, 158, 73, 0.05) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(0, 158, 73, 0.05) 1px, transparent 1px),
-      linear-gradient(to right, rgba(252, 225, 0, 0.08) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(252, 225, 0, 0.08) 1px, transparent 1px),
-      linear-gradient(to right, rgba(218, 18, 26, 0.08) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(218, 18, 26, 0.08) 1px, transparent 1px);
+      linear-gradient(to right, rgba(0, 158, 73, 0.15) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(0, 158, 73, 0.15) 1px, transparent 1px),
+      linear-gradient(to right, rgba(252, 225, 0, 0.18) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(252, 225, 0, 0.18) 1px, transparent 1px),
+      linear-gradient(to right, rgba(218, 18, 26, 0.18) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(218, 18, 26, 0.18) 1px, transparent 1px);
     animation: moveGrid 15s linear infinite;
   }
 
