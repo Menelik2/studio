@@ -12,14 +12,33 @@ The backend is built on Node.js, which is the runtime for all Next.js server-sid
 - `books.json`, `planner1.json`, and `planner2.json` act as the "database". They are simple JSON files that store the application's data persistently on the server.
 
 **`src/lib/data.ts`**:
-- This file is the data access layer. It uses the Node.js `fs` (file system) module to read from and write to the JSON files. It abstracts the file operations into asynchronous functions like `getBooks`, `addBook`, etc. This file is marked with `'use server';` to ensure it only ever runs on the server.
+- This file is the data access layer. It uses the Node.js `fs` (file system) module to read from and write to the JSON files. It abstracts the file operations into asynchronous functions like `getBooks`, `addBook`, etc.
 
 **`src/lib/actions.ts`**:
 - This file serves as the API layer. It contains Next.js Server Actions, which are server-side functions that can be called directly from client-side components. These actions handle business logic (like validation with Zod) and then use the functions from `data.ts` to interact with the JSON "database".
 
 This setup provides a robust, self-contained backend without requiring an external database service.
 
-## 1. Authentication
+## Frontend Architecture (React & Next.js)
+
+The frontend is built using a modern component-based architecture that leverages the power of React and Next.js.
+
+**`src/app/**` (App Router)**:
+- The file-based routing system is used to define pages and layouts. Server Components are used by default to fetch data and render static content, which improves performance.
+
+**`src/components/**` (React Components)**:
+- The UI is broken down into reusable components. Components that require interactivity, state, or browser-only APIs are marked with `'use client';`.
+- **State Management**: Client components use React hooks (`useState`, `useEffect`) to manage local state. For cross-component state (like opening/closing dialogs), a simple global store pattern is implemented.
+- **Styling**: ShadCN UI provides pre-built components (like `Button`, `Card`, `Dialog`) which are styled using Tailwind CSS for a consistent and modern design.
+
+**Connecting Frontend to Backend**:
+- The frontend communicates with the backend exclusively through **Next.js Server Actions** defined in `src/lib/actions.ts`. Client components, like forms, directly invoke these server actions, which handle data validation, persistence, and cache revalidation. This provides a seamless and secure way to manage data without writing traditional API endpoints.
+
+---
+
+## Feature Breakdown
+
+### 1. Authentication
 
 A simple, mock login page serves as the entry point for accessing the admin dashboard.
 
@@ -52,7 +71,7 @@ export async function loginAction() {
 // ...
 ```
 
-## 2. Dashboard
+### 2. Dashboard
 
 The dashboard provides a statistical overview of the library.
 
@@ -98,13 +117,13 @@ export default async function DashboardPage() {
 }
 ```
 
-## 3. Book Management (CRUD)
+### 3. Book Management (CRUD)
 
 This is the core feature, allowing full management of the book library.
 
-### UI Components
+#### UI Components
 
-**`src/components/books/book-list.tsx`**: Displays the books and handles filtering by search term or category.
+**`src/components/books/book-list.tsx`**: A client component (`'use client'`) that displays the books and handles filtering by search term or category.
 
 ```tsx
 'use client';
@@ -131,40 +150,7 @@ export function BookList({ initialBooks }: { initialBooks: Book[] }) {
 }
 ```
 
-**`src/components/books/book-card.tsx`**: Renders a single book with action buttons.
-
-```tsx
-'use client';
-// ...
-export function BookCard({ book }: { book: Book }) {
-  const { onOpen: onOpenDialog } = useBookDialog();
-  const { onOpen: onOpenDelete } = useDeleteBookDialog();
-
-  return (
-    <Card className="flex flex-col h-full">
-      {/* ... */}
-      <CardFooter className="flex justify-end gap-2 mt-auto">
-        <Button asChild variant="secondary" size="icon" title="View">
-          <Link href={`/dashboard/books/${book.id}`} target="_blank" rel="noopener noreferrer">
-            <Eye className="h-4 w-4" />
-          </Link>
-        </Button>
-        <Button variant="outline" size="icon" title="Edit" onClick={() => onOpenDialog(book, 'edit')}>
-          <Edit className="h-4 w-4" />
-        </Button>
-         <Button variant="outline" size="icon" title="Comment" onClick={() => onOpenDialog(book, 'comment')}>
-          <MessageSquarePlus className="h-4 w-4" />
-        </Button>
-        <Button variant="destructive" size="icon" title="Delete" onClick={() => onOpenDelete(book)}>
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      </CardFooter>
-    </Card>
-  );
-}
-```
-
-**`src/components/books/book-form-dialog.tsx`**: A shared state dialog for creating, editing, and commenting on books.
+**`src/components/books/book-form-dialog.tsx`**: A shared state dialog for creating, editing, and commenting on books. It directly invokes server actions for form submission.
 
 ```tsx
 'use client';
@@ -180,7 +166,7 @@ export function BookFormDialog() {
 }
 ```
 
-### Backend Logic (`actions.ts`)
+#### Backend Logic (`actions.ts`)
 
 Server Actions handle form submissions for creating, updating, and deleting books. It uses Zod for validation.
 
@@ -220,11 +206,11 @@ export async function deleteBookAction(prevState: any, formData: FormData) {
 }
 ```
 
-## 4. Planners
+### 4. Planners
 
-The application features two distinct planners, each with its own data structure and UI. Both support adding, editing, deleting, and printing. Data for both planners is persisted on the server using a similar mechanism to the book management system, utilizing `planner1.json` and `planner2.json` files and corresponding data functions and server actions for permanent storage.
+The application features two distinct planners, each with its own data structure and UI. Both support adding, editing, deleting, and printing. Data for both planners is persisted on the server using the same mechanism as the book management system.
 
-### Planner 1
+#### Planner 1
 
 **`src/components/planner/planner.tsx`**: Manages state for planner items and renders the complex table. It uses server actions (`getPlanner1ItemsAction`, `savePlanner1ItemsAction`) to fetch and persist data.
 
@@ -249,42 +235,19 @@ export function Planner() {
     setItems(updatedItems);
     // ...
   };
-
-  const handleAddItem = () => { /* ... */ };
-  const handleEditItem = (itemToUpdate: PlannerItem) => { /* ... */ };
-  const handleRemoveItem = (id: string) => { /* ... */ };
-  const handlePrint = () => { window.print(); };
-
-  const filteredItems = items.filter(item => item.year === year.toString());
-
-  return (
-    <div className="space-y-4 print:space-y-0">
-      <PlannerFormDialog />
-      <div className="flex flex-wrap items-center justify-between gap-4 print:hidden">
-        {/* ... (Filters and Buttons) */}
-      </div>
-      <div className="overflow-x-auto rounded-lg border print:border-0 print:shadow-none">
-        <Table>
-            {/* ... (Complex header structure) */}
-        </Table>
-      </div>
-    </div>
-  );
+  // ...
 }
 ```
 
-### Planner 2
+#### Planner 2
 
-**`src/components/planner/planner-2.tsx`**: Similar to Planner 1 but with a different table structure and editable header fields. It also uses server actions for data persistence.
+**`src/components/planner/planner-2.tsx`**: Similar to Planner 1 but with a different table structure. It also uses server actions for data persistence.
 
 ```tsx
 'use client';
 // ...
 export function Planner2() {
   const [items, setItems] = useState<Planner2Item[]>([]);
-  const [departmentName, setDepartmentName] = useState('');
-  const [planMonth, setPlanMonth] = useState('');
-  const [year, setYear] = useState(new Date().getFullYear());
   // ...
   
   useEffect(() => {
@@ -301,19 +264,6 @@ export function Planner2() {
      //...
   }
 
-  return (
-    <div className="space-y-4 print:space-y-2">
-      <Planner2FormDialog />
-      <div className="text-center space-y-2 print:space-y-1">
-        {/* ... */}
-        <div className="flex items-center gap-2">
-            <strong className="whitespace-nowrap">የክፍሉ ስም:</strong>
-            <Input className="print:border-0 print:pl-2" placeholder="የክፍሉን ስም ያስገቡ" value={departmentName} onChange={(e) => setDepartmentName(e.target.value)} />
-        </div>
-        {/* ... */}
-      </div>
-      {/* ... (Table and Actions) */}
-    </div>
-  );
+  // ...
 }
 ```
