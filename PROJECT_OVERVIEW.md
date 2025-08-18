@@ -156,7 +156,7 @@ export function BookCard({ book }: { book: Book }) {
       {/* ... */}
       <CardFooter className="flex justify-end gap-2 mt-auto">
         <Button asChild variant="secondary" size="icon" title="View">
-          <Link href={`/dashboard/books/${book.id}`}>
+          <Link href={`/dashboard/books/${book.id}`} target="_blank" rel="noopener noreferrer">
             <Eye className="h-4 w-4" />
           </Link>
         </Button>
@@ -218,7 +218,8 @@ export async function updateBookAction(prevState: FormState, formData: FormData)
 }
 
 // Action for deleting a book
-export async function deleteBookAction(id: string) {
+export async function deleteBookAction(prevState: any, formData: FormData) {
+  const id = formData.get('id') as string;
   try {
     await deleteBook(id);
     revalidatePath('/dashboard/books'); // Revalidates cache
@@ -232,11 +233,11 @@ export async function deleteBookAction(id: string) {
 
 ## 4. Planners
 
-The application features two distinct planners, each with its own data structure and UI. Both support adding, editing, deleting, and printing.
+The application features two distinct planners, each with its own data structure and UI. Both support adding, editing, deleting, and printing. Data for both planners is persisted on the server using a similar mechanism to the book management system, utilizing `planner1.json` and `planner2.json` files and corresponding data functions and server actions for permanent storage.
 
 ### Planner 1
 
-**`src/components/planner/planner.tsx`**: Manages state for planner items and renders the complex table.
+**`src/components/planner/planner.tsx`**: Manages state for planner items and renders the complex table. It uses server actions (`getPlanner1ItemsAction`, `savePlanner1ItemsAction`) to fetch and persist data.
 
 ```tsx
 'use client';
@@ -245,6 +246,20 @@ export function Planner() {
   const [year, setYear] = useState(new Date().getFullYear());
   const [items, setItems] = useState<PlannerItem[]>([]);
   const { onOpen } = usePlannerDialog();
+
+  useEffect(() => {
+    async function loadItems() {
+      const loadedItems = await getPlanner1ItemsAction();
+      setItems(loadedItems);
+    }
+    loadItems();
+  }, []);
+
+  const handleSaveItems = async (updatedItems: PlannerItem[]) => {
+    await savePlanner1ItemsAction(updatedItems);
+    setItems(updatedItems);
+    // ...
+  };
 
   const handleAddItem = () => { /* ... */ };
   const handleEditItem = (itemToUpdate: PlannerItem) => { /* ... */ };
@@ -271,7 +286,7 @@ export function Planner() {
 
 ### Planner 2
 
-**`src/components/planner/planner-2.tsx`**: Similar to Planner 1 but with a different table structure and editable header fields.
+**`src/components/planner/planner-2.tsx`**: Similar to Planner 1 but with a different table structure and editable header fields. It also uses server actions for data persistence.
 
 ```tsx
 'use client';
@@ -282,6 +297,20 @@ export function Planner2() {
   const [planMonth, setPlanMonth] = useState('');
   const [year, setYear] = useState(new Date().getFullYear());
   // ...
+  
+  useEffect(() => {
+    async function loadItems() {
+      const loadedItems = await getPlanner2ItemsAction();
+      setItems(loadedItems);
+    }
+    loadItems();
+  }, []);
+  
+  const handleSaveItems = async (updatedItems: Planner2Item[]) => {
+     await savePlanner2ItemsAction(updatedItems);
+     setItems(updatedItems);
+     //...
+  }
 
   return (
     <div className="space-y-4 print:space-y-2">
