@@ -2,6 +2,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import type { Book } from '@/lib/definitions';
 import { BookCard } from '@/components/books/book-card';
 import { PlusCircle } from 'lucide-react';
@@ -11,8 +12,13 @@ import { BookFormDialog, useBookDialog } from '@/components/books/book-form-dial
 import { DeleteBookDialog, useDeleteBookDialog } from '@/components/books/delete-book-dialog';
 
 export function BookList({ initialBooks }: { initialBooks: Book[] }) {
+  const searchParams = useSearchParams();
+  const initialCategory = searchParams.get('category');
+  
   const [filteredBooks, setFilteredBooks] = useState<Book[]>(initialBooks);
   const [filter, setFilter] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(initialCategory);
+  
   const { onOpen } = useBookDialog();
   const { bookToDelete } = useDeleteBookDialog();
 
@@ -20,14 +26,17 @@ export function BookList({ initialBooks }: { initialBooks: Book[] }) {
     setFilteredBooks(
       initialBooks.filter((book) => {
         const searchTerm = filter.toLowerCase();
-        return (
+        const matchesSearch = (
           book.title.toLowerCase().includes(searchTerm) ||
           book.author.toLowerCase().includes(searchTerm) ||
           book.year.toString().includes(filter)
         );
+        const matchesCategory = !categoryFilter || book.category === categoryFilter;
+
+        return matchesSearch && matchesCategory;
       })
     );
-  }, [filter, initialBooks]);
+  }, [filter, categoryFilter, initialBooks]);
 
   return (
     <div className="space-y-6">
@@ -66,5 +75,3 @@ export function BookList({ initialBooks }: { initialBooks: Book[] }) {
     </div>
   );
 }
-
-    

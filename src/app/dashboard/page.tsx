@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { BookFormDialog, useBookDialog } from '@/components/books/book-form-dialog';
 import { DeleteBookDialog, useDeleteBookDialog } from '@/components/books/delete-book-dialog';
 import { DashboardClient } from '@/components/dashboard/dashboard-client';
+import Link from 'next/link';
 
 export default async function DashboardPage() {
   const books = await getBooks();
@@ -28,6 +29,14 @@ export default async function DashboardPage() {
     // For now, let's assume books with IDs > 4 are "recent".
     return parseInt(book.id) > 4;
   }).length;
+
+  const categoryCards = [
+    { title: 'Poetry', icon: Feather, count: categoryCounts['Poetry'] || 0 },
+    { title: 'Tradition', icon: Scroll, count: categoryCounts['Tradition'] || 0 },
+    { title: 'Reading', icon: BookIcon, count: categoryCounts['Reading'] || 0 },
+    { title: 'Drama', icon: Theater, count: categoryCounts['Drama'] || 0 },
+    { title: 'Folding', icon: Folder, count: categoryCounts['Folding'] || 0 },
+  ];
 
   return (
     <div className="space-y-6">
@@ -67,36 +76,16 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-         <StatCard
-          title="Poetry"
-          value={categoryCounts['Poetry'] || 0}
-          icon={Feather}
-          description="books in collection"
-        />
-        <StatCard
-          title="Tradition"
-          value={categoryCounts['Tradition'] || 0}
-          icon={Scroll}
-          description="books in collection"
-        />
-         <StatCard
-          title="Reading"
-          value={categoryCounts['Reading'] || 0}
-          icon={BookIcon}
-          description="books in collection"
-        />
-        <StatCard
-          title="Drama"
-          value={categoryCounts['Drama'] || 0}
-          icon={Theater}
-          description="books in collection"
-        />
-        <StatCard
-          title="Folding"
-          value={categoryCounts['Folding'] || 0}
-          icon={Folder}
-          description="books in collection"
-        />
+         {categoryCards.map(cat => (
+            <Link key={cat.title} href={`/dashboard/books?category=${cat.title}`}>
+                <StatCard
+                    title={cat.title}
+                    value={cat.count}
+                    icon={cat.icon}
+                    description="books in collection"
+                />
+            </Link>
+         ))}
       </div>
     </div>
   );
