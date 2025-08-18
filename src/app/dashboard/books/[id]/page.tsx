@@ -3,11 +3,11 @@ import { getBookById } from '@/lib/data';
 import { notFound, redirect } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft, Download } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ArrowLeft } from 'lucide-react';
 
 export default async function BookViewerPage({ params }: { params: { id: string } }) {
-  const book = await getBookById(params.id);
+  const { id } = params;
+  const book = await getBookById(id);
 
   if (!book) {
     notFound();
@@ -15,10 +15,13 @@ export default async function BookViewerPage({ params }: { params: { id: string 
 
   const isExternal = book.filePath.startsWith('http');
 
+  // If the path is local, we want to serve it directly.
+  // Next.js will handle this from the `public` folder.
   if (!isExternal) {
     redirect(book.filePath);
   }
 
+  // If the path is external (http/https), we display it in an iframe.
   return (
     <div className="flex flex-col h-full">
       <header className="flex items-center justify-between mb-4">

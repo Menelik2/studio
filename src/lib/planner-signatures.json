@@ -1,8 +1,12 @@
-
 [
   {
     "year": 2024,
     "preparationOfficer": "Default Prep Officer",
     "reviewOfficer": "Default Review Officer"
+  },
+  {
+    "year": 2025,
+    "preparationOfficer": "ምኒልክ",
+    "reviewOfficer": "አድማሱ"
   }
 ]
