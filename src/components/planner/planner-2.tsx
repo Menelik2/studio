@@ -20,10 +20,14 @@ export function Planner2() {
   const [items, setItems] = useState<Planner2Item[]>([]);
   const [departmentName, setDepartmentName] = useState('');
   const [planMonth, setPlanMonth] = useState('');
+  const [year, setYear] = useState(new Date().getFullYear());
   const { onOpen } = usePlanner2Dialog();
 
   const handleAddItem = () => {
-    onOpen(null, (newItem) => {
+    const newItemTemplate: Partial<Planner2Item> = {
+        year: year.toString(),
+    };
+    onOpen(newItemTemplate as Planner2Item, (newItem) => {
       setItems([...items, { ...newItem, id: (items.length + 1).toString() }]);
     });
   };
@@ -42,6 +46,8 @@ export function Planner2() {
     window.print();
   };
 
+  const filteredItems = items.filter((item) => item.year === year.toString());
+
   return (
     <div className="space-y-4 print:space-y-2">
         <Planner2FormDialog />
@@ -59,15 +65,25 @@ export function Planner2() {
             </div>
         </div>
 
-        <div className="flex items-center justify-end gap-2 print:hidden">
-            <Button onClick={handleAddItem}>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Add Item
-            </Button>
-            <Button variant="outline" onClick={handlePrint}>
-                <Printer className="mr-2 h-4 w-4" />
-                Print
-            </Button>
+        <div className="flex items-center justify-between gap-2 print:hidden">
+            <div className="relative">
+                <Input
+                type="number"
+                value={year}
+                onChange={(e) => setYear(parseInt(e.target.value))}
+                className="w-28"
+                />
+            </div>
+            <div className="flex items-center gap-2">
+                <Button onClick={handleAddItem}>
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Add Item
+                </Button>
+                <Button variant="outline" onClick={handlePrint}>
+                    <Printer className="mr-2 h-4 w-4" />
+                    Print
+                </Button>
+            </div>
         </div>
 
       <div className="overflow-x-auto rounded-lg border print:border-0 print:shadow-none">
@@ -85,14 +101,14 @@ export function Planner2() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {items.length === 0 ? (
+            {filteredItems.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8}>
                   <div className="flex flex-col items-center justify-center gap-4 py-16 text-center print:hidden">
                     <FileText className="h-16 w-16 text-muted-foreground" />
-                    <h3 className="text-xl font-semibold">No Items Found</h3>
+                    <h3 className="text-xl font-semibold">No Items Found for {year}</h3>
                     <p className="text-muted-foreground">
-                      Get started by adding a new item.
+                      Get started by adding a new item for this year.
                     </p>
                     <Button onClick={handleAddItem}>
                       <PlusCircle className="mr-2 h-4 w-4" />
@@ -102,7 +118,7 @@ export function Planner2() {
                 </TableCell>
               </TableRow>
             ) : (
-                items.map((item, index) => (
+                filteredItems.map((item, index) => (
                     <TableRow key={item.id}>
                         <TableCell className="border-r">{index + 1}</TableCell>
                         <TableCell className="border-r">{item.activity}</TableCell>

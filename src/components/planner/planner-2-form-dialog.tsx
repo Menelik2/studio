@@ -76,6 +76,7 @@ const getInitialFormState = (): Planner2Item => ({
     approvedBudget: '',
     performance: '',
     executionPercentage: '',
+    year: new Date().getFullYear().toString(),
 });
 
 
@@ -139,6 +140,10 @@ export function Planner2FormDialog() {
                 <div className="space-y-2">
                     <Label htmlFor="executionPercentage">አፈፃፀም በ% (Execution in %)</Label>
                     <Input id="executionPercentage" value={formState.executionPercentage} onChange={(e) => handleFieldChange('executionPercentage', e.target.value)} placeholder="Enter execution %" />
+                </div>
+                 <div className="space-y-2">
+                    <Label htmlFor="year">Year</Label>
+                    <Input id="year" type="number" value={formState.year} onChange={(e) => handleFieldChange('year', e.target.value)} />
                 </div>
             </div>
 

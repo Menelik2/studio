@@ -33,4 +33,5 @@ export interface Planner2Item {
     approvedBudget: string;
     performance: string;
     executionPercentage: string;
+    year: string;
 }
