@@ -1,8 +1,16 @@
 import type { Book } from './definitions';
+import fs from 'fs/promises';
+import path from 'path';
 
-// In-memory store to simulate a database
-let books: Book[] = [
-  {
+// Path to the JSON file that will act as our database
+const dbPath = path.join(process.cwd(), 'src', 'lib', 'books.json');
+
+// In-memory cache of the database to avoid reading the file on every request
+let books: Book[] | null = null;
+
+// Initial data to seed the database if it doesn't exist
+const initialData: Book[] = [
+    {
     id: '1',
     title: 'Sonnets',
     author: 'William Shakespeare',
@@ -40,42 +48,76 @@ let books: Book[] = [
   },
 ];
 
+async function readDb(): Promise<Book[]> {
+  if (books) return books;
+
+  try {
+    const data = await fs.readFile(dbPath, 'utf-8');
+    books = JSON.parse(data);
+  } catch (error: any) {
+    if (error.code === 'ENOENT') {
+      // File doesn't exist, so we'll create it with initial data
+      books = initialData;
+      await writeDb(books);
+    } else {
+      throw error;
+    }
+  }
+  return books!;
+}
+
+async function writeDb(data: Book[]) {
+  books = data;
+  await fs.writeFile(dbPath, JSON.stringify(data, null, 2), 'utf-8');
+}
+
+
 // Simulate network delay
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export async function getBooks(): Promise<Book[]> {
   await delay(500);
-  return books;
+  return await readDb();
 }
 
 export async function getBookById(id: string): Promise<Book | undefined> {
   await delay(200);
-  return books.find((book) => book.id === id);
+  const allBooks = await readDb();
+  return allBooks.find((book) => book.id === id);
 }
 
 export async function addBook(book: Omit<Book, 'id'>): Promise<Book> {
   await delay(300);
+  const allBooks = await readDb();
   const newBook: Book = {
-    id: (Math.max(...books.map(b => parseInt(b.id, 10))) + 1).toString(),
+    id: (Math.max(0, ...allBooks.map(b => parseInt(b.id, 10))) + 1).toString(),
     ...book,
   };
-  books.push(newBook);
+  const updatedBooks = [...allBooks, newBook];
+  await writeDb(updatedBooks);
   return newBook;
 }
 
 export async function updateBook(updatedBook: Book): Promise<Book | null> {
   await delay(300);
-  const index = books.findIndex((book) => book.id === updatedBook.id);
+  let allBooks = await readDb();
+  const index = allBooks.findIndex((book) => book.id === updatedBook.id);
   if (index !== -1) {
-    books[index] = updatedBook;
-    return books[index];
+    allBooks[index] = updatedBook;
+    await writeDb(allBooks);
+    return allBooks[index];
   }
   return null;
 }
 
 export async function deleteBook(id: string): Promise<boolean> {
   await delay(300);
-  const initialLength = books.length;
-  books = books.filter((book) => book.id !== id);
-  return books.length < initialLength;
+  let allBooks = await readDb();
+  const initialLength = allBooks.length;
+  const updatedBooks = allBooks.filter((book) => book.id !== id);
+  if (updatedBooks.length < initialLength) {
+    await writeDb(updatedBooks);
+    return true;
+  }
+  return false;
 }

@@ -1,0 +1,87 @@
+
+'use client';
+
+import { useEffect, useState } from 'react';
+import type { Book } from '@/lib/definitions';
+import { BookCard } from '@/components/books/book-card';
+import { PlusCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { BookFormDialog, useBookDialog } from '@/components/books/book-form-dialog';
+import { DeleteBookDialog, useDeleteBookDialog } from '@/components/books/delete-book-dialog';
+import { getBooks } from '@/lib/data';
+
+export function BookList({ initialBooks }: { initialBooks: Book[] }) {
+  const [books, setBooks] = useState<Book[]>(initialBooks);
+  const [filteredBooks, setFilteredBooks] = useState<Book[]>(initialBooks);
+  const [filter, setFilter] = useState('');
+  const { onOpen, isOpen: isFormOpen } = useBookDialog();
+  const { bookToDelete, isOpen: isDeleteOpen } = useDeleteBookDialog();
+
+  useEffect(() => {
+    // This function refetches the books from the "database"
+    // whenever a dialog is closed, ensuring the list is up-to-date.
+    async function refetchBooks() {
+      const allBooks = await getBooks();
+      setBooks(allBooks);
+    }
+    
+    // We only refetch if the dialogs are closed.
+    // This avoids an initial double-fetch on page load.
+    if (!isFormOpen && !isDeleteOpen) {
+       refetchBooks();
+    }
+    
+  }, [isFormOpen, isDeleteOpen]);
+
+
+  useEffect(() => {
+    setFilteredBooks(
+      books.filter((book) => {
+        const searchTerm = filter.toLowerCase();
+        return (
+          book.title.toLowerCase().includes(searchTerm) ||
+          book.author.toLowerCase().includes(searchTerm) ||
+          book.year.toString().includes(filter)
+        );
+      })
+    );
+  }, [filter, books]);
+
+  return (
+    <div className="space-y-6">
+      <BookFormDialog />
+      <DeleteBookDialog book={bookToDelete} />
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+            <h1 className="font-headline text-3xl font-bold tracking-tight">Book Management</h1>
+            <p className="text-muted-foreground">Add, edit, or delete books from your library.</p>
+        </div>
+        <div className="flex gap-2">
+            <Input
+              placeholder="Filter by title, author, or year..."
+              value={filter}
+              onChange={(event) => setFilter(event.target.value)}
+              className="max-w-sm"
+            />
+            <Button onClick={() => onOpen(null)}>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Add Book
+            </Button>
+        </div>
+      </div>
+      
+      {filteredBooks.length > 0 ? (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {filteredBooks.map((book) => (
+            <BookCard key={book.id} book={book} />
+          ))}
+        </div>
+      ) : (
+        <div className="flex items-center justify-center h-64">
+          <p className="text-muted-foreground">No books found.</p>
+        </div>
+      )}
+    </div>
+  );
+}

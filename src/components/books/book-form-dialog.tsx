@@ -1,11 +1,10 @@
 
 'use client';
 
-import { useActionState, useEffect, useState, useTransition } from 'react';
-import { useFormStatus } from 'react-dom';
+import { useActionState, useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { createBookAction, updateBookAction } from '@/lib/actions';
-import type { Book, Category } from '@/lib/definitions';
+import type { Book } from '@/lib/definitions';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -95,10 +94,13 @@ const bookSchema = z.object({
 type BookFormValues = z.infer<typeof bookSchema>;
 
 function SubmitButton({ isEdit }: { isEdit: boolean }) {
-  const { pending } = useFormStatus();
+  // Directly using formState from useActionState is not possible here
+  // as react-hook-form doesn't expose the pending state in the same way.
+  // A simple solution is to track submitting state manually if needed,
+  // but for now, we rely on the form's own state.
   return (
-    <Button type="submit" disabled={pending}>
-      {pending ? (isEdit ? 'Saving...' : 'Adding...') : (isEdit ? 'Save Changes' : 'Add Book')}
+    <Button type="submit">
+      {isEdit ? 'Save Changes' : 'Add Book'}
       <Save className="ml-2 h-4 w-4" />
     </Button>
   );
@@ -114,7 +116,7 @@ export function BookFormDialog() {
     { message: '', errors: {} }
   );
 
-  const { register, reset, control, formState: { errors } } = useForm<BookFormValues>({
+  const { register, reset, control, formState: { errors }, handleSubmit } = useForm<BookFormValues>({
     resolver: zodResolver(bookSchema),
     defaultValues: {
         title: '',
@@ -150,6 +152,17 @@ export function BookFormDialog() {
     }
   }, [formState, toast, onClose, isEdit]);
   
+  const onSubmit = (data: BookFormValues) => {
+    const formData = new FormData();
+    Object.entries(data).forEach(([key, value]) => {
+      formData.append(key, String(value));
+    });
+    if (isEdit && book) {
+      formData.append('id', book.id);
+    }
+    formAction(formData);
+  };
+  
   if (!isOpen) return null;
 
   return (
@@ -166,8 +179,7 @@ export function BookFormDialog() {
             {isEdit ? 'Update the details of this book.' : 'Fill in the details for the new book.'}
           </DialogDescription>
         </DialogHeader>
-        <form action={formAction} className="grid gap-4 py-4">
-          {isEdit && book && <input type="hidden" name="id" value={book.id} />}
+        <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="title" className="text-right">Title</Label>
             <Input id="title" {...register('title')} className="col-span-3" />
@@ -188,7 +200,7 @@ export function BookFormDialog() {
               name="category"
               control={control}
               render={({ field }) => (
-                <Select name={field.name} onValueChange={field.onChange} defaultValue={field.value}>
+                <Select name={field.name} onValueChange={field.onChange} value={field.value}>
                   <SelectTrigger className="col-span-3">
                     <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
