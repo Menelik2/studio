@@ -1,4 +1,3 @@
-
 [
   {
     "id": "1",
@@ -36,5 +35,15 @@
     "year": 1855,
     "description": "A poetry collection by American poet Walt Whitman.",
     "filePath": "/pdfs/leaves_of_grass.pdf"
+  },
+  {
+    "id": "",
+    "title": "ምኒልክ ",
+    "author": "አድማሱ",
+    "category": "Poetry",
+    "year": 2025,
+    "description": "ሚገር ነው አድናቂህ ነኝ",
+    "filePath": "https://teacher-network.in/OER/images/9/9a/ICT_student_textbook.pdf",
+    "comment": ""
   }
 ]
