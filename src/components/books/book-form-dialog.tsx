@@ -35,38 +35,52 @@ import { Controller } from 'react-hook-form';
 interface BookDialogState {
   isOpen: boolean;
   book: Book | null;
+}
+
+interface BookDialogStore extends BookDialogState {
   onOpen: (book: Book | null) => void;
   onClose: () => void;
 }
 
-const useBookDialogStore = (
-  (set: any) => ({
-    isOpen: false,
-    book: null,
-    onOpen: (book: Book | null) => set({ isOpen: true, book }),
-    onClose: () => set({ isOpen: false, book: null }),
-  })
-);
-
 // This is a bit of a hack to create a global store without Zustand
 // In a real app, you would use a state management library.
-let state: BookDialogState = useBookDialogStore(() => {});
-const listeners = new Set<(state: BookDialogState) => void>();
-const set = (updater: (state: BookDialogState) => Partial<BookDialogState>) => {
-  state = { ...state, ...updater(state) };
-  listeners.forEach((listener) => listener(state));
+let state: BookDialogState = {
+    isOpen: false,
+    book: null,
 };
-useBookDialogStore(set);
+const listeners = new Set<(state: BookDialogState) => void>();
 
-export const useBookDialog = () => {
-  const [dialogState, setDialogState] = useState(state);
+const store = {
+    getState: () => state,
+    setState: (updater: (state: BookDialogState) => Partial<BookDialogState>) => {
+        state = { ...state, ...updater(state) };
+        listeners.forEach((listener) => listener(state));
+    },
+    subscribe: (listener: (state: BookDialogState) => void) => {
+        listeners.add(listener);
+        return () => listeners.delete(listener);
+    },
+    onOpen: (book: Book | null) => {
+        store.setState(() => ({ isOpen: true, book }));
+    },
+    onClose: () => {
+        store.setState(() => ({ isOpen: false, book: null }));
+    }
+}
+
+
+export const useBookDialog = (): BookDialogStore => {
+  const [dialogState, setDialogState] = useState(store.getState());
   useEffect(() => {
-    listeners.add(setDialogState);
-    return () => {
-      listeners.delete(setDialogState);
-    };
+    const unsubscribe = store.subscribe(setDialogState);
+    return unsubscribe;
   }, []);
-  return dialogState;
+  
+  return {
+    ...dialogState,
+    onOpen: store.onOpen,
+    onClose: store.onClose
+  };
 };
 
 const bookSchema = z.object({
