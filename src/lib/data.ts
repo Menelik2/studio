@@ -1,6 +1,6 @@
 'use server';
 
-import type { Book, Planner1Item, Planner2Item } from './definitions';
+import type { Book, Planner1Item, Planner2Item, PlannerSignatures } from './definitions';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -79,6 +79,31 @@ async function writePlanner2Db(data: Planner2Item[]) {
     await fs.writeFile(planner2DbPath, JSON.stringify(data, null, 2), 'utf-8');
 }
 
+// --- PLANNER SIGNATURES DATA ---
+const plannerSignaturesDbPath = path.join(process.cwd(), 'src', 'lib', 'planner-signatures.json');
+let plannerSignatures: PlannerSignatures[] | null = null;
+
+async function readPlannerSignaturesDb(): Promise<PlannerSignatures[]> {
+    if (plannerSignatures) return plannerSignatures;
+    try {
+        const data = await fs.readFile(plannerSignaturesDbPath, 'utf-8');
+        plannerSignatures = JSON.parse(data);
+    } catch (error: any) {
+        if (error.code === 'ENOENT') {
+            plannerSignatures = [];
+            await writePlannerSignaturesDb(plannerSignatures);
+        } else {
+            throw error;
+        }
+    }
+    return plannerSignatures!;
+}
+
+async function writePlannerSignaturesDb(data: PlannerSignatures[]) {
+    plannerSignatures = data;
+    await fs.writeFile(plannerSignaturesDbPath, JSON.stringify(data, null, 2), 'utf-8');
+}
+
 
 // Simulate network delay
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -145,6 +170,30 @@ export async function getPlanner1Items(): Promise<Planner1Item[]> {
 export async function savePlanner1Items(items: Planner1Item[]): Promise<void> {
     await delay(300);
     await writePlanner1Db(items);
+}
+
+// Planner Signatures Functions
+export async function getPlannerSignatures(year: number): Promise<Omit<PlannerSignatures, 'year'> | null> {
+    await delay(200);
+    const allSignatures = await readPlannerSignaturesDb();
+    const signaturesForYear = allSignatures.find(s => s.year === year);
+    if (signaturesForYear) {
+        const { year, ...rest } = signaturesForYear;
+        return rest;
+    }
+    return null;
+}
+
+export async function savePlannerSignatures(signatures: PlannerSignatures): Promise<void> {
+    await delay(300);
+    let allSignatures = await readPlannerSignaturesDb();
+    const index = allSignatures.findIndex(s => s.year === signatures.year);
+    if (index !== -1) {
+        allSignatures[index] = signatures;
+    } else {
+        allSignatures.push(signatures);
+    }
+    await writePlannerSignaturesDb(allSignatures);
 }
 
 

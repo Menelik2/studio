@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -12,15 +12,15 @@ import {
   TableBody,
   TableCell,
 } from '@/components/ui/table';
-import { Check, Edit, FileText, PlusCircle, Search, Trash2, Printer } from 'lucide-react';
+import { Check, Edit, FileText, PlusCircle, Search, Trash2, Printer, Save } from 'lucide-react';
 import type { PlannerItem } from '@/lib/definitions';
 import { PlannerFormDialog, usePlannerDialog } from './planner-form-dialog';
-import { getPlanner1ItemsAction, savePlanner1ItemsAction } from '@/lib/actions';
+import { getPlanner1ItemsAction, savePlanner1ItemsAction, getPlannerSignaturesAction, savePlannerSignaturesAction } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 
 const quarters = {
   '1ኛ ሩብ ዓመት': ['ሐምሌ', 'ነሐሴ', 'መስከረም'],
-  '2ኛ ሩብ ዓመት': ['ጥቅምት', 'ህዳр', 'ታህሳс'],
+  '2ኛ ሩብ ዓመት': ['ጥቅምት', 'ህዳር', 'ታህሳс'],
   '3ኛ ሩብ ዓመት': ['ጥር', 'የካቲት', 'መጋቢት'],
   '4ኛ ሩብ ዓመት': ['ሚያዝያ', 'ግንቦት', 'ሰኔ'],
 };
@@ -32,13 +32,36 @@ export function Planner() {
   const { onOpen } = usePlannerDialog();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
+  
+  const [preparationOfficer, setPreparationOfficer] = useState('');
+  const [reviewOfficer, setReviewOfficer] = useState('');
+
+  const loadSignatures = useCallback(async (currentYear: number) => {
+    try {
+        const signatures = await getPlannerSignaturesAction(currentYear);
+        if (signatures) {
+            setPreparationOfficer(signatures.preparationOfficer);
+            setReviewOfficer(signatures.reviewOfficer);
+        } else {
+            setPreparationOfficer('');
+            setReviewOfficer('');
+        }
+    } catch (error) {
+        toast({
+            title: 'Error loading signatures',
+            description: 'Could not fetch signature data.',
+            variant: 'destructive',
+        });
+    }
+  }, [toast]);
 
   useEffect(() => {
-    async function loadItems() {
+    async function loadData() {
       setIsLoading(true);
       try {
         const loadedItems = await getPlanner1ItemsAction();
         setItems(loadedItems);
+        await loadSignatures(year);
       } catch (error) {
         toast({
             title: 'Error loading planner data',
@@ -49,8 +72,8 @@ export function Planner() {
         setIsLoading(false);
       }
     }
-    loadItems();
-  }, [toast]);
+    loadData();
+  }, [toast, year, loadSignatures]);
 
   const handleSaveItems = async (updatedItems: PlannerItem[]) => {
     const result = await savePlanner1ItemsAction(updatedItems);
@@ -69,10 +92,30 @@ export function Planner() {
     }
   };
 
+  const handleSaveSignatures = async () => {
+    const result = await savePlannerSignaturesAction({
+        year,
+        preparationOfficer,
+        reviewOfficer
+    });
+    if(result.success) {
+        toast({
+            title: 'Signatures Saved',
+            description: 'The officer names have been saved for this year.',
+        });
+    } else {
+        toast({
+            title: 'Error Saving Signatures',
+            description: 'Could not save the officer names.',
+            variant: 'destructive',
+        });
+    }
+  }
+
 
   const handleAddItem = () => {
     onOpen(null, (newItem) => {
-        const updatedItems = [...items, {...newItem, id: (items.length + 1).toString()}];
+        const updatedItems = [...items, {...newItem, id: (items.length + 1).toString(), year: year.toString()}];
         handleSaveItems(updatedItems);
     });
   };
@@ -92,6 +135,13 @@ export function Planner() {
   const handlePrint = () => {
     window.print();
   };
+
+  const handleYearChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newYear = parseInt(e.target.value);
+    if (!isNaN(newYear)) {
+      setYear(newYear);
+    }
+  }
 
   const filteredItems = items
     .filter(item => item.year === year.toString())
@@ -119,7 +169,7 @@ export function Planner() {
             <Input
                 type="number"
                 value={year}
-                onChange={(e) => setYear(parseInt(e.target.value))}
+                onChange={handleYearChange}
                 className="w-28"
             />
             <Button onClick={handleAddItem}>
@@ -154,8 +204,8 @@ export function Planner() {
               {Object.values(quarters).flat().map(month => (
                 <TableHead key={month} className="text-center border-r text-xs">{month}</TableHead>
               ))}
-              <TableHead className="text-center border-r text-xs">Cost</TableHead>
-              <TableHead className="text-center border-r text-xs">Income</TableHead>
+              <TableHead className="text-center border-r text-xs">ወጪ</TableHead>
+              <TableHead className="text-center border-r text-xs">ገቢ</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -217,14 +267,26 @@ export function Planner() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8 print:hidden">
         <div className="space-y-2">
-            <h4 className="font-semibold">የዝግጅት ኃላፊ ፈርማ፡-</h4>
-            <Input placeholder="ስም ያስገቡ" />
-            <p>ስም፡</p>
+            <h4 className="font-semibold">የዝግጅት ኃላፊ ስም፡</h4>
+            <Input placeholder="ስም ያስገቡ" value={preparationOfficer} onChange={(e) => setPreparationOfficer(e.target.value)} />
         </div>
         <div className="space-y-2">
-            <h4 className="font-semibold">የእይታ ኃላፊ ፈርማ፡-</h4>
-            <Input placeholder="ስም ያስገቡ" />
-            <p>ስም፡</p>
+            <h4 className="font-semibold">የእይታ ኃላፊ ስም፡</h4>
+            <Input placeholder="ስም ያስገቡ" value={reviewOfficer} onChange={(e) => setReviewOfficer(e.target.value)} />
+        </div>
+      </div>
+      <div className="flex justify-end print:hidden">
+          <Button onClick={handleSaveSignatures}><Save className="mr-2 h-4 w-4" /> Save Signatures</Button>
+      </div>
+      
+       <div className="hidden print:grid grid-cols-2 gap-16 pt-16">
+        <div>
+            <p className="font-semibold">የዝግጅት ኃላፊ ስም፡- {preparationOfficer}</p>
+            <p className="mt-4">ፊርማ፡ __________________</p>
+        </div>
+        <div>
+            <p className="font-semibold">የእይታ ኃላፊ ስም፡- {reviewOfficer}</p>
+            <p className="mt-4">ፊርማ፡ __________________</p>
         </div>
       </div>
     </div>

@@ -4,8 +4,8 @@
 import { z } from 'zod';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
-import { addBook, deleteBook, updateBook, getPlanner1Items, savePlanner1Items, getPlanner2Items, savePlanner2Items } from './data';
-import type { Book, Planner1Item, Planner2Item } from './definitions';
+import { addBook, deleteBook, updateBook, getPlanner1Items, savePlanner1Items, getPlanner2Items, savePlanner2Items, getPlannerSignatures, savePlannerSignatures } from './data';
+import type { Book, Planner1Item, Planner2Item, PlannerSignatures } from './definitions';
 
 // Mock login action
 export async function loginAction() {
@@ -109,6 +109,22 @@ export async function savePlanner1ItemsAction(items: Planner1Item[]): Promise<{s
     return { success: false };
   }
 }
+
+export async function getPlannerSignaturesAction(year: number): Promise<Omit<PlannerSignatures, 'year'> | null> {
+    return await getPlannerSignatures(year);
+}
+
+export async function savePlannerSignaturesAction(signatures: PlannerSignatures): Promise<{success: boolean}> {
+    try {
+        await savePlannerSignatures(signatures);
+        revalidatePath('/dashboard/planner');
+        return { success: true };
+    } catch (error) {
+        console.error('Failed to save planner signatures:', error);
+        return { success: false };
+    }
+}
+
 
 // Planner 2 Actions
 export async function getPlanner2ItemsAction(): Promise<Planner2Item[]> {

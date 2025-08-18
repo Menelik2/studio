@@ -35,3 +35,9 @@ export interface Planner2Item {
     executionPercentage: string;
     year: string;
 }
+
+export interface PlannerSignatures {
+    year: number;
+    preparationOfficer: string;
+    reviewOfficer: string;
+}
