@@ -18,6 +18,8 @@ import { Planner2FormDialog, usePlanner2Dialog } from './planner-2-form-dialog';
 
 export function Planner2() {
   const [items, setItems] = useState<Planner2Item[]>([]);
+  const [departmentName, setDepartmentName] = useState('');
+  const [planMonth, setPlanMonth] = useState('');
   const { onOpen } = usePlanner2Dialog();
 
   const handleAddItem = () => {
@@ -45,9 +47,15 @@ export function Planner2() {
         <Planner2FormDialog />
         <div className="text-center space-y-2 print:space-y-1">
             <h1 className="font-bold text-lg">የባህር ዳር ፈ/ገ/ቅ/ጊዮርጊስ ካ/ሰ/ት/ቤት በበጀት አመቱ የተከናወነ የስራ ተግባራት የሪፖርት ማሳወቂያ ቅጽ</h1>
-            <div className="flex justify-around items-center text-sm">
-               <p><strong>የክፍሉ ስም:</strong> ________________________</p>
-               <p><strong>ዕቅዱ የተፈፀመበት ወር:</strong> ________________________</p>
+            <div className="grid md:grid-cols-2 gap-4 text-sm print:grid-cols-2">
+                <div className="flex items-center gap-2">
+                    <strong className="whitespace-nowrap">የክፍሉ ስም:</strong>
+                    <Input className="print:border-0 print:pl-2" placeholder="የክፍሉን ስም ያስገቡ" value={departmentName} onChange={(e) => setDepartmentName(e.target.value)} />
+                </div>
+                <div className="flex items-center gap-2">
+                    <strong className="whitespace-nowrap">ዕቅዱ የተፈፀመበት ወር:</strong>
+                    <Input className="print:border-0 print:pl-2" placeholder="ወር እና ዓመት ያስገቡ" value={planMonth} onChange={(e) => setPlanMonth(e.target.value)} />
+                </div>
             </div>
         </div>
 
