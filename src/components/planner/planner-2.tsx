@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -15,13 +15,53 @@ import {
 import { Edit, FileText, PlusCircle, Printer, Trash2 } from 'lucide-react';
 import type { Planner2Item } from '@/lib/definitions';
 import { Planner2FormDialog, usePlanner2Dialog } from './planner-2-form-dialog';
+import { getPlanner2Items, savePlanner2Items } from '@/lib/data';
+import { useToast } from '@/hooks/use-toast';
 
 export function Planner2() {
   const [items, setItems] = useState<Planner2Item[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [departmentName, setDepartmentName] = useState('');
   const [planMonth, setPlanMonth] = useState('');
   const [year, setYear] = useState(new Date().getFullYear());
   const { onOpen } = usePlanner2Dialog();
+  const { toast } = useToast();
+  
+  useEffect(() => {
+    async function loadItems() {
+      setIsLoading(true);
+      try {
+        const loadedItems = await getPlanner2Items();
+        setItems(loadedItems);
+      } catch (error) {
+        toast({
+            title: 'Error loading planner data',
+            description: 'Could not fetch planner items from the server.',
+            variant: 'destructive',
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadItems();
+  }, [toast]);
+  
+  const handleSaveItems = async (updatedItems: Planner2Item[]) => {
+    try {
+      await savePlanner2Items(updatedItems);
+      setItems(updatedItems);
+      toast({
+        title: 'Planner Saved',
+        description: 'Your changes have been saved successfully.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error Saving Planner',
+        description: 'Could not save your changes to the server.',
+        variant: 'destructive',
+      });
+    }
+  };
 
   const handleAddItem = () => {
     const newItemTemplate: Planner2Item = {
@@ -35,18 +75,21 @@ export function Planner2() {
       year: year.toString(),
     };
     onOpen(newItemTemplate, (newItem) => {
-      setItems([...items, { ...newItem, id: (items.length + 1).toString() }]);
+      const updatedItems = [...items, { ...newItem, id: (items.length + 1).toString() }];
+      handleSaveItems(updatedItems);
     });
   };
 
   const handleEditItem = (itemToUpdate: Planner2Item) => {
     onOpen(itemToUpdate, (updatedItem) => {
-      setItems(items.map((item) => (item.id === updatedItem.id ? updatedItem : item)));
+      const updatedItems = items.map((item) => (item.id === updatedItem.id ? updatedItem : item));
+      handleSaveItems(updatedItems);
     });
   };
 
   const handleRemoveItem = (id: string) => {
-    setItems(items.filter((item) => item.id !== id));
+    const updatedItems = items.filter((item) => item.id !== id);
+    handleSaveItems(updatedItems);
   };
 
   const handlePrint = () => {
@@ -108,7 +151,13 @@ export function Planner2() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredItems.length === 0 ? (
+            {isLoading ? (
+                 <TableRow>
+                    <TableCell colSpan={8} className="h-24 text-center">
+                        Loading planner data...
+                    </TableCell>
+                </TableRow>
+            ) : filteredItems.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8}>
                   <div className="flex flex-col items-center justify-center gap-4 py-16 text-center print:hidden">
