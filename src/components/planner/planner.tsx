@@ -89,7 +89,7 @@ export function Planner() {
       <div className="overflow-x-auto rounded-lg border">
         <Table className="min-w-max whitespace-nowrap">
           <TableHeader>
-            <TableRow className="bg-muted/50">
+            <TableRow className="bg-muted hover:bg-muted">
               <TableHead rowSpan={2} className="border-r">No</TableHead>
               <TableHead rowSpan={2} className="border-r">detailed task</TableHead>
               <TableHead rowSpan={2} className="border-r">Measure</TableHead>
@@ -104,16 +104,16 @@ export function Planner() {
               <TableHead colSpan={2} className="text-center border-r">Approved budget</TableHead>
               <TableHead rowSpan={2}>Actions</TableHead>
             </TableRow>
-            <TableRow className="bg-muted/50">
+            <TableRow className="bg-muted hover:bg-muted">
               {Object.values(quarters)
                 .flat()
                 .map((month) => (
-                  <TableHead key={month} className="text-center bg-accent/20 border-r">
+                  <TableHead key={month} className="text-center bg-muted/60 border-r">
                     {month}
                   </TableHead>
                 ))}
-              <TableHead className="text-center bg-accent/20 border-r">Cost</TableHead>
-              <TableHead className="text-center bg-accent/20 border-r">Income</TableHead>
+              <TableHead className="text-center bg-muted/60 border-r">Cost</TableHead>
+              <TableHead className="text-center bg-muted/60 border-r">Income</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
