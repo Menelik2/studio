@@ -19,7 +19,7 @@ import {
   TableBody,
   TableCell,
 } from '@/components/ui/table';
-import { Edit, FileText, PlusCircle, Search, Trash2 } from 'lucide-react';
+import { Edit, FileText, PlusCircle, Search, Trash2, Printer } from 'lucide-react';
 import { Checkbox } from '../ui/checkbox';
 import type { PlannerItem } from '@/lib/definitions';
 import { PlannerFormDialog, usePlannerDialog } from './planner-form-dialog';
@@ -51,13 +51,17 @@ export function Planner() {
   const handleRemoveItem = (id: string) => {
     setItems(items.filter(item => item.id !== id));
   }
+  
+  const handlePrint = () => {
+    window.print();
+  };
 
   const filteredItems = items.filter(item => item.year === year.toString());
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 print:space-y-0">
       <PlannerFormDialog />
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-4 print:hidden">
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -80,13 +84,19 @@ export function Planner() {
             />
           </div>
         </div>
-        <Button onClick={handleAddItem}>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          አዲስ ዝግጅት ጨምር
-        </Button>
+        <div className="flex items-center gap-2">
+            <Button onClick={handleAddItem}>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              አዲስ ዝግጅት ጨምር
+            </Button>
+            <Button variant="outline" onClick={handlePrint}>
+                <Printer className="mr-2 h-4 w-4" />
+                Print
+            </Button>
+        </div>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border">
+      <div className="overflow-x-auto rounded-lg border print:border-0 print:shadow-none">
         <Table className="min-w-max whitespace-nowrap">
           <TableHeader>
             <TableRow className="bg-muted hover:bg-muted">
@@ -102,7 +112,7 @@ export function Planner() {
               ))}
               <TableHead rowSpan={2} className="border-r">The budget requested by the department</TableHead>
               <TableHead colSpan={2} className="text-center border-r">Approved budget</TableHead>
-              <TableHead rowSpan={2}>Actions</TableHead>
+              <TableHead rowSpan={2} className="print:hidden">Actions</TableHead>
             </TableRow>
             <TableRow className="bg-muted hover:bg-muted">
               {Object.values(quarters)
@@ -120,7 +130,7 @@ export function Planner() {
             {filteredItems.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={20}>
-                  <div className="flex flex-col items-center justify-center gap-4 py-16 text-center">
+                  <div className="flex flex-col items-center justify-center gap-4 py-16 text-center print:hidden">
                     <FileText className="h-16 w-16 text-muted-foreground" />
                     <h3 className="text-xl font-semibold">No arts plan items found</h3>
                     <p className="text-muted-foreground">
@@ -149,7 +159,7 @@ export function Planner() {
                         <TableCell className="border-r">{item.budgetRequested}</TableCell>
                         <TableCell className="border-r">{item.approvedCost}</TableCell>
                         <TableCell className="border-r">{item.approvedIncome}</TableCell>
-                        <TableCell className="flex gap-2">
+                        <TableCell className="flex gap-2 print:hidden">
                             <Button variant="outline" size="icon" onClick={() => handleEditItem(item)}>
                                 <Edit className="h-4 w-4" />
                             </Button>
@@ -164,7 +174,7 @@ export function Planner() {
         </Table>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8 print:hidden">
         <div className="space-y-2">
             <h4 className="font-semibold">የዝግጅት ኃላፊ ፈርማ፡-</h4>
             <Input placeholder="ስም ያስገቡ" />
