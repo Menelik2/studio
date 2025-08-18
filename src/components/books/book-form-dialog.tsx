@@ -29,6 +29,7 @@ import {
 } from '@/components/ui/select';
 import { Save } from 'lucide-react';
 import { Controller } from 'react-hook-form';
+import { useFormStatus } from 'react-dom';
 
 
 interface BookDialogState {
@@ -94,13 +95,11 @@ const bookSchema = z.object({
 type BookFormValues = z.infer<typeof bookSchema>;
 
 function SubmitButton({ isEdit }: { isEdit: boolean }) {
-  // Directly using formState from useActionState is not possible here
-  // as react-hook-form doesn't expose the pending state in the same way.
-  // A simple solution is to track submitting state manually if needed,
-  // but for now, we rely on the form's own state.
+  const { pending } = useFormStatus();
+
   return (
-    <Button type="submit">
-      {isEdit ? 'Save Changes' : 'Add Book'}
+    <Button type="submit" disabled={pending}>
+      {pending ? (isEdit ? 'Saving...' : 'Adding...') : (isEdit ? 'Save Changes' : 'Add Book')}
       <Save className="ml-2 h-4 w-4" />
     </Button>
   );
@@ -111,12 +110,14 @@ export function BookFormDialog() {
   const { toast } = useToast();
   const isEdit = !!book;
   
-  const [formState, formAction] = useActionState(
-    isEdit ? updateBookAction : createBookAction,
-    { message: '', errors: {} }
-  );
+  const action = isEdit ? updateBookAction : createBookAction;
+  
+  const [formState, formAction] = useActionState(action, {
+    message: '',
+    errors: {},
+  });
 
-  const { register, reset, control, formState: { errors }, handleSubmit } = useForm<BookFormValues>({
+  const { register, reset, control, formState: { errors } } = useForm<BookFormValues>({
     resolver: zodResolver(bookSchema),
     defaultValues: {
         title: '',
@@ -129,17 +130,19 @@ export function BookFormDialog() {
   });
 
   useEffect(() => {
-    if (book) {
-      reset(book);
-    } else {
-      reset({
-        title: '',
-        author: '',
-        category: 'Poetry',
-        year: new Date().getFullYear(),
-        description: '',
-        filePath: '',
-      });
+    if (isOpen) {
+      if (book) {
+        reset(book);
+      } else {
+        reset({
+          title: '',
+          author: '',
+          category: 'Poetry',
+          year: new Date().getFullYear(),
+          description: '',
+          filePath: '',
+        });
+      }
     }
   }, [book, reset, isOpen]);
 
@@ -151,17 +154,6 @@ export function BookFormDialog() {
       toast({ variant: 'destructive', title: 'Error', description: formState.message });
     }
   }, [formState, toast, onClose, isEdit]);
-  
-  const onSubmit = (data: BookFormValues) => {
-    const formData = new FormData();
-    Object.entries(data).forEach(([key, value]) => {
-      formData.append(key, String(value));
-    });
-    if (isEdit && book) {
-      formData.append('id', book.id);
-    }
-    formAction(formData);
-  };
   
   if (!isOpen) return null;
 
@@ -179,7 +171,8 @@ export function BookFormDialog() {
             {isEdit ? 'Update the details of this book.' : 'Fill in the details for the new book.'}
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 py-4">
+        <form action={formAction} className="grid gap-4 py-4">
+          {isEdit && <input type="hidden" {...register('id')} value={book.id} />}
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="title" className="text-right">Title</Label>
             <Input id="title" {...register('title')} className="col-span-3" />

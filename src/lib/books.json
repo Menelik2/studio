@@ -1,0 +1,47 @@
+[
+  {
+    "id": "1",
+    "title": "Sonnets",
+    "author": "William Shakespeare",
+    "category": "Poetry",
+    "year": 1609,
+    "description": "A collection of 154 sonnets by William Shakespeare.",
+    "filePath": "/pdfs/sonnets.pdf"
+  },
+  {
+    "id": "2",
+    "title": "The Odyssey",
+    "author": "Homer",
+    "category": "Tradition",
+    "year": -800,
+    "description": "An ancient Greek epic poem.",
+    "filePath": "/pdfs/odyssey.pdf"
+  },
+  {
+    "id": "3",
+    "title": "Hamlet",
+    "author": "William Shakespeare",
+    "category": "Drama",
+    "year": 1603,
+    "description": "A tragedy by William Shakespeare.",
+    "filePath": "/pdfs/hamlet.pdf"
+  },
+  {
+    "id": "4",
+    "title": "Leaves of Grass",
+    "author": "Walt Whitman",
+    "category": "Poetry",
+    "year": 1855,
+    "description": "A poetry collection by American poet Walt Whitman.",
+    "filePath": "/pdfs/leaves_of_grass.pdf"
+  },
+  {
+    "id": "5",
+    "title": "fgdf",
+    "author": "dfdf",
+    "category": "Poetry",
+    "year": 2025,
+    "description": "fdgfgf",
+    "filePath": "fgfg.pdf"
+  }
+]
