@@ -24,10 +24,17 @@ export function Planner2() {
   const { onOpen } = usePlanner2Dialog();
 
   const handleAddItem = () => {
-    const newItemTemplate: Partial<Planner2Item> = {
-        year: year.toString(),
+    const newItemTemplate: Planner2Item = {
+      id: '',
+      activity: '',
+      measure: '',
+      annualPlan: '',
+      approvedBudget: '',
+      performance: '',
+      executionPercentage: '',
+      year: year.toString(),
     };
-    onOpen(newItemTemplate as Planner2Item, (newItem) => {
+    onOpen(newItemTemplate, (newItem) => {
       setItems([...items, { ...newItem, id: (items.length + 1).toString() }]);
     });
   };
