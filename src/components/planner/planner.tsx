@@ -5,13 +5,6 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
   Table,
   TableHeader,
   TableRow,
@@ -19,12 +12,17 @@ import {
   TableBody,
   TableCell,
 } from '@/components/ui/table';
-import { Edit, FileText, PlusCircle, Search, Trash2, Printer } from 'lucide-react';
-import { Checkbox } from '../ui/checkbox';
+import { MoreHorizontal, Edit, FileText, PlusCircle, Search, Trash2, Printer } from 'lucide-react';
 import type { PlannerItem } from '@/lib/definitions';
 import { PlannerFormDialog, usePlannerDialog } from './planner-form-dialog';
 import { getPlanner1ItemsAction, savePlanner1ItemsAction } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const quarters = {
   '1ኛ ሩብ ዓመት': ['ሐምሌ', 'ነሐሴ', 'መስከረም'],
@@ -39,6 +37,7 @@ export function Planner() {
   const [isLoading, setIsLoading] = useState(true);
   const { onOpen } = usePlannerDialog();
   const { toast } = useToast();
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     async function loadItems() {
@@ -100,35 +99,44 @@ export function Planner() {
     window.print();
   };
 
-  const filteredItems = items.filter(item => item.year === year.toString());
+  const filteredItems = items
+    .filter(item => item.year === year.toString())
+    .filter(item => item.task.toLowerCase().includes(searchTerm.toLowerCase()));
+
+  const formatMonths = (months: Record<string, boolean>) => {
+    const selectedMonths = Object.entries(months)
+        .filter(([,isSelected]) => isSelected)
+        .map(([month]) => month);
+    if (selectedMonths.length === 0) return 'ምንም አልተመረጠም';
+    if (selectedMonths.length > 3) return `${selectedMonths.slice(0, 3).join(', ')}...`;
+    return selectedMonths.join(', ');
+  }
 
   return (
-    <div className="space-y-4 print:space-y-0 print-container">
+    <div className="space-y-4 print:space-y-2 print-container">
       <PlannerFormDialog />
-      <div className="flex flex-wrap items-center justify-between gap-4 print:hidden">
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="ፈልግ..." className="pl-8 w-40" />
-          </div>
-          <Select defaultValue="all">
-            <SelectTrigger className="w-40">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">ሁሉንም</SelectItem>
-            </SelectContent>
-          </Select>
-          <div className="relative">
-            <Input
-              type="number"
-              value={year}
-              onChange={(e) => setYear(parseInt(e.target.value))}
-              className="w-28"
-            />
-          </div>
+
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between print:hidden">
+        <div>
+            <h1 className="font-headline text-3xl font-bold tracking-tight">የስራ እቅድ ማሰናጃ</h1>
+            <p className="text-muted-foreground">አዳዲስ እቅዶችን ያክሉ፣ ያርትዑ፣ ወይም ይሰርዙ።</p>
         </div>
         <div className="flex items-center gap-2">
+            <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input 
+                    placeholder="በተግባር ፈልግ..." 
+                    className="pl-8 w-40" 
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+            </div>
+            <Input
+                type="number"
+                value={year}
+                onChange={(e) => setYear(parseInt(e.target.value))}
+                className="w-28"
+            />
             <Button onClick={handleAddItem}>
               <PlusCircle className="mr-2 h-4 w-4" />
               አዲስ ዝግጅት ጨምር
@@ -141,54 +149,40 @@ export function Planner() {
       </div>
 
       <div className="overflow-x-auto rounded-lg border print-table-container">
-        <Table className="min-w-max whitespace-nowrap print-table">
+        <Table className="min-w-full whitespace-nowrap print-table">
           <TableHeader>
             <TableRow className="bg-muted hover:bg-muted">
-              <TableHead rowSpan={2} className="border-r">ተ.ቁ</TableHead>
-              <TableHead rowSpan={2} className="border-r">ዝርዝር ተግባር</TableHead>
-              <TableHead rowSpan={2} className="border-r">መለኪያ</TableHead>
-              <TableHead rowSpan={2} className="border-r">ብዛት</TableHead>
-              <TableHead rowSpan={2} className="border-r">ከማን ጋር እንሰራለን?</TableHead>
-              {Object.keys(quarters).map((quarter) => (
-                <TableHead key={quarter} colSpan={3} className="text-center border-r">
-                  {quarter}
-                </TableHead>
-              ))}
-              <TableHead rowSpan={2} className="border-r">በመምሪያው የተጠየቀው በጀት</TableHead>
-              <TableHead colSpan={2} className="text-center border-r">የጸደቀ በጀት</TableHead>
-              <TableHead rowSpan={2} className="print:hidden">ድርጊቶች</TableHead>
-            </TableRow>
-            <TableRow className="bg-muted hover:bg-muted">
-              {Object.values(quarters)
-                .flat()
-                .map((month) => (
-                  <TableHead key={month} className="text-center bg-muted/60 border-r">
-                    {month}
-                  </TableHead>
-                ))}
-              <TableHead className="text-center bg-muted/60 border-r">ወጪ</TableHead>
-              <TableHead className="text-center bg-muted/60 border-r">ገቢ</TableHead>
+              <TableHead className="border-r">ተ.ቁ</TableHead>
+              <TableHead className="border-r">ዝርዝር ተግባር</TableHead>
+              <TableHead className="border-r">መለኪያ</TableHead>
+              <TableHead className="border-r">ብዛት</TableHead>
+              <TableHead className="border-r">ከማን ጋር እንሰራለን?</TableHead>
+              <TableHead className="border-r">የተመረጡ ወራት</TableHead>
+              <TableHead className="border-r">የተጠየቀው በጀት</TableHead>
+              <TableHead className="border-r">የጸደቀ ወጪ</TableHead>
+              <TableHead className="border-r">የጸደቀ ገቢ</TableHead>
+              <TableHead className="print:hidden text-right">ድርጊቶች</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
              {isLoading ? (
                 <TableRow>
-                    <TableCell colSpan={20} className="h-24 text-center">
-                        Loading planner data...
+                    <TableCell colSpan={10} className="h-24 text-center">
+                        የእቅድ መረጃ በመጫን ላይ...
                     </TableCell>
                 </TableRow>
              ) : filteredItems.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={20}>
+                <TableCell colSpan={10}>
                   <div className="flex flex-col items-center justify-center gap-4 py-16 text-center print:hidden">
                     <FileText className="h-16 w-16 text-muted-foreground" />
-                    <h3 className="text-xl font-semibold">No arts plan items found</h3>
+                    <h3 className="text-xl font-semibold">ለ {year} ምንም እቅድ አልተገኘም</h3>
                     <p className="text-muted-foreground">
-                      No items for {year}. Add items for this year.
+                      ለዚህ አመት አዲስ እቅድ በመጨመር ይጀምሩ።
                     </p>
                     <Button onClick={handleAddItem}>
                       <PlusCircle className="mr-2 h-4 w-4" />
-                      Add Your First Item
+                      የመጀመሪያ እቅድዎን ያክሉ
                     </Button>
                   </div>
                    <div className="hidden print:block text-center p-8">No items for this year.</div>
@@ -198,25 +192,36 @@ export function Planner() {
                 filteredItems.map((item, index) => (
                     <TableRow key={item.id}>
                         <TableCell className="border-r">{index + 1}</TableCell>
-                        <TableCell className="border-r">{item.task}</TableCell>
+                        <TableCell className="border-r font-medium">{item.task}</TableCell>
                         <TableCell className="border-r">{item.measure}</TableCell>
                         <TableCell className="border-r">{item.quantity}</TableCell>
                         <TableCell className="border-r">{item.collaborator}</TableCell>
-                        {Object.values(quarters).flat().map(month => (
-                            <TableCell key={month} className="text-center border-r">
-                                {item.months[month] && <Checkbox checked={true} disabled />}
-                            </TableCell>
-                        ))}
+                        <TableCell className="border-r text-muted-foreground text-xs">{formatMonths(item.months)}</TableCell>
                         <TableCell className="border-r">{item.budgetRequested}</TableCell>
                         <TableCell className="border-r">{item.approvedCost}</TableCell>
                         <TableCell className="border-r">{item.approvedIncome}</TableCell>
-                        <TableCell className="flex gap-2 print:hidden">
-                            <Button variant="outline" size="icon" onClick={() => handleEditItem(item)}>
-                                <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button variant="destructive" size="icon" onClick={() => handleRemoveItem(item.id)}>
-                                <Trash2 className="h-4 w-4" />
-                            </Button>
+                        <TableCell className="text-right print:hidden">
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                    <span className="sr-only">Open menu</span>
+                                    <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => handleEditItem(item)}>
+                                        <Edit className="mr-2 h-4 w-4" />
+                                        <span>አርትዕ</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        className="text-red-500 focus:text-red-500"
+                                        onClick={() => handleRemoveItem(item.id)}
+                                    >
+                                        <Trash2 className="mr-2 h-4 w-4" />
+                                        <span>ሰርዝ</span>
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </TableCell>
                     </TableRow>
                 ))
