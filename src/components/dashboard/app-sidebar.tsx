@@ -11,6 +11,7 @@ import {
 import {
   Book,
   BookOpen,
+  CalendarCheck,
   LayoutDashboard,
   LogOut,
   Settings,
@@ -20,6 +21,7 @@ import { cn } from '@/lib/utils';
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/dashboard/books', icon: Book, label: 'Books' },
+  { href: '/dashboard/planner', icon: CalendarCheck, label: 'Planner' },
 ];
 
 export function AppSidebar() {
