@@ -9,6 +9,7 @@ export interface Book {
   year: number;
   description: string;
   filePath: string;
+  comment?: string;
 }
 
 export interface PlannerItem {

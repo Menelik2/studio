@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -14,7 +15,8 @@ import { Badge } from '@/components/ui/badge';
 import type { Book } from '@/lib/definitions';
 import { useBookDialog } from './book-form-dialog';
 import { useDeleteBookDialog } from './delete-book-dialog';
-import { Edit, Trash2, Eye } from 'lucide-react';
+import { Edit, Trash2, Eye, MessageSquareQuote } from 'lucide-react';
+import { Separator } from '../ui/separator';
 
 export function BookCard({ book }: { book: Book }) {
   const { onOpen: onOpenEdit } = useBookDialog();
@@ -38,6 +40,15 @@ export function BookCard({ book }: { book: Book }) {
       <CardContent className="flex-grow space-y-4">
         <p className="text-sm text-muted-foreground line-clamp-3">{book.description}</p>
         <Badge variant={variant}>{book.category}</Badge>
+        {book.comment && (
+            <div className="space-y-2 pt-2">
+                <Separator />
+                <div className="flex items-start gap-2 text-sm text-muted-foreground">
+                    <MessageSquareQuote className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                    <p className="italic line-clamp-2">"{book.comment}"</p>
+                </div>
+            </div>
+        )}
       </CardContent>
       <CardFooter className="flex justify-end gap-2 mt-auto">
         <Button asChild variant="secondary" size="icon">

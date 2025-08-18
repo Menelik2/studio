@@ -93,6 +93,7 @@ const bookSchema = z.object({
   filePath: z.string().min(1, 'File path is required').refine(val => val.startsWith('/pdfs/'), {
     message: 'File path must start with /pdfs/',
   }),
+  comment: z.string().optional(),
 });
 
 type BookFormValues = z.infer<typeof bookSchema>;
@@ -130,6 +131,7 @@ export function BookFormDialog() {
         year: new Date().getFullYear(),
         description: '',
         filePath: '',
+        comment: '',
     },
   });
 
@@ -145,6 +147,7 @@ export function BookFormDialog() {
           year: new Date().getFullYear(),
           description: '',
           filePath: '',
+          comment: '',
         });
       }
     }
@@ -297,6 +300,13 @@ export function BookFormDialog() {
             </div>
           </div>
           
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="comment" className="text-right">Comment</Label>
+            <Textarea id="comment" {...register('comment')} className="col-span-3" placeholder="Add a comment..."/>
+            {errors.comment && <p className="col-span-4 text-red-500 text-xs text-right">{errors.comment.message}</p>}
+            {formState.errors?.comment && <p className="col-span-4 text-red-500 text-xs text-right">{formState.errors.comment[0]}</p>}
+          </div>
+
           <DialogFooter>
             <Button variant="outline" type="button" onClick={() => {
                 reset();

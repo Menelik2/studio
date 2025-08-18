@@ -28,6 +28,7 @@ const bookSchema = z.object({
   filePath: z.string().min(1, { message: 'File path is required' }).refine(val => val.startsWith('/pdfs/'), {
     message: 'File path must start with /pdfs/',
   }),
+  comment: z.string().optional(),
 });
 
 export type FormState = {
@@ -39,6 +40,7 @@ export type FormState = {
     year?: string[];
     description?: string[];
     filePath?: string[];
+    comment?: string[];
   };
 };
 
