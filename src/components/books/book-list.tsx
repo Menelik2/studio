@@ -9,35 +9,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { BookFormDialog, useBookDialog } from '@/components/books/book-form-dialog';
 import { DeleteBookDialog, useDeleteBookDialog } from '@/components/books/delete-book-dialog';
-import { getBooks } from '@/lib/data';
 
 export function BookList({ initialBooks }: { initialBooks: Book[] }) {
-  const [books, setBooks] = useState<Book[]>(initialBooks);
   const [filteredBooks, setFilteredBooks] = useState<Book[]>(initialBooks);
   const [filter, setFilter] = useState('');
-  const { onOpen, isOpen: isFormOpen } = useBookDialog();
-  const { bookToDelete, isOpen: isDeleteOpen } = useDeleteBookDialog();
-
-  useEffect(() => {
-    // This function refetches the books from the "database"
-    // whenever a dialog is closed, ensuring the list is up-to-date.
-    async function refetchBooks() {
-      const allBooks = await getBooks();
-      setBooks(allBooks);
-    }
-    
-    // We only refetch if the dialogs are closed.
-    // This avoids an initial double-fetch on page load.
-    if (!isFormOpen && !isDeleteOpen) {
-       refetchBooks();
-    }
-    
-  }, [isFormOpen, isDeleteOpen]);
-
+  const { onOpen } = useBookDialog();
+  const { bookToDelete } = useDeleteBookDialog();
 
   useEffect(() => {
     setFilteredBooks(
-      books.filter((book) => {
+      initialBooks.filter((book) => {
         const searchTerm = filter.toLowerCase();
         return (
           book.title.toLowerCase().includes(searchTerm) ||
@@ -46,7 +27,7 @@ export function BookList({ initialBooks }: { initialBooks: Book[] }) {
         );
       })
     );
-  }, [filter, books]);
+  }, [filter, initialBooks]);
 
   return (
     <div className="space-y-6">
