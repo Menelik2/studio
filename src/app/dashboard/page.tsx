@@ -1,7 +1,7 @@
 import { getBooks } from '@/lib/data';
 import type { Book, Category } from '@/lib/definitions';
 import { StatCard } from '@/components/dashboard/stat-card';
-import { Book as BookIcon, Feather, Mask, Scroll } from 'lucide-react';
+import { Book as BookIcon, Feather, Scroll, Theater } from 'lucide-react';
 
 export default async function DashboardPage() {
   const books = await getBooks();
@@ -40,7 +40,7 @@ export default async function DashboardPage() {
         <StatCard
           title="Drama"
           value={categoryCounts['Drama'] || 0}
-          icon={Mask}
+          icon={Theater}
           description="Total books in the Drama category."
         />
       </div>
