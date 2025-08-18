@@ -299,4 +299,4 @@ export function Planner2() {
   );
 }
 ```
-**Note**: The planner data is currently stored in the component's state (`useState`) and is not persistent. A next step would be to create `planner.json` files and corresponding data functions in `src/lib/data.ts` and `src/lib/actions.ts`, similar to the Book Management system, to achieve permanent storage.
+**Note**: The planner data is now persisted using a similar mechanism to the book management system, utilizing `planner1.json` and `planner2.json` files and corresponding data functions and server actions in `src/lib/data.ts` and `src/lib/actions.ts` for permanent storage.
