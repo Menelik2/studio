@@ -51,19 +51,20 @@ export function BookCard({ book }: { book: Book }) {
         )}
       </CardContent>
       <CardFooter className="flex justify-end gap-2 mt-auto">
-        <Button asChild variant="secondary" size="icon">
+        <Button asChild variant="secondary" size="icon" title="View">
           <Link href={`/dashboard/books/${book.id}`}>
             <Eye className="h-4 w-4" />
             <span className="sr-only">View</span>
           </Link>
         </Button>
-        <Button variant="outline" size="icon" onClick={() => onOpenEdit(book)}>
+        <Button variant="outline" size="icon" title="Edit or Comment" onClick={() => onOpenEdit(book)}>
           <Edit className="h-4 w-4" />
-          <span className="sr-only">Edit</span>
+          <span className="sr-only">Edit or Comment</span>
         </Button>
         <Button
           variant="destructive"
           size="icon"
+          title="Delete"
           onClick={() => onOpenDelete(book)}
         >
           <Trash2 className="h-4 w-4" />
