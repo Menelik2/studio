@@ -31,7 +31,7 @@ export function BookCard({ book }: { book: Book }) {
   return (
     <Card className="flex flex-col h-full">
       <CardHeader>
-        <Link href={`/dashboard/books/${book.id}`}>
+        <Link href={`/dashboard/books/${book.id}`} target="_blank" rel="noopener noreferrer">
           <CardTitle className="font-headline hover:underline">{book.title}</CardTitle>
         </Link>
         <CardDescription>
@@ -53,7 +53,7 @@ export function BookCard({ book }: { book: Book }) {
       </CardContent>
       <CardFooter className="flex justify-end gap-2 mt-auto">
         <Button asChild variant="secondary" size="icon" title="View">
-          <Link href={`/dashboard/books/${book.id}`}>
+          <Link href={book.filePath.startsWith('http') ? book.filePath : `/dashboard/books/${book.id}`} target="_blank" rel="noopener noreferrer">
             <Eye className="h-4 w-4" />
             <span className="sr-only">View</span>
           </Link>
