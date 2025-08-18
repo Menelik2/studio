@@ -166,22 +166,18 @@ export function PlannerFormDialog() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="space-y-2">
                     <Label htmlFor="budgetRequested">Budget Requested by Department</Label>
                     <Input id="budgetRequested" value={formState.budgetRequested} onChange={(e) => handleFieldChange('budgetRequested', e.target.value)} placeholder="Enter budget requested" />
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="approvedCost">Approved Budget</Label>
-                    <Input id="approvedCost" value={formState.approvedCost} onChange={(e) => handleFieldChange('approvedCost', e.target.value)} placeholder="Enter approved budget" />
-                </div>
-                 <div className="space-y-2">
-                    <Label htmlFor="approvedCost">Cost</Label>
-                    <Input id="approvedCost" value={formState.approvedCost} onChange={(e) => handleFieldChange('approvedCost', e.target.value)} placeholder="Enter cost" />
+                    <Label htmlFor="approvedCost">Approved Budget (Cost)</Label>
+                    <Input id="approvedCost" value={formState.approvedCost} onChange={(e) => handleFieldChange('approvedCost', e.target.value)} placeholder="Enter approved cost" />
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="approvedIncome">Income</Label>
-                    <Input id="approvedIncome" value={formState.approvedIncome} onChange={(e) => handleFieldChange('approvedIncome', e.target.value)} placeholder="Enter income" />
+                    <Label htmlFor="approvedIncome">Approved Budget (Income)</Label>
+                    <Input id="approvedIncome" value={formState.approvedIncome} onChange={(e) => handleFieldChange('approvedIncome', e.target.value)} placeholder="Enter approved income" />
                 </div>
             </div>
             

@@ -12,21 +12,15 @@ import {
   TableBody,
   TableCell,
 } from '@/components/ui/table';
-import { MoreHorizontal, Edit, FileText, PlusCircle, Search, Trash2, Printer } from 'lucide-react';
+import { Check, Edit, FileText, PlusCircle, Search, Trash2, Printer } from 'lucide-react';
 import type { PlannerItem } from '@/lib/definitions';
 import { PlannerFormDialog, usePlannerDialog } from './planner-form-dialog';
 import { getPlanner1ItemsAction, savePlanner1ItemsAction } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 
 const quarters = {
   '1ኛ ሩብ ዓመት': ['ሐምሌ', 'ነሐሴ', 'መስከረም'],
-  '2ኛ ሩብ ዓመት': ['ጥቅምት', 'ህዳር', 'ታህሳስ'],
+  '2ኛ ሩብ ዓመት': ['ጥቅምት', 'ህዳр', 'ታህሳс'],
   '3ኛ ሩብ ዓመት': ['ጥር', 'የካቲት', 'መጋቢት'],
   '4ኛ ሩብ ዓመት': ['ሚያዝያ', 'ግንቦት', 'ሰኔ'],
 };
@@ -103,15 +97,6 @@ export function Planner() {
     .filter(item => item.year === year.toString())
     .filter(item => item.task.toLowerCase().includes(searchTerm.toLowerCase()));
 
-  const formatMonths = (months: Record<string, boolean>) => {
-    const selectedMonths = Object.entries(months)
-        .filter(([,isSelected]) => isSelected)
-        .map(([month]) => month);
-    if (selectedMonths.length === 0) return 'ምንም አልተመረጠም';
-    if (selectedMonths.length > 3) return `${selectedMonths.slice(0, 3).join(', ')}...`;
-    return selectedMonths.join(', ');
-  }
-
   return (
     <div className="space-y-4 print:space-y-2 print-container">
       <PlannerFormDialog />
@@ -152,28 +137,37 @@ export function Planner() {
         <Table className="min-w-full whitespace-nowrap print-table">
           <TableHeader>
             <TableRow className="bg-muted hover:bg-muted">
-              <TableHead className="border-r">ተ.ቁ</TableHead>
-              <TableHead className="border-r">ዝርዝር ተግባር</TableHead>
-              <TableHead className="border-r">መለኪያ</TableHead>
-              <TableHead className="border-r">ብዛት</TableHead>
-              <TableHead className="border-r">ከማን ጋር እንሰራለን?</TableHead>
-              <TableHead className="border-r">የተመረጡ ወራት</TableHead>
-              <TableHead className="border-r">የተጠየቀው በጀት</TableHead>
-              <TableHead className="border-r">የጸደቀ ወጪ</TableHead>
-              <TableHead className="border-r">የጸደቀ ገቢ</TableHead>
-              <TableHead className="print:hidden text-right">ድርጊቶች</TableHead>
+              <TableHead rowSpan={2} className="border-r align-middle">ተ.ቁ</TableHead>
+              <TableHead rowSpan={2} className="border-r align-middle">ዝርዝር ተግባር</TableHead>
+              <TableHead rowSpan={2} className="border-r align-middle">መለኪያ</TableHead>
+              <TableHead rowSpan={2} className="border-r align-middle">ብዛት</TableHead>
+              <TableHead rowSpan={2} className="border-r align-middle">ከማን ጋር እንሰራለን?</TableHead>
+              <TableHead colSpan={3} className="text-center border-r">1ኛ ሩብ ዓመት</TableHead>
+              <TableHead colSpan={3} className="text-center border-r">2ኛ ሩብ ዓመት</TableHead>
+              <TableHead colSpan={3} className="text-center border-r">3ኛ ሩብ ዓመት</TableHead>
+              <TableHead colSpan={3} className="text-center border-r">4ኛ ሩብ ዓመት</TableHead>
+              <TableHead colSpan={2} className="text-center border-r">የተጠየቀው በጀት</TableHead>
+              <TableHead rowSpan={2} className="border-r align-middle">የጸደቀ ወጪ</TableHead>
+              <TableHead rowSpan={2} className="border-r align-middle print:hidden">ድርጊቶች</TableHead>
+            </TableRow>
+            <TableRow className="bg-muted/70 hover:bg-muted/70">
+              {Object.values(quarters).flat().map(month => (
+                <TableHead key={month} className="text-center border-r text-xs">{month}</TableHead>
+              ))}
+              <TableHead className="text-center border-r text-xs">Cost</TableHead>
+              <TableHead className="text-center border-r text-xs">Income</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
              {isLoading ? (
                 <TableRow>
-                    <TableCell colSpan={10} className="h-24 text-center">
+                    <TableCell colSpan={20} className="h-24 text-center">
                         የእቅድ መረጃ በመጫን ላይ...
                     </TableCell>
                 </TableRow>
              ) : filteredItems.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={10}>
+                <TableCell colSpan={20}>
                   <div className="flex flex-col items-center justify-center gap-4 py-16 text-center print:hidden">
                     <FileText className="h-16 w-16 text-muted-foreground" />
                     <h3 className="text-xl font-semibold">ለ {year} ምንም እቅድ አልተገኘም</h3>
@@ -196,32 +190,23 @@ export function Planner() {
                         <TableCell className="border-r">{item.measure}</TableCell>
                         <TableCell className="border-r">{item.quantity}</TableCell>
                         <TableCell className="border-r">{item.collaborator}</TableCell>
-                        <TableCell className="border-r text-muted-foreground text-xs">{formatMonths(item.months)}</TableCell>
+                        {Object.values(quarters).flat().map(month => (
+                          <TableCell key={`${item.id}-${month}`} className="text-center border-r">
+                            {item.months[month] && <Check className="h-4 w-4 mx-auto" />}
+                          </TableCell>
+                        ))}
                         <TableCell className="border-r">{item.budgetRequested}</TableCell>
-                        <TableCell className="border-r">{item.approvedCost}</TableCell>
                         <TableCell className="border-r">{item.approvedIncome}</TableCell>
+                        <TableCell className="border-r">{item.approvedCost}</TableCell>
                         <TableCell className="text-right print:hidden">
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-8 w-8 p-0">
-                                    <span className="sr-only">Open menu</span>
-                                    <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={() => handleEditItem(item)}>
-                                        <Edit className="mr-2 h-4 w-4" />
-                                        <span>አርትዕ</span>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                        className="text-red-500 focus:text-red-500"
-                                        onClick={() => handleRemoveItem(item.id)}
-                                    >
-                                        <Trash2 className="mr-2 h-4 w-4" />
-                                        <span>ሰርዝ</span>
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
+                           <div className="flex justify-end gap-2">
+                             <Button variant="outline" size="icon" onClick={() => handleEditItem(item)}>
+                                <Edit className="h-4 w-4" />
+                             </Button>
+                             <Button variant="destructive" size="icon" onClick={() => handleRemoveItem(item.id)}>
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                           </div>
                         </TableCell>
                     </TableRow>
                 ))
