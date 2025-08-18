@@ -2,7 +2,22 @@
 
 This document provides a technical overview of the "Local Library Lore" application, detailing its features and showcasing relevant code snippets from the implementation.
 
-The application is built with Next.js (App Router), React, and Tailwind CSS, using ShadCN for UI components. The backend logic is handled by Next.js Server Actions, and data is persisted in JSON files (`src/lib/books.json`, `src/lib/planner1.json`, `src/lib/planner2.json`).
+The application is built with Next.js (App Router), React, and Tailwind CSS, using ShadCN for UI components. 
+
+## Backend & Data Persistence (Node.js)
+
+The backend is built on Node.js, which is the runtime for all Next.js server-side features. Instead of a traditional database, this application uses a file-based persistence system.
+
+**`src/lib/*.json`**:
+- `books.json`, `planner1.json`, and `planner2.json` act as the "database". They are simple JSON files that store the application's data persistently on the server.
+
+**`src/lib/data.ts`**:
+- This file is the data access layer. It uses the Node.js `fs` (file system) module to read from and write to the JSON files. It abstracts the file operations into asynchronous functions like `getBooks`, `addBook`, etc. This file is marked with `'use server';` to ensure it only ever runs on the server.
+
+**`src/lib/actions.ts`**:
+- This file serves as the API layer. It contains Next.js Server Actions, which are server-side functions that can be called directly from client-side components. These actions handle business logic (like validation with Zod) and then use the functions from `data.ts` to interact with the JSON "database".
+
+This setup provides a robust, self-contained backend without requiring an external database service.
 
 ## 1. Authentication
 
@@ -87,32 +102,6 @@ export default async function DashboardPage() {
 
 This is the core feature, allowing full management of the book library.
 
-### Data Persistence
-
-**`src/lib/data.ts`**: Contains functions to read from and write to `books.json`.
-
-```ts
-import type { Book } from './definitions';
-import fs from 'fs/promises';
-import path from 'path';
-
-const dbPath = path.join(process.cwd(), 'src', 'lib', 'books.json');
-let books: Book[] | null = null;
-
-// Reads the database file
-async function readDb(): Promise<Book[]> { /* ... */ }
-
-// Writes to the database file
-async function writeDb(data: Book[]) { /* ... */ }
-
-// Exported functions for CRUD operations
-export async function getBooks(): Promise<Book[]> { /* ... */ }
-export async function getBookById(id: string): Promise<Book | undefined> { /* ... */ }
-export async function addBook(book: Omit<Book, 'id'>): Promise<Book> { /* ... */ }
-export async function updateBook(updatedBook: Book): Promise<Book | null> { /* ... */ }
-export async function deleteBook(id: string): Promise<boolean> { /* ... */ }
-```
-
 ### UI Components
 
 **`src/components/books/book-list.tsx`**: Displays the books and handles filtering by search term or category.
@@ -191,9 +180,9 @@ export function BookFormDialog() {
 }
 ```
 
-### Backend Logic
+### Backend Logic (`actions.ts`)
 
-**`src/lib/actions.ts`**: Server Actions handle form submissions for creating, updating, and deleting books. It uses Zod for validation.
+Server Actions handle form submissions for creating, updating, and deleting books. It uses Zod for validation.
 
 ```ts
 'use server';
@@ -328,4 +317,3 @@ export function Planner2() {
   );
 }
 ```
-**Note**: The planner data is now persisted using a similar mechanism to the book management system, utilizing `planner1.json` and `planner2.json` files and corresponding data functions and server actions in `src/lib/data.ts` and `src/lib/actions.ts` for permanent storage.
