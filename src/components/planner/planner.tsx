@@ -19,8 +19,10 @@ import {
   TableBody,
   TableCell,
 } from '@/components/ui/table';
-import { FileText, PlusCircle, Search, Trash2 } from 'lucide-react';
+import { Edit, FileText, PlusCircle, Search, Trash2 } from 'lucide-react';
 import { Checkbox } from '../ui/checkbox';
+import type { PlannerItem } from '@/lib/definitions';
+import { PlannerFormDialog, usePlannerDialog } from './planner-form-dialog';
 
 const quarters = {
   '1st quarter': ['July', 'August', 'September'],
@@ -29,51 +31,32 @@ const quarters = {
   '4th quarter': ['April', 'May', 'June'],
 };
 
-interface PlannerItem {
-    id: number;
-    task: string;
-    measure: string;
-    quantity: string;
-    collaborator: string;
-    budgetRequested: string;
-    approvedCost: string;
-    approvedIncome: string;
-    months: Record<string, boolean>;
-}
-
 export function Planner() {
   const [year, setYear] = useState(new Date().getFullYear());
   const [items, setItems] = useState<PlannerItem[]>([]);
+  const { onOpen } = usePlannerDialog();
 
   const handleAddItem = () => {
-    const newItem: PlannerItem = {
-      id: items.length + 1,
-      task: '',
-      measure: '',
-      quantity: '',
-      collaborator: '',
-      budgetRequested: '',
-      approvedCost: '',
-      approvedIncome: '',
-      months: Object.values(quarters).flat().reduce((acc, month) => ({...acc, [month]: false}), {})
-    };
-    setItems([...items, newItem]);
+    onOpen(null, (newItem) => {
+        setItems([...items, {...newItem, id: (items.length + 1).toString()}]);
+    });
   };
-
-  const handleItemChange = (id: number, field: keyof Omit<PlannerItem, 'id' | 'months'>, value: string) => {
-    setItems(items.map(item => item.id === id ? {...item, [field]: value} : item));
+  
+  const handleEditItem = (itemToUpdate: PlannerItem) => {
+    onOpen(itemToUpdate, (updatedItem) => {
+        setItems(items.map(item => item.id === updatedItem.id ? updatedItem : item));
+    });
   }
 
-  const handleMonthChange = (id: number, month: string, checked: boolean) => {
-    setItems(items.map(item => item.id === id ? {...item, months: {...item.months, [month]: checked}} : item));
-  }
-
-  const handleRemoveItem = (id: number) => {
+  const handleRemoveItem = (id: string) => {
     setItems(items.filter(item => item.id !== id));
   }
 
+  const filteredItems = items.filter(item => item.year === year.toString());
+
   return (
     <div className="space-y-4">
+      <PlannerFormDialog />
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative">
@@ -95,10 +78,6 @@ export function Planner() {
               onChange={(e) => setYear(parseInt(e.target.value))}
               className="w-28"
             />
-            <div className="absolute left-3 top-10 text-xs text-muted-foreground">
-              <p>Type a year to filter and press</p>
-              <p>Enter or click away to apply.</p>
-            </div>
           </div>
         </div>
         <Button onClick={handleAddItem}>
@@ -138,7 +117,7 @@ export function Planner() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {items.length === 0 ? (
+            {filteredItems.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={20}>
                   <div className="flex flex-col items-center justify-center gap-4 py-16 text-center">
@@ -155,36 +134,25 @@ export function Planner() {
                 </TableCell>
               </TableRow>
             ) : (
-                items.map((item, index) => (
+                filteredItems.map((item, index) => (
                     <TableRow key={item.id}>
                         <TableCell className="border-r">{index + 1}</TableCell>
-                        <TableCell className="border-r">
-                            <Input value={item.task} onChange={(e) => handleItemChange(item.id, 'task', e.target.value)} />
-                        </TableCell>
-                        <TableCell className="border-r">
-                            <Input value={item.measure} onChange={(e) => handleItemChange(item.id, 'measure', e.target.value)} />
-                        </TableCell>
-                        <TableCell className="border-r">
-                            <Input value={item.quantity} onChange={(e) => handleItemChange(item.id, 'quantity', e.target.value)} />
-                        </TableCell>
-                        <TableCell className="border-r">
-                            <Input value={item.collaborator} onChange={(e) => handleItemChange(item.id, 'collaborator', e.target.value)} />
-                        </TableCell>
+                        <TableCell className="border-r">{item.task}</TableCell>
+                        <TableCell className="border-r">{item.measure}</TableCell>
+                        <TableCell className="border-r">{item.quantity}</TableCell>
+                        <TableCell className="border-r">{item.collaborator}</TableCell>
                         {Object.values(quarters).flat().map(month => (
                             <TableCell key={month} className="text-center border-r">
-                                <Checkbox checked={item.months[month]} onCheckedChange={(checked) => handleMonthChange(item.id, month, !!checked)} />
+                                {item.months[month] && <Checkbox checked={true} disabled />}
                             </TableCell>
                         ))}
-                        <TableCell className="border-r">
-                            <Input value={item.budgetRequested} onChange={(e) => handleItemChange(item.id, 'budgetRequested', e.target.value)} />
-                        </TableCell>
-                        <TableCell className="border-r">
-                            <Input value={item.approvedCost} onChange={(e) => handleItemChange(item.id, 'approvedCost', e.target.value)} />
-                        </TableCell>
-                        <TableCell className="border-r">
-                             <Input value={item.approvedIncome} onChange={(e) => handleItemChange(item.id, 'approvedIncome', e.target.value)} />
-                        </TableCell>
-                        <TableCell>
+                        <TableCell className="border-r">{item.budgetRequested}</TableCell>
+                        <TableCell className="border-r">{item.approvedCost}</TableCell>
+                        <TableCell className="border-r">{item.approvedIncome}</TableCell>
+                        <TableCell className="flex gap-2">
+                            <Button variant="outline" size="icon" onClick={() => handleEditItem(item)}>
+                                <Edit className="h-4 w-4" />
+                            </Button>
                             <Button variant="destructive" size="icon" onClick={() => handleRemoveItem(item.id)}>
                                 <Trash2 className="h-4 w-4" />
                             </Button>
