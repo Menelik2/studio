@@ -42,11 +42,9 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-6">
       <DashboardClient />
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-headline text-3xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground">እንኳን በደህና መጡ</p>
-        </div>
+      <div className="w-full text-center">
+        <h1 className="font-headline text-3xl font-bold tracking-tight">Dashboard</h1>
+        <p className="text-muted-foreground animate-fade-in-up [text-shadow:1px_1px_2px_rgba(0,0,0,0.1)]">እንኳን በደህና መጡ</p>
       </div>
       
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
