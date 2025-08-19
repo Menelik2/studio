@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -47,7 +46,7 @@ export default function WelcomePage() {
   return (
     <div className="relative flex flex-col min-h-screen bg-background text-foreground overflow-hidden">
       <div className="absolute inset-0 z-0">
-        <svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlnsXlink="http://www.w3.org/1999/xlink" xmlnsSvgjs="http://svgjs.dev/svgjs" viewBox="0 0 700 700" width="100%" height="100%" opacity="0.38" className="absolute w-full h-full object-cover">
+        <svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 700 700" width="100%" height="100%" opacity="0.38" className="absolute w-full h-full object-cover">
           <defs>
             <radialGradient id="ffflux-gradient">
               <stop offset="0%" stopColor="hsl(315, 100%, 72%)"></stop>
