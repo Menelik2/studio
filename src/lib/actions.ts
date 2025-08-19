@@ -16,7 +16,7 @@ const bookSchema = z.object({
   id: z.string().optional(),
   title: z.string().min(1, { message: 'Title is required' }),
   author: z.string().min(1, { message: 'Author is required' }),
-  category: z.enum(['ግጥም', 'ወግ', 'ድራማ', 'መነባንብ', 'መጣጥፍ'], {
+  category: z.enum(['ግጥም', 'ወግ', 'ድራማ', 'መነባንብ', 'መጣጥፍ', 'ሌሎች መፅሐፍት'], {
     errorMap: () => ({ message: 'Please select a valid category.' }),
   }),
   year: z.coerce

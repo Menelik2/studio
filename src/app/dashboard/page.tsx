@@ -2,7 +2,7 @@
 import { getBooks } from '@/lib/data';
 import type { Book, Category } from '@/lib/definitions';
 import { StatCard } from '@/components/dashboard/stat-card';
-import { Book as BookIcon, Feather, Scroll, Theater, BookCopy, Folder, TrendingUp, Calendar, Library, PlusCircle } from 'lucide-react';
+import { Book as BookIcon, Feather, Scroll, Theater, BookCopy, Folder, TrendingUp, Calendar, Library, PlusCircle, BookText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { BookFormDialog, useBookDialog } from '@/components/books/book-form-dialog';
 import { DeleteBookDialog, useDeleteBookDialog } from '@/components/books/delete-book-dialog';
@@ -36,6 +36,7 @@ export default async function DashboardPage() {
     { title: 'መነባንብ', icon: BookIcon, count: categoryCounts['መነባንብ'] || 0 },
     { title: 'ድራማ', icon: Theater, count: categoryCounts['ድራማ'] || 0 },
     { title: 'መጣጥፍ', icon: Folder, count: categoryCounts['መጣጥፍ'] || 0 },
+    { title: 'ሌሎች መፅሐፍት', icon: BookText, count: categoryCounts['ሌሎች መፅሐፍት'] || 0 },
   ];
 
   return (
@@ -75,7 +76,7 @@ export default async function DashboardPage() {
         />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
          {categoryCards.map(cat => (
             <Link key={cat.title} href={`/dashboard/books?category=${cat.title}`}>
                 <StatCard

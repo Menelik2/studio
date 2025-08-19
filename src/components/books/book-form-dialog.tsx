@@ -89,7 +89,7 @@ const bookSchema = z.object({
   id: z.string().optional(),
   title: z.string().min(1, 'Title is required'),
   author: z.string().min(1, 'Author is required'),
-  category: z.enum(['ግጥም', 'ወግ', 'ድራማ', 'መነባንብ', 'መጣጥፍ']),
+  category: z.enum(['ግጥም', 'ወግ', 'ድራማ', 'መነባንብ', 'መጣጥፍ', 'ሌሎች መፅሐፍት']),
   year: z.coerce.number().int().min(1000).max(new Date().getFullYear()),
   description: z.string().min(1, 'Description is required'),
   filePath: z.string().min(1, 'File path is required').refine(val => val.startsWith('/pdfs/') || val.startsWith('http'), {
@@ -270,6 +270,7 @@ export function BookFormDialog() {
                         <SelectItem value="ድራማ">ድራማ</SelectItem>
                         <SelectItem value="መነባንብ">መነባንብ</SelectItem>
                         <SelectItem value="መጣጥፍ">መጣጥፍ</SelectItem>
+                        <SelectItem value="ሌሎች መፅሐፍት">ሌሎች መፅሐፍት</SelectItem>
                       </SelectContent>
                     </Select>
                   )}

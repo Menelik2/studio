@@ -1,5 +1,5 @@
 
-export type Category = 'ግጥም' | 'ወግ' | 'ድራማ' | 'መነባንብ' | 'መጣጥፍ';
+export type Category = 'ግጥም' | 'ወግ' | 'ድራማ' | 'መነባንብ' | 'መጣጥፍ' | 'ሌሎች መፅሐፍት';
 
 export interface Book {
   id: string;
