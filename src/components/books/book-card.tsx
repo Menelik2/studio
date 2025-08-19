@@ -24,9 +24,9 @@ export function BookCard({ book }: { book: Book }) {
 
   const category = book.category;
   let variant: 'default' | 'secondary' | 'destructive' | 'outline' = 'secondary';
-  if (category === 'Poetry') variant = 'default';
-  if (category === 'Drama') variant = 'outline';
-  if (category === 'Reading') variant = 'destructive';
+  if (category === 'ግጥም') variant = 'default';
+  if (category === 'ድራማ') variant = 'outline';
+  if (category === 'መነባንብ') variant = 'destructive';
 
   return (
     <Card className="flex flex-col h-full">

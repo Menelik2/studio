@@ -1,9 +1,10 @@
+
 [
   {
     "id": "1",
     "title": "Sonnets",
     "author": "William Shakespeare",
-    "category": "Poetry",
+    "category": "ግጥም",
     "year": 1609,
     "description": "A collection of 154 sonnets by William Shakespeare.",
     "filePath": "https://teacher-network.in/OER/images/9/9a/ICT_student_textbook.pdf",
@@ -13,7 +14,7 @@
     "id": "2",
     "title": "The Odyssey",
     "author": "Homer",
-    "category": "Tradition",
+    "category": "ወግ",
     "year": -800,
     "description": "An ancient Greek epic poem.",
     "filePath": "/pdfs/odyssey.pdf"
@@ -22,7 +23,7 @@
     "id": "4",
     "title": "Leaves of Grass",
     "author": "Walt Whitman",
-    "category": "Poetry",
+    "category": "ግጥም",
     "year": 1855,
     "description": "A poetry collection by American poet Walt Whitman.",
     "filePath": "/pdfs/leaves_of_grass.pdf"
@@ -31,7 +32,7 @@
     "id": "",
     "title": "ምኒልክ ",
     "author": "አድማሱ",
-    "category": "Poetry",
+    "category": "ግጥም",
     "year": 2025,
     "description": "ሚገር ነው አድናቂህ ነኝ",
     "filePath": "https://teacher-network.in/OER/images/9/9a/ICT_student_textbook.pdf",

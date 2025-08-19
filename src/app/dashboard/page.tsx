@@ -31,11 +31,11 @@ export default async function DashboardPage() {
   }).length;
 
   const categoryCards = [
-    { title: 'Poetry', icon: Feather, count: categoryCounts['Poetry'] || 0 },
-    { title: 'Tradition', icon: Scroll, count: categoryCounts['Tradition'] || 0 },
-    { title: 'Reading', icon: BookIcon, count: categoryCounts['Reading'] || 0 },
-    { title: 'Drama', icon: Theater, count: categoryCounts['Drama'] || 0 },
-    { title: 'Folding', icon: Folder, count: categoryCounts['Folding'] || 0 },
+    { title: 'ግጥም', icon: Feather, count: categoryCounts['ግጥም'] || 0 },
+    { title: 'ወግ', icon: Scroll, count: categoryCounts['ወግ'] || 0 },
+    { title: 'መነባንብ', icon: BookIcon, count: categoryCounts['መነባንብ'] || 0 },
+    { title: 'ድራማ', icon: Theater, count: categoryCounts['ድራማ'] || 0 },
+    { title: 'መጣጥፍ', icon: Folder, count: categoryCounts['መጣጥፍ'] || 0 },
   ];
 
   return (

@@ -89,7 +89,7 @@ const bookSchema = z.object({
   id: z.string().optional(),
   title: z.string().min(1, 'Title is required'),
   author: z.string().min(1, 'Author is required'),
-  category: z.enum(['Poetry', 'Tradition', 'Drama', 'Reading', 'Folding']),
+  category: z.enum(['ግጥም', 'ወግ', 'ድራማ', 'መነባንብ', 'መጣጥፍ']),
   year: z.coerce.number().int().min(1000).max(new Date().getFullYear()),
   description: z.string().min(1, 'Description is required'),
   filePath: z.string().min(1, 'File path is required').refine(val => val.startsWith('/pdfs/') || val.startsWith('http'), {
@@ -129,7 +129,7 @@ export function BookFormDialog() {
     defaultValues: {
         title: '',
         author: '',
-        category: 'Poetry',
+        category: 'ግጥም',
         year: new Date().getFullYear(),
         description: '',
         filePath: '',
@@ -145,7 +145,7 @@ export function BookFormDialog() {
         reset({
           title: '',
           author: '',
-          category: 'Poetry',
+          category: 'ግጥም',
           year: new Date().getFullYear(),
           description: '',
           filePath: '',
@@ -265,11 +265,11 @@ export function BookFormDialog() {
                         <SelectValue placeholder="Select a category" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Poetry">Poetry</SelectItem>
-                        <SelectItem value="Tradition">Tradition</SelectItem>
-                        <SelectItem value="Drama">Drama</SelectItem>
-                        <SelectItem value="Reading">Reading</SelectItem>
-                        <SelectItem value="Folding">Folding</SelectItem>
+                        <SelectItem value="ግጥም">ግጥም</SelectItem>
+                        <SelectItem value="ወግ">ወግ</SelectItem>
+                        <SelectItem value="ድራማ">ድራማ</SelectItem>
+                        <SelectItem value="መነባንብ">መነባንብ</SelectItem>
+                        <SelectItem value="መጣጥፍ">መጣጥፍ</SelectItem>
                       </SelectContent>
                     </Select>
                   )}
