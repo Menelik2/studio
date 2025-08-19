@@ -51,7 +51,7 @@ export default async function DashboardPage() {
       
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
-          title="Total Books"
+          title="ጠቅላላ መጽሐፍት"
           value={totalBooks}
           icon={Library}
           description="Across all categories"
