@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { motion } from 'framer-motion';
 
 const content = {
   en: {
@@ -38,12 +39,23 @@ export default function WelcomePage() {
 
   const currentContent = content[language];
 
+  const FADE_IN_UP_VARIANTS = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 },
+  };
+
   return (
     <div className="relative flex flex-col min-h-screen bg-background text-foreground">
       <div className="absolute inset-0 bg-cover bg-center bg-no-repeat bg-image-main opacity-20 blur-sm"></div>
       <div className="absolute inset-0 bg-grid"></div>
       
-      <header className="relative flex items-center justify-between p-4 border-b bg-background/80 backdrop-blur-sm">
+      <motion.header 
+        initial="hidden"
+        animate="visible"
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}
+        className="relative flex items-center justify-between p-4 border-b bg-background/80 backdrop-blur-sm"
+      >
         <div className="flex items-center gap-3">
           <BookOpen className="h-8 w-8 text-primary" />
           <div>
@@ -65,16 +77,28 @@ export default function WelcomePage() {
             <Link href="/login">{currentContent.dashboardButton}</Link>
           </Button>
         </div>
-      </header>
+      </motion.header>
       <main className="relative flex-grow flex flex-col items-center justify-center text-center p-8">
-        <div className="max-w-4xl bg-background/80 backdrop-blur-sm p-8 rounded-lg shadow-xl">
-          <h2 className="text-3xl md:text-4xl font-headline font-bold mb-4">
+        <motion.div 
+          initial="hidden"
+          animate="visible"
+          variants={FADE_IN_UP_VARIANTS}
+          transition={{ duration: 0.6, ease: "easeOut", staggerChildren: 0.2 }}
+          className="max-w-4xl bg-background/80 backdrop-blur-sm p-8 rounded-lg shadow-xl"
+        >
+          <motion.h2 
+            variants={FADE_IN_UP_VARIANTS}
+            className="text-3xl md:text-4xl font-headline font-bold mb-4"
+          >
             {currentContent.title}
-          </h2>
-          <p className="text-lg md:text-xl text-muted-foreground">
+          </motion.h2>
+          <motion.p 
+            variants={FADE_IN_UP_VARIANTS}
+            className="text-lg md:text-xl text-muted-foreground"
+          >
             {currentContent.description}
-          </p>
-        </div>
+          </motion.p>
+        </motion.div>
       </main>
     </div>
   );
