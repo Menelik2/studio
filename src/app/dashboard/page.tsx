@@ -43,7 +43,7 @@ export default async function DashboardPage() {
     <div className="space-y-6">
       <DashboardClient />
       <div className="w-full text-center">
-        <h1 className="font-headline text-3xl font-bold tracking-tight">Dashboard</h1>
+        <h1 className="font-headline text-3xl font-bold tracking-tight">ባህር ዳር ፈ/ገ/ቅ/ጊዮርጊስ ካ/ሰ/ት/ቤት</h1>
         <p className="text-muted-foreground animate-fade-in-up [text-shadow:1px_1px_2px_rgba(0,0,0,0.1)]">እንኳን በደህና መጡ</p>
       </div>
       

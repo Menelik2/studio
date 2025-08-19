@@ -14,7 +14,7 @@ export default {
       },
       fontFamily: {
         body: ['"Noto Sans Ethiopic"', 'sans-serif'],
-        headline: ['"Literata"', 'serif'],
+        headline: ['"Noto Sans Ethiopic"', 'serif'],
         code: ['monospace'],
       },
       colors: {
