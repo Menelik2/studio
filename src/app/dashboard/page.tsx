@@ -45,7 +45,7 @@ export default async function DashboardPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-headline text-3xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground">Welcome to your digital library management system</p>
+          <p className="text-muted-foreground">እንኳን በደህና መጡ</p>
         </div>
       </div>
       
