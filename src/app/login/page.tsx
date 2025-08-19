@@ -1,3 +1,4 @@
+
 import { LoginForm } from '@/components/auth/login-form';
 import { BookOpen } from 'lucide-react';
 
@@ -7,11 +8,11 @@ export default function LoginPage() {
       <div className="flex w-full max-w-md flex-col items-center justify-center space-y-6">
         <div className="text-center">
           <BookOpen className="mx-auto h-12 w-12 text-primary" />
-          <h1 className="mt-4 font-headline text-4xl font-bold tracking-tight text-primary">
-            Local Library Lore
+          <h1 className="mt-4 font-headline text-3xl font-bold tracking-tight text-primary">
+            ባህር ዳር ፈ/ገ/ቅ/ጊዮርጊስ ካ/ሰ/ት/ቤት
           </h1>
           <p className="mt-2 text-lg text-muted-foreground">
-            Admin Login
+            የአስተዳዳሪ መግቢያ
           </p>
         </div>
         <LoginForm />

@@ -28,7 +28,7 @@ export function LoginForm() {
   return (
     <Card className="w-full shadow-lg">
       <CardHeader>
-        <CardTitle className="font-headline text-2xl text-center">Admin Access</CardTitle>
+        <CardTitle className="font-headline text-2xl text-center">የአስተዳዳሪ መግቢያ</CardTitle>
       </CardHeader>
       <CardContent>
         <form action={formAction} className="space-y-4">
