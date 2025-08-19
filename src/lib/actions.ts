@@ -1,3 +1,4 @@
+
 // @ts-nocheck
 'use server';
 
@@ -8,8 +9,14 @@ import { addBook, deleteBook, updateBook, getPlanner1Items, savePlanner1Items, g
 import type { Book, Planner1Item, Planner2Item, PlannerSignatures } from './definitions';
 
 // Mock login action
-export async function loginAction() {
-  redirect('/dashboard');
+export async function loginAction(prevState: { error: string } | undefined, formData: FormData) {
+  const password = formData.get('password');
+  
+  if (password === '123!@#admin') {
+    redirect('/dashboard');
+  } else {
+    return { error: 'Invalid password. Please try again.' };
+  }
 }
 
 const bookSchema = z.object({
