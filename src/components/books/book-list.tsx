@@ -17,9 +17,16 @@ export function BookList({ initialBooks }: { initialBooks: Book[] }) {
   
   const [filteredBooks, setFilteredBooks] = useState<Book[]>(initialBooks);
   const [filter, setFilter] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState<string | null>(initialCategory);
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   
   const { onOpen } = useBookDialog();
+
+  useEffect(() => {
+    // Set the category from URL params only on the client-side
+    if (initialCategory) {
+      setCategoryFilter(initialCategory);
+    }
+  }, [initialCategory]);
 
   useEffect(() => {
     setFilteredBooks(
