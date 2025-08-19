@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { BookOpen } from 'lucide-react';
+import { BookOpen, Phone, User } from 'lucide-react';
 import Link from 'next/link';
 import {
   Select,
@@ -46,7 +46,7 @@ export default function WelcomePage() {
   return (
     <div className="relative flex flex-col min-h-screen bg-background text-foreground overflow-hidden">
       <div className="absolute inset-0 z-0">
-        <svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 700 700" width="100%" height="100%" opacity="0.38" className="absolute w-full h-full object-cover">
+        <svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlnsXlink="http://www.w3.org/1999/xlink" viewBox="0 0 700 700" width="100%" height="100%" opacity="0.38" className="absolute w-full h-full object-cover">
           <defs>
             <radialGradient id="ffflux-gradient">
               <stop offset="0%" stopColor="hsl(315, 100%, 72%)"></stop>
@@ -113,6 +113,24 @@ export default function WelcomePage() {
           </motion.p>
         </motion.div>
       </main>
+      <motion.footer 
+        initial="hidden"
+        animate="visible"
+        variants={FADE_IN_UP_VARIANTS}
+        transition={{ duration: 0.6, ease: "easeOut", delay: 0.5 }}
+        className="relative z-10 p-4 text-center text-sm text-muted-foreground bg-background/80 backdrop-blur-sm"
+      >
+        <div className="flex items-center justify-center gap-6">
+          <div className="flex items-center gap-2">
+            <User className="h-4 w-4" />
+            <span>Developer: Menelik Admasu</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Phone className="h-4 w-4" />
+            <span>Phone: 0918006053</span>
+          </div>
+        </div>
+      </motion.footer>
     </div>
   );
 }
