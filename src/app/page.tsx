@@ -50,10 +50,10 @@ export default function WelcomePage() {
         <svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlnsXlink="http://www.w3.org/1999/xlink" xmlnsSvgjs="http://svgjs.dev/svgjs" viewBox="0 0 700 700" width="100%" height="100%" opacity="0.38" className="absolute w-full h-full object-cover">
           <defs>
             <radialGradient id="ffflux-gradient">
-              <stop offset="0%" stop-color="hsl(315, 100%, 72%)"></stop>
-              <stop offset="100%" stop-color="hsl(227, 100%, 50%)"></stop>
+              <stop offset="0%" stopColor="hsl(315, 100%, 72%)"></stop>
+              <stop offset="100%" stopColor="hsl(227, 100%, 50%)"></stop>
             </radialGradient>
-            <filter id="ffflux-filter" x="-20%" y="-20%" width="140%" height="140%" filterUnits="objectBoundingBox" primitiveUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+            <filter id="ffflux-filter" x="-20%" y="-20%" width="140%" height="140%" filterUnits="objectBoundingBox" primitiveUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
               <feTurbulence type="fractalNoise" baseFrequency="0.003 0.003" numOctaves="1" seed="18" stitchTiles="stitch" x="0%" y="0%" width="100%" height="100%" result="turbulence"></feTurbulence>
               <feGaussianBlur stdDeviation="20 0" x="0%" y="0%" width="100%" height="100%" in="turbulence" edgeMode="duplicate" result="blur"></feGaussianBlur>
               <feBlend mode="screen" x="0%" y="0%" width="100%" height="100%" in="SourceGraphic" in2="blur" result="blend"></feBlend>
