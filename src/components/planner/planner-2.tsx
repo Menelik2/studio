@@ -93,7 +93,10 @@ export function Planner2() {
   };
 
   const handlePrint = () => {
+    const originalTitle = document.title;
+    document.title = `Planner 2 - ${year}`;
     window.print();
+    document.title = originalTitle;
   };
 
   const filteredItems = items.filter((item) => item.year === year.toString());

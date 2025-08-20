@@ -133,7 +133,10 @@ export function Planner() {
   }
   
   const handlePrint = () => {
+    const originalTitle = document.title;
+    document.title = `Planner 1 - ${year}`;
     window.print();
+    document.title = originalTitle;
   };
 
   const handleYearChange = (e: React.ChangeEvent<HTMLInputElement>) => {
