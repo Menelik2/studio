@@ -101,7 +101,7 @@ export default function WelcomePage() {
         >
           <motion.h2 
             variants={FADE_IN_UP_VARIANTS}
-            className="text-3xl md:text-4xl font-headline font-bold mb-4"
+            className="text-3xl md:text-4xl font-headline font-bold mb-4 bg-gradient-to-r from-primary to-chart-4 bg-clip-text text-transparent [text-shadow:2px_2px_4px_rgba(0,0,0,0.2)]"
           >
             {currentContent.title}
           </motion.h2>
