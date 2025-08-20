@@ -10,12 +10,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { BookFormDialog, useBookDialog } from '@/components/books/book-form-dialog';
 import { DeleteBookDialog } from '@/components/books/delete-book-dialog';
+import { motion } from 'framer-motion';
 
 export function BookList({ initialBooks }: { initialBooks: Book[] }) {
   const searchParams = useSearchParams();
   const initialCategory = searchParams.get('category');
   
-  const [filteredBooks, setFilteredBooks] = useState<Book[]>(initialBooks);
+  const [filteredBooks, setFilteredBooks] = useState<Book[]>([]);
   const [filter, setFilter] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   
@@ -29,8 +30,7 @@ export function BookList({ initialBooks }: { initialBooks: Book[] }) {
   }, [initialCategory]);
 
   useEffect(() => {
-    setFilteredBooks(
-      initialBooks.filter((book) => {
+    const filtered = initialBooks.filter((book) => {
         const searchTerm = filter.toLowerCase();
         const matchesSearch = (
           book.title.toLowerCase().includes(searchTerm) ||
@@ -40,9 +40,19 @@ export function BookList({ initialBooks }: { initialBooks: Book[] }) {
         const matchesCategory = !categoryFilter || book.category === categoryFilter;
 
         return matchesSearch && matchesCategory;
-      })
-    );
+      });
+    setFilteredBooks(filtered);
   }, [filter, categoryFilter, initialBooks]);
+  
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.05,
+      },
+    },
+  };
 
   return (
     <div className="space-y-6">
@@ -68,11 +78,16 @@ export function BookList({ initialBooks }: { initialBooks: Book[] }) {
       </div>
       
       {filteredBooks.length > 0 ? (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <motion.div 
+            className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+        >
           {filteredBooks.map((book) => (
             <BookCard key={book.id} book={book} />
           ))}
-        </div>
+        </motion.div>
       ) : (
         <div className="flex items-center justify-center h-64">
           <p className="text-muted-foreground">No books found.</p>
