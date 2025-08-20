@@ -37,11 +37,11 @@ export function BookCard({ book }: { book: Book }) {
   return (
     <motion.div
       variants={cardVariants}
-      whileHover={{ scale: 1.03, y: -5, rotateX: 2, rotateY: -2 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+      whileHover={{ scale: 1.05, y: -5 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 17 }}
       className="h-full"
     >
-      <Card className="flex flex-col h-full bg-card/60 backdrop-blur-sm border-border/20 transition-all hover:shadow-lg hover:shadow-primary/10 hover:border-primary/20">
+      <Card className="flex flex-col h-full transition-shadow duration-300 hover:shadow-xl">
         <CardHeader>
           <Link href={`/dashboard/books/${book.id}`} target="_blank" rel="noopener noreferrer">
             <CardTitle className="font-headline hover:underline">{book.title}</CardTitle>
