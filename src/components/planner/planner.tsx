@@ -202,7 +202,7 @@ export function Planner() {
             </TableRow>
             <TableRow className="bg-muted/70 hover:bg-muted/70">
               {Object.values(quarters).flat().map(month => (
-                <TableHead key={month} className="text-center border-r text-xs">{month}</TableHead>
+                <TableHead key={month} className="text-center border-r text-xs" style={{ backgroundColor: '#F5BE27' }}>{month}</TableHead>
               ))}
               <TableHead className="text-center border-r text-xs">ወጪ</TableHead>
               <TableHead className="text-center border-r text-xs">ገቢ</TableHead>
