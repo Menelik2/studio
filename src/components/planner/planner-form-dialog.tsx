@@ -130,19 +130,19 @@ export function PlannerFormDialog() {
         <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                    <Label htmlFor="task">Detailed Task</Label>
+                    <Label htmlFor="task">ዝርዝር ተግባር</Label>
                     <Input id="task" value={formState.task} onChange={(e) => handleFieldChange('task', e.target.value)} placeholder="Enter detailed task" />
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="measure">Measure</Label>
+                    <Label htmlFor="measure">መለኪያ</Label>
                     <Input id="measure" value={formState.measure} onChange={(e) => handleFieldChange('measure', e.target.value)} placeholder="Enter measure" />
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="quantity">Quantity</Label>
+                    <Label htmlFor="quantity">ብዛት</Label>
                     <Input id="quantity" value={formState.quantity} onChange={(e) => handleFieldChange('quantity', e.target.value)} placeholder="Enter quantity" />
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="collaborator">Who will we work with?</Label>
+                    <Label htmlFor="collaborator">ከማን ጋር እንሰራለን?</Label>
                     <Input id="collaborator" value={formState.collaborator} onChange={(e) => handleFieldChange('collaborator', e.target.value)} placeholder="Enter collaboration partners" />
                 </div>
             </div>
