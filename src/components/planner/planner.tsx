@@ -20,7 +20,7 @@ import { useToast } from '@/hooks/use-toast';
 
 const quarters = {
   '1ኛ ሩብ ዓመት': ['ሐምሌ', 'ነሐሴ', 'መስከረም'],
-  '2ኛ ሩብ ዓመት': ['ጥቅምት', 'ህዳር', 'ታህሳс'],
+  '2ኛ ሩብ ዓመት': ['ጥቅምት', 'ህዳр', 'ታህሳс'],
   '3ኛ ሩብ ዓመት': ['ጥር', 'የካቲት', 'መጋቢት'],
   '4ኛ ሩብ ዓመት': ['ሚያዝያ', 'ግንቦት', 'ሰኔ'],
 };
@@ -236,7 +236,7 @@ export function Planner() {
                 filteredItems.map((item, index) => (
                     <TableRow key={item.id}>
                         <TableCell className="border-r">{index + 1}</TableCell>
-                        <TableCell className="border-r font-medium" style={{ backgroundColor: '#F2DC7E' }}>{item.task}</TableCell>
+                        <TableCell className="border-r font-medium">{item.task}</TableCell>
                         <TableCell className="border-r">{item.measure}</TableCell>
                         <TableCell className="border-r">{item.quantity}</TableCell>
                         <TableCell className="border-r">{item.collaborator}</TableCell>
