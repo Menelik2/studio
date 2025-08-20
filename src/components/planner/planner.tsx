@@ -236,7 +236,7 @@ export function Planner() {
                 filteredItems.map((item, index) => (
                     <TableRow key={item.id}>
                         <TableCell className="border-r">{index + 1}</TableCell>
-                        <TableCell className="border-r font-medium">{item.task}</TableCell>
+                        <TableCell className="border-r font-medium" style={{ backgroundColor: '#F2DC7E' }}>{item.task}</TableCell>
                         <TableCell className="border-r">{item.measure}</TableCell>
                         <TableCell className="border-r">{item.quantity}</TableCell>
                         <TableCell className="border-r">{item.collaborator}</TableCell>
