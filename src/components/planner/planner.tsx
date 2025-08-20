@@ -153,8 +153,8 @@ export function Planner() {
 
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between print:hidden">
         <div>
-            <h1 className="font-headline text-3xl font-bold tracking-tight">የስራ እቅድ ማሰናጃ</h1>
-            <p className="text-muted-foreground">አዳዲስ እቅዶችን ያክሉ፣ ያርትዑ፣ ወይም ይሰርዙ።</p>
+            <h1 className="font-headline text-xl font-bold tracking-tight">የባሕር ዳር ፈ/ገ/ቅ/ጊዮርጊስ ካቴድራል ሰንበት ት/ቤት</h1>
+            <p className="text-muted-foreground">የ{year} ዓ.ም የኪነጥበብ ክፍል የሥራ ዕቅድ</p>
         </div>
         <div className="flex items-center gap-2">
             <div className="relative">
