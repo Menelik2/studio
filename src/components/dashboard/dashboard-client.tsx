@@ -12,7 +12,7 @@ export function DashboardClient() {
 
     return (
         <>
-            <div className="fixed top-4 right-4 z-20">
+            <div className="fixed top-4 right-4 z-20 print:hidden">
                  <Button onClick={() => onOpen(null, 'create')}>
                     <PlusCircle className="mr-2 h-4 w-4" />
                     Add New Book

@@ -6,8 +6,8 @@ import { Book as BookIcon, Feather, Scroll, Theater, BookCopy, Folder, TrendingU
 import { Button } from '@/components/ui/button';
 import { BookFormDialog, useBookDialog } from '@/components/books/book-form-dialog';
 import { DeleteBookDialog, useDeleteBookDialog } from '@/components/books/delete-book-dialog';
-import { DashboardClient } from '@/components/dashboard/dashboard-client';
 import Link from 'next/link';
+import { DashboardClient } from '@/components/dashboard/dashboard-client';
 
 export default async function DashboardPage() {
   const books = await getBooks();
