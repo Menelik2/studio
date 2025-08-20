@@ -7,6 +7,8 @@ import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { addBook, deleteBook, updateBook, getPlanner1Items, savePlanner1Items, getPlanner2Items, savePlanner2Items, getPlannerSignatures, savePlannerSignatures } from './data';
 import type { Book, Planner1Item, Planner2Item, PlannerSignatures } from './definitions';
+import fs from 'fs/promises';
+import path from 'path';
 
 // Mock login action
 export async function loginAction(prevState: { error: string } | undefined, formData: FormData) {
@@ -100,6 +102,30 @@ export async function deleteBookAction(prevState: any, formData: FormData) {
   }
 }
 
+export async function uploadPdfAction(formData: FormData) {
+    const file = formData.get('file') as File;
+    if (!file || file.type !== 'application/pdf') {
+        return { success: false, error: 'Invalid file type. Please upload a PDF.' };
+    }
+
+    try {
+        const publicDir = path.join(process.cwd(), 'public', 'pdfs');
+        await fs.mkdir(publicDir, { recursive: true });
+
+        const filePath = path.join(publicDir, file.name);
+        const fileBuffer = Buffer.from(await file.arrayBuffer());
+        await fs.writeFile(filePath, fileBuffer);
+
+        const relativePath = `/pdfs/${file.name}`;
+        return { success: true, path: relativePath };
+
+    } catch (error) {
+        console.error('File upload failed:', error);
+        return { success: false, error: 'An unexpected error occurred during file upload.' };
+    }
+}
+
+
 // Planner 1 Actions
 export async function getPlanner1ItemsAction(): Promise<Planner1Item[]> {
   const items = await getPlanner1Items();
@@ -139,7 +165,7 @@ export async function getPlanner2ItemsAction(): Promise<Planner2Item[]> {
   return items;
 }
 
-export async function savePlanner2ItemsAction(items: Planner2Item[]): Promise<{success: boolean}> {
+export async function savePlanner2ItemsAction(items: Planner2Item[]): Promise<{success:boolean}> {
   try {
     await savePlanner2Items(items);
     revalidatePath('/dashboard/planner-2');

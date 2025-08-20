@@ -1,9 +1,9 @@
 
 'use client';
 
-import { useActionState, useEffect, useState, useCallback } from 'react';
+import { useActionState, useEffect, useState, useCallback, useTransition } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { updateBookAction, createBookAction } from '@/lib/actions';
+import { updateBookAction, createBookAction, uploadPdfAction } from '@/lib/actions';
 import type { Book } from '@/lib/definitions';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, Controller } from 'react-hook-form';
@@ -27,7 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Save, UploadCloud } from 'lucide-react';
+import { Save, UploadCloud, Loader2 } from 'lucide-react';
 import { useFormStatus } from 'react-dom';
 import { cn } from '@/lib/utils';
 
@@ -116,6 +116,8 @@ export function BookFormDialog() {
   const { toast } = useToast();
   const isEdit = !!book;
   const [isDragging, setIsDragging] = useState(false);
+  const [isUploading, startUploadTransition] = useTransition();
+
   
   const action = isEdit ? updateBookAction : createBookAction;
   
@@ -190,11 +192,26 @@ export function BookFormDialog() {
     if (files && files.length > 0) {
       const file = files[0];
       if (file.type === 'application/pdf') {
-        setValue('filePath', `/pdfs/${file.name}`, { shouldValidate: true });
-        toast({
-          title: 'File selected',
-          description: `"${file.name}". Make sure to place this file in the public/pdfs folder.`,
+        const formData = new FormData();
+        formData.append('file', file);
+
+        startUploadTransition(async () => {
+            const result = await uploadPdfAction(formData);
+            if(result.success) {
+                setValue('filePath', result.path, { shouldValidate: true });
+                toast({
+                    title: 'File Uploaded!',
+                    description: `Successfully uploaded "${file.name}"`
+                });
+            } else {
+                toast({
+                    variant: 'destructive',
+                    title: 'Upload Failed',
+                    description: result.error,
+                });
+            }
         });
+
       } else {
         toast({
           variant: 'destructive',
@@ -302,20 +319,30 @@ export function BookFormDialog() {
                     onDragOver={handleDragOver}
                     onDrop={handleDrop}
                     className={cn(
-                      'flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50 transition-colors',
+                      'relative flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50 transition-colors',
                       isDragging ? 'border-primary bg-muted/50' : 'border-input'
                     )}
                   >
-                    <UploadCloud className="h-8 w-8 text-muted-foreground" />
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      Drag & drop a PDF here
-                    </p>
-                    <p className="text-xs text-muted-foreground">(updates the path below)</p>
+                    {isUploading ? (
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Loader2 className="h-6 w-6 animate-spin" />
+                        <span>Uploading...</span>
+                      </div>
+                    ) : (
+                      <>
+                        <UploadCloud className="h-8 w-8 text-muted-foreground" />
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          Drag & drop a PDF here
+                        </p>
+                        <p className="text-xs text-muted-foreground">or provide a URL below</p>
+                      </>
+                    )}
                   </div>
                   <Input
                     id="filePath"
                     placeholder="/pdfs/example.pdf or https://..."
                     {...register('filePath')}
+                    disabled={isUploading}
                   />
                    {errors.filePath && <p className="text-red-500 text-xs text-right">{errors.filePath.message}</p>}
                    {formState.errors?.filePath && <p className="text-red-500 text-xs text-right">{formState.errors.filePath[0]}</p>}
