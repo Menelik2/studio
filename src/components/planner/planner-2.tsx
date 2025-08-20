@@ -99,7 +99,7 @@ export function Planner2() {
   const filteredItems = items.filter((item) => item.year === year.toString());
 
   return (
-    <div className="space-y-4 print:space-y-2 print-container">
+    <div className="space-y-4 print:space-y-2 print-container planner-2-print-container">
         <Planner2FormDialog />
         <div className="text-center space-y-2 print:space-y-1">
             <h1 className="font-bold text-lg">የባህር ዳር ፈ/ገ/ቅ/ጊዮርጊስ ካ/ሰ/ት/ቤት በበጀት አመቱ የተከናወነ የስራ ተግባራት የሪፖርት ማሳወቂያ ቅጽ</h1>

@@ -72,30 +72,54 @@ body {
 }
 
 @media print {
-  @page {
-    size: A4;
-    margin: 1cm;
-  }
   body {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
+
   .print-container {
     padding: 0;
   }
+  
   .print-table-container {
     overflow: visible !important;
     border: none !important;
     box-shadow: none !important;
   }
+
   .print-table {
     width: 100%;
     min-width: 0 !important;
-    font-size: 8px; /* Adjust font size for better fit on A4 */
     border-collapse: collapse;
   }
+
   .print-table th, .print-table td {
     padding: 4px 6px;
     border: 1px solid #ccc;
+  }
+  
+  /* Planner 1 Specific Styles */
+  .planner-1-print-container {
+    @page {
+      size: A4 landscape;
+      margin: 0.5cm;
+    }
+    .print-table {
+      font-size: 6px; /* Smaller font for landscape */
+    }
+    .print-table th, .print-table td {
+       padding: 2px 4px;
+    }
+  }
+
+  /* Planner 2 Specific Styles */
+  .planner-2-print-container {
+    @page {
+      size: A4 portrait;
+      margin: 1cm;
+    }
+    .print-table {
+      font-size: 8px;
+    }
   }
 }

@@ -148,7 +148,7 @@ export function Planner() {
     .filter(item => item.task.toLowerCase().includes(searchTerm.toLowerCase()));
 
   return (
-    <div className="space-y-4 print:space-y-2 print-container">
+    <div className="space-y-4 print:space-y-2 print-container planner-1-print-container">
       <PlannerFormDialog />
 
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between print:hidden">
@@ -182,6 +182,12 @@ export function Planner() {
             </Button>
         </div>
       </div>
+      
+       <div className="hidden print:block text-center mb-4">
+            <h1 className="font-bold text-lg">የባሕር ዳር ፈ/ገ/ቅ/ጊዮርጊስ ካቴድራል ሰንበት ት/ቤት</h1>
+            <h2 className="text-md">የ{year} ዓ.ም የኪነጥበብ ክፍል የሥራ ዕቅድ</h2>
+        </div>
+
 
       <div className="overflow-x-auto rounded-lg border print-table-container">
         <Table className="min-w-full whitespace-nowrap print-table">
@@ -234,7 +240,7 @@ export function Planner() {
               </TableRow>
             ) : (
                 filteredItems.map((item, index) => (
-                    <TableRow key={item.id}>
+                    <TableRow key={item.id} className="hover:bg-muted/50">
                         <TableCell className="border-r">{index + 1}</TableCell>
                         <TableCell className="border-r font-medium">{item.task}</TableCell>
                         <TableCell className="border-r">{item.measure}</TableCell>
