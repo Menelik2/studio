@@ -13,7 +13,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { motion } from 'framer-motion';
-import { AnimatedBackground } from '@/components/ui/animated-background';
 
 const content = {
   en: {
@@ -46,11 +45,7 @@ export default function WelcomePage() {
   };
 
   return (
-    <div className="relative flex flex-col min-h-screen bg-background text-foreground overflow-hidden">
-      <div className="absolute inset-0 z-0">
-        <AnimatedBackground />
-      </div>
-      
+    <div className="relative flex flex-col min-h-screen bg-background text-foreground overflow-hidden animated-gradient-bg">
       <motion.header 
         initial="hidden"
         animate="visible"
