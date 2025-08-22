@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { BookOpen, Phone, User, ArrowRight, BookCheck, Target, Goal, ShieldCheck, Info, Library, CalendarDays, ScrollText, MoreHorizontal, User as UserIcon, Wind, Heart } from 'lucide-react';
+import { BookOpen, Phone, User, BookCheck, Target, Goal, ShieldCheck, Info, Library, CalendarDays, ScrollText, MoreHorizontal, User as UserIcon, Wind, Heart } from 'lucide-react';
 import Link from 'next/link';
 import {
   Select,
@@ -87,7 +87,7 @@ export default function WelcomePage() {
       "6. ኢየሱስ፣ ቁስቋም、 አርሴማ",
       "7.ሥላሴ፣ ፊሊሞና、 አብላዮናስ",
       "8.ማቴዎስ፣ ዮልያኖስ、 አባ ኪሮስ",
-      "9. ቶማስ ሐዋሪያ፣ እንድርያስ ሐዋርያ、 አውሳብዮስ、 አባ ሰማእታት",
+      "9. ቶማስ ሐዋሪያ፣ እንድርያስ ሐዋርያ፣ አውሳብዮስ、 አባ ሰማእታት",
       "10.በዓለ መስቀሉ ለእግዚእን",
       "***",
       "11.ሃና ወያቄም፣ ፋሲለደስ ሰማዕት",
@@ -110,9 +110,9 @@ export default function WelcomePage() {
       "***",
       "26. ሆሴዕ ነብይ، ሳዶቅ ሰማዕት",
       "27.መድኃኔዓለም، ሕዝቂያስ ነብይ، አባ ዮሐንስ",
-      "28.አማኑኤል، ቆስጠንጢኖስ، አብርሃም",
+      "28.አማኑኤል፣ ቆስጠንጢኖስ፣ አብርሃም",
       "29.በዓል ወልድ، ሰሙኤል ዘወጋግ",
-      "30.መጥምቁ ዮሐንስ، ማርቆስ ወንጌላዊ"
+      "30.መጥምቁ ዮሐንስ፣ ማርቆስ ወንጌላዊ"
   ];
   
   const trinityItems = [
@@ -142,6 +142,37 @@ export default function WelcomePage() {
         "አይወለድም፣ አይወልድም፣ አያሰርፅም",
         "መንፈስ ቅዱስ፡ እስትንፋስ፣ “በውስጣችን ያለው'አምላክ፣ የአብ ምክሩ"
       ]
+    }
+  ];
+
+  const proclaimedFasts = [
+    {
+      title: "፩ኛ- ጾመ ነቢያት/ የነቢያት",
+      content: "ከጌታችን ከአምላካችንና ከመድኃኒታችን ከኢየሱስ ክርስቶስ የልደት ቀን በፊት ባሉት አርባ ቀናት ውስጥየሚጾም ነው።"
+    },
+    {
+      title: "፪ኛ- ጾመ ነነዌ/የነነዌ ጾም/",
+      content: "ሕዝበ ነነዌ የጾሙት እና መልስ ያገኙበት ለሦስት ቀናት የሚጾም ነው።"
+    },
+    {
+      title: "፫ኛ- ዐብይ ጾም/ጾመ ኢየሱስ/",
+      content: "አንዲሁም ሁዳዴ ወይንም ጾመ አርባ ይባላል።ጌታችን አምላካችንና መድኃኒታችን ኢየሱስ ክርስቶስ በገዳመ ቆሮንቶስ ለአርባ ቀናት የጾመው ነው። ከጾሙ መጀመርያ ያለው ሳምንት ጾመ ሕርቃል እንዲሁም የመጨረሻው ሳምንትን ሰሞነ ሕማማትን ጨምሮ ለስምንት ሳምንታት የሚጾም ነው።\nየዐቢይ ጾም ሳምንታት\n1ኛው እሁድ ዘወረደ /ጾመ ሕርቃል / 2ኛው እሁድ ቅድስት 3ኛው እሁድ ምኩራብ 4ኛው እሁድ መጻጉዕ 5ኛው እሁድ ደብረዘይት 6ኛው እሁድ ገብርሔር 7ኛው እሁድ ኒቆዲሞስ 8ኛው እሁድ ሆሳዕና 9ኛው እሁድ ትንሳኤ ናቸው።"
+    },
+    {
+      title: "፬ኛ- ጾመ ሐዋርያት/የሐዋርያት ጾም/",
+      content: "ከበዐለ ጰራቅሊጦስ ማግስት ከሰኞ ቀን ጀምሮ የሐዋርያው ቅዱስ ጴጥሮስና የሐዋርያው ቅዱስ ጳውሎስ የመታሠቢያ በዓል እስከሚከበርበት ሐምሌ ፭ ቀን ድረስ ይጾማል። ይኽ ጾም እንደ ሌሎቹ አጽዋማት የተወሰነ ቁጥር የለውም። የትንሣኤ በዓል በመጀመርያው የሚያዝያ ወር ቀናት ሲውል እና በመጨረሻው የሚያዝያ ወራት ሲውል ቁጥሩ ከፍ እና ዝቅ ይላል። ሆኖም ግን በጣም ከፍ ሲል ለ፵፱ ቀናት በጣም ዝቅ ሲል ለ፲ ፭ ቀናት የሚጾም ነው።"
+    },
+    {
+      title: "፭ኛ- ጾመ ፍልሰታ/ጾመ ማርያም/",
+      content: "የእመቤታችን የትንሣኤዋ በዓል የሚከበርበት፤ ለሁለት ሳምንታት ያህል የሚፆም ነው።"
+    },
+    {
+      title: "፮ኛ- ጾመ ድኅነት፡- /ረቡዕና ዓርብ/",
+      content: "ከትንሣኤ እስከ በዓለ ጰራቅሊጦስ ባሉት ረቡዕና ዓርብ ውጪ ዓመቱን በሙሉ ባሉት ረቡዕና ዓርብቀናት ይጾማል። ምክንያቱም ጌታን ለመያዝ ረቡዕ መክረው ዓርብ ስለሰቀሉት መከራውን ለማሰብየሚጾም ነው።"
+    },
+    {
+      title: "፯ኛ- ጾመ ገሐድ/ጾመ ጋድ/",
+      content: "በየዓመቱ ከበዓለ ጥምቀት በፊት ያለው ቀን ይጾምና የጥምቀት ዕለት ግን ረቡዕም ሆነ አርብ ቢውል አይጾምም። ስለዚህም ጾመ ገሐድ ለአንድ ቀን የሚጾም ነው።"
     }
   ];
 
@@ -338,7 +369,7 @@ export default function WelcomePage() {
                 animate="visible"
                 variants={FADE_IN_UP_VARIANTS}
                 transition={{ duration: 0.6, ease: 'easeOut', delay: 1.2 }}
-                className="w-full group md:col-span-2 lg:col-span-1"
+                className="w-full group"
             >
                 <Card className="bg-background/80 backdrop-blur-sm shadow-2xl h-80 overflow-hidden relative transition-all duration-300 ease-in-out group-hover:h-auto">
                     <CardHeader className="text-center">
@@ -402,6 +433,44 @@ export default function WelcomePage() {
                     </div>
                 </Card>
             </motion.div>
+            <motion.div
+                initial="hidden"
+                animate="visible"
+                variants={FADE_IN_UP_VARIANTS}
+                transition={{ duration: 0.6, ease: 'easeOut', delay: 1.4 }}
+                className="w-full group"
+            >
+                <Card className="bg-background/80 backdrop-blur-sm shadow-2xl h-80 overflow-hidden relative transition-all duration-300 ease-in-out group-hover:h-auto">
+                    <CardHeader className="text-center">
+                        <CardTitle className="font-headline text-2xl font-bold text-primary">
+                            ፯ቱ የአዋጅ አጽዋማት
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-sm text-foreground mb-4">በቅድስት አገራችን በኢትዮጵያ መላው የኦርቶዶክስ ተዋሕዶ ቤተ ክርስቲያን ምእመናን በማኅበር የሚጾማቸው ሰባት የአዋጅ አጽዋማት አሉ።</p>
+                        <Accordion type="single" collapsible className="w-full">
+                           {proclaimedFasts.map((item, index) => (
+                            <AccordionItem value={`item-${index}`} key={index}>
+                                <AccordionTrigger>
+                                  <div className="flex items-center gap-2">
+                                    <ScrollText className="h-4 w-4 text-primary"/>
+                                    {item.title}
+                                  </div>
+                                </AccordionTrigger>
+                                <AccordionContent>
+                                    <p className="text-sm text-foreground whitespace-pre-wrap">{item.content}</p>
+                                </AccordionContent>
+                            </AccordionItem>
+                           ))}
+                        </Accordion>
+                    </CardContent>
+                     <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent group-hover:hidden" />
+                     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 text-muted-foreground text-sm group-hover:hidden">
+                        <MoreHorizontal className="h-4 w-4" />
+                        <span>Read More</span>
+                    </div>
+                </Card>
+            </motion.div>
         </div>
       </main>
       <motion.footer 
@@ -425,5 +494,7 @@ export default function WelcomePage() {
     </div>
   );
 }
+
+    
 
     
