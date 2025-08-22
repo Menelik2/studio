@@ -9,7 +9,7 @@ export default function LoginPage() {
         <div className="text-center text-white">
           <BookOpen className="mx-auto h-12 w-12" />
           <h1 className="mt-4 font-headline text-3xl font-bold tracking-tight">
-            እንኳን በደህና መጡ
+            እንኳን በደኅና መጡ !
           </h1>
           <p className="mt-2 text-lg text-white/80">
             ባህር ዳር ፈ/ገ/ቅ/ጊዮርጊስ ካ/ሰ/ት/ቤት
