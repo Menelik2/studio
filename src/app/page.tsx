@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { BookOpen, Phone, User, ArrowRight, BookCheck, Target, Goal } from 'lucide-react';
+import { BookOpen, Phone, User, ArrowRight, BookCheck, Target, Goal, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 import {
   Select,
@@ -67,6 +67,16 @@ export default function WelcomePage() {
     "የሰ/ት/ቤቱ አባላት ያላቸውን መክሊት (ፀጋ) ተጠቅመው ቤተክርስትያንን እንዲያገለግሉ ማድረግ።",
     "ወጣቶች እና ህፃናት የሃይማኖታቸውን ስርአት ፣ ትውፊት እና ዶግማ እንዲያውቁ ፤በስነምግባራቸውም የታነጹ እና ክርስትያናዊ ግብረገብ የተላበሱ እንዲሆኑ ማድረግ።",
     'ሃይማኖታቸውን አፅንተው እንዲይዙና እንዲጠብቁ ማድረግ ። 2ኛ ጢሞ 4÷7-8 "ሃይማኖቴን ጠብቄአለሁ ወደ ፊት የፅድቅ አክሊል ተዘጋጅቶልኛል"',
+  ];
+  
+  const sacramentsItems = [
+    "ምሥጢረ ጥምቀት፡- መንፈሳዊ ልደት",
+    "ምሥጢረ ሜሮን፡- መንፈሳዊ ዕድገት /በመንፈስ ቅዱስ መበልጸግ/",
+    "ምሥጢረ ቁርባን፡- መንፈሳዊ ምግብ /የዘለአለም ሕይወት/",
+    "ምሥጢረ ንስሐ፡- መንፈሳዊ ድኅነት /ሥርየተ ኀጢአት/",
+    "ምሥጢረ ተክሊል፡- የጋብቻ ጽናት",
+    "ምሥጢረ ክህነት፡- የማሠርና የመፍታት ፣ የማስተማር ፣ የማደስ ፣ የማጥመቅ ፣ ሥልጣን /መንፈሳዊ ኃይል/",
+    "ምሥጢረ ቀንዲል፡- ሥጋዊና መንፈሳዊ ኃይል /ከበሽታ መፈወስ/",
   ];
 
 
@@ -202,6 +212,29 @@ export default function WelcomePage() {
                         </CardFooter>
                     </Card>
                 </motion.div>
+                 <motion.div
+                    initial="hidden"
+                    animate="visible"
+                    variants={FADE_IN_UP_VARIANTS}
+                    transition={{ duration: 0.6, ease: 'easeOut', delay: 0.8 }}
+                    className="w-full"
+                >
+                    <Card className="bg-background/80 backdrop-blur-sm shadow-2xl h-full">
+                        <CardHeader className="text-center">
+                            <CardTitle className="font-headline text-2xl font-bold text-primary">
+                                ሰባቱ ምሥጢራተ ቤተ ክርስቲያን
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                            {sacramentsItems.map((item, index) => (
+                               <div key={index} className="flex items-start gap-3 p-2 text-sm">
+                                   <ShieldCheck className="h-4 w-4 text-primary mt-1 flex-shrink-0" />
+                                   <span className="text-foreground">{item}</span>
+                               </div>
+                            ))}
+                        </CardContent>
+                    </Card>
+                </motion.div>
             </div>
         </div>
       </main>
@@ -226,5 +259,7 @@ export default function WelcomePage() {
     </div>
   );
 }
+
+    
 
     
