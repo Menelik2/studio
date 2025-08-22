@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { BookOpen, Phone, User, ArrowRight, BookCheck, Target, Goal, ShieldCheck, Info } from 'lucide-react';
+import { BookOpen, Phone, User, ArrowRight, BookCheck, Target, Goal, ShieldCheck, Info, Library } from 'lucide-react';
 import Link from 'next/link';
 import {
   Select,
@@ -64,6 +64,14 @@ export default function WelcomePage() {
     "ምሥጢረ ቀንዲል፡- ሥጋዊና መንፈሳዊ ኃይል /ከበሽታ መፈወስ/",
   ];
 
+  const fivePillarsItems = [
+      "ምሥጢረ ሥላሴ (የሥላሴን አንድነትና ሦስትነት)",
+      "ምሥጢረ ሥጋዌ (የአምላክን ሰው መሆን)",
+      "ምሥጢረ ጥምቀት (ስለ ዳግም መወለድ)",
+      "ምሥጢረ ቁርባን (ስለ ክርስቶስ ሥጋና ደም)",
+      "ምሥጢረ ትንሣኤ ሙታን (ስለ ዳግም ምጽዓት)",
+  ];
+
 
   return (
     <div className="relative flex flex-col min-h-screen bg-background text-foreground overflow-hidden animated-gradient-bg">
@@ -121,7 +129,7 @@ export default function WelcomePage() {
             </motion.p>
         </motion.div>
         
-        <div className="grid md:grid-cols-2 items-start justify-center gap-8 w-full max-w-4xl">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 items-start justify-center gap-8 w-full max-w-6xl">
             <motion.div
                 initial="hidden"
                 animate="visible"
@@ -153,7 +161,7 @@ export default function WelcomePage() {
                 initial="hidden"
                 animate="visible"
                 variants={FADE_IN_UP_VARIANTS}
-                transition={{ duration: 0.6, ease: 'easeOut', delay: 1.0 }}
+                transition={{ duration: 0.6, ease: 'easeOut', delay: 0.6 }}
                 className="w-full"
             >
                 <Card className="bg-background/80 backdrop-blur-sm shadow-2xl h-full">
@@ -166,6 +174,33 @@ export default function WelcomePage() {
                         {sacramentsItems.map((item, index) => (
                            <div key={index} className="flex items-start gap-3 p-2 text-sm">
                                <ShieldCheck className="h-4 w-4 text-primary mt-1 flex-shrink-0" />
+                               <span className="text-foreground">{item}</span>
+                           </div>
+                        ))}
+                    </CardContent>
+                </Card>
+            </motion.div>
+
+             <motion.div
+                initial="hidden"
+                animate="visible"
+                variants={FADE_IN_UP_VARIANTS}
+                transition={{ duration: 0.6, ease: 'easeOut', delay: 0.8 }}
+                className="w-full"
+            >
+                <Card className="bg-background/80 backdrop-blur-sm shadow-2xl h-full">
+                    <CardHeader className="text-center">
+                        <CardTitle className="font-headline text-2xl font-bold text-primary">
+                            አምስቱ አዕማደ ሚስጥራት
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="text-sm text-foreground text-center space-y-2">
+                            <p>አምድ ፤ ማለት ምሰሶ ማለት ሲሆን አእማድ ማለት ምሰሶዎች ማለት ነው ። ቤት በአምድ (በኮለም) እንደሚፀና ፤ ሃይማኖትም በነዚህ ምሥጢራት ተጠቃሎ ይገለጻል ፤ ምዕመናንም እነዚህን ምሥጢራት በመማር ፀንተው ይኖራሉ ።</p>
+                        </div>
+                         {fivePillarsItems.map((item, index) => (
+                           <div key={index} className="flex items-start gap-3 p-2 text-sm">
+                               <Library className="h-4 w-4 text-primary mt-1 flex-shrink-0" />
                                <span className="text-foreground">{item}</span>
                            </div>
                         ))}
