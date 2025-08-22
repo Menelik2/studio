@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { BookOpen, Phone, User, ArrowRight, BookCheck, Target, Goal, ShieldCheck, Info, Library, CalendarDays } from 'lucide-react';
+import { BookOpen, Phone, User, ArrowRight, BookCheck, Target, Goal, ShieldCheck, Info, Library, CalendarDays, ScrollText, MoreHorizontal } from 'lucide-react';
 import Link from 'next/link';
 import {
   Select,
@@ -15,6 +15,8 @@ import {
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { cn } from '@/lib/utils';
 
 const content = {
   en: {
@@ -105,10 +107,10 @@ export default function WelcomePage() {
       "25.መርቆሬዎስ፣ አኒፍኖስ",
       "***",
       "26. ሆሴዕ ነብይ፣ ሳዶቅ ሰማዕት",
-      "27.መድኃኔዓለም፣ ሕዝቂያስ ነብይ፣ አባ ዮሐንስ",
-      "28.አማኑኤል፣ ቆስጠንጢኖስ፣ አብርሃም",
-      "29.በዓል ወልድ፣ ሰሙኤል ዘወጋግ",
-      "30.መጥምቁ ዮሐንስ፣ ማርቆስ ወንጌላዊ"
+      "27.መድኃኔዓለም، ሕዝቂያስ ነብይ، አባ ዮሐንስ",
+      "28.አማኑኤል، ቆስጠንጢኖስ، አብርሃም",
+      "29.በዓል ወልድ، ሰሙኤል ዘወጋግ",
+      "30.መጥምቁ ዮሐንስ، ማርቆስ ወንጌላዊ"
   ];
 
 
@@ -174,9 +176,9 @@ export default function WelcomePage() {
                 animate="visible"
                 variants={FADE_IN_UP_VARIANTS}
                 transition={{ duration: 0.6, ease: 'easeOut', delay: 0.4 }}
-                className="w-full"
+                className="w-full group"
             >
-                <Card className="bg-background/80 backdrop-blur-sm shadow-2xl h-full">
+                <Card className="bg-background/80 backdrop-blur-sm shadow-2xl h-80 overflow-hidden relative transition-all duration-300 ease-in-out group-hover:h-auto">
                     <CardHeader className="text-center">
                         <CardTitle className="font-headline text-2xl font-bold text-primary">
                             ኦርቶዶክሳዊ ትምህርተ ሃይማኖት (ዶግማ)
@@ -193,6 +195,11 @@ export default function WelcomePage() {
                     <CardFooter className="justify-center">
                         <p className="text-sm text-muted-foreground font-semibold">ማንኛውም ሰው መሳተፍ ይችላል</p>
                     </CardFooter>
+                    <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent group-hover:hidden" />
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 text-muted-foreground text-sm group-hover:hidden">
+                        <MoreHorizontal className="h-4 w-4" />
+                        <span>Read More</span>
+                    </div>
                 </Card>
             </motion.div>
             
@@ -201,9 +208,9 @@ export default function WelcomePage() {
                 animate="visible"
                 variants={FADE_IN_UP_VARIANTS}
                 transition={{ duration: 0.6, ease: 'easeOut', delay: 0.6 }}
-                className="w-full"
+                className="w-full group"
             >
-                <Card className="bg-background/80 backdrop-blur-sm shadow-2xl h-full">
+                <Card className="bg-background/80 backdrop-blur-sm shadow-2xl h-80 overflow-hidden relative transition-all duration-300 ease-in-out group-hover:h-auto">
                     <CardHeader className="text-center">
                         <CardTitle className="font-headline text-2xl font-bold text-primary">
                             ሰባቱ ምሥጢራተ ቤተ ክርስቲያን
@@ -217,6 +224,11 @@ export default function WelcomePage() {
                            </div>
                         ))}
                     </CardContent>
+                    <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent group-hover:hidden" />
+                     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 text-muted-foreground text-sm group-hover:hidden">
+                        <MoreHorizontal className="h-4 w-4" />
+                        <span>Read More</span>
+                    </div>
                 </Card>
             </motion.div>
 
@@ -225,9 +237,9 @@ export default function WelcomePage() {
                 animate="visible"
                 variants={FADE_IN_UP_VARIANTS}
                 transition={{ duration: 0.6, ease: 'easeOut', delay: 0.8 }}
-                className="w-full"
+                className="w-full group"
             >
-                <Card className="bg-background/80 backdrop-blur-sm shadow-2xl h-full">
+                <Card className="bg-background/80 backdrop-blur-sm shadow-2xl h-80 overflow-hidden relative transition-all duration-300 ease-in-out group-hover:h-auto">
                     <CardHeader className="text-center">
                         <CardTitle className="font-headline text-2xl font-bold text-primary">
                             አምስቱ አዕማደ ሚስጥራት
@@ -244,6 +256,11 @@ export default function WelcomePage() {
                            </div>
                         ))}
                     </CardContent>
+                     <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent group-hover:hidden" />
+                     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 text-muted-foreground text-sm group-hover:hidden">
+                        <MoreHorizontal className="h-4 w-4" />
+                        <span>Read More</span>
+                    </div>
                 </Card>
             </motion.div>
              <motion.div
@@ -251,28 +268,37 @@ export default function WelcomePage() {
                 animate="visible"
                 variants={FADE_IN_UP_VARIANTS}
                 transition={{ duration: 0.6, ease: 'easeOut', delay: 1.0 }}
-                className="w-full"
+                className="w-full group"
             >
-                <Card className="bg-background/80 backdrop-blur-sm shadow-2xl h-full">
+                <Card className="bg-background/80 backdrop-blur-sm shadow-2xl h-80 overflow-hidden relative transition-all duration-300 ease-in-out group-hover:h-auto">
                     <CardHeader className="text-center">
                         <CardTitle className="font-headline text-2xl font-bold text-primary">
                            ከ1 እስክ 30 ያሉ የኢትዮጵያ ኦርቶዶክስ በዓላት!!!
                         </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-2 text-sm">
-                        {holidaysList.map((item, index) => (
-                          <React.Fragment key={index}>
-                            {item === '***' ? (
-                                <Separator className="my-2" />
-                            ) : (
-                               <div className="flex items-start gap-3 p-1">
-                                   <CalendarDays className="h-4 w-4 text-primary mt-1 flex-shrink-0" />
-                                   <span className="text-foreground">{item}</span>
-                               </div>
-                            )}
-                          </React.Fragment>
-                        ))}
+                    <CardContent>
+                        <ScrollArea className="h-full">
+                             <div className="space-y-2 text-sm">
+                                {holidaysList.map((item, index) => (
+                                <React.Fragment key={index}>
+                                    {item === '***' ? (
+                                        <Separator className="my-2" />
+                                    ) : (
+                                    <div className="flex items-start gap-3 p-1">
+                                        <CalendarDays className="h-4 w-4 text-primary mt-1 flex-shrink-0" />
+                                        <span className="text-foreground">{item}</span>
+                                    </div>
+                                    )}
+                                </React.Fragment>
+                                ))}
+                            </div>
+                        </ScrollArea>
                     </CardContent>
+                     <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent group-hover:hidden" />
+                     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 text-muted-foreground text-sm group-hover:hidden">
+                        <MoreHorizontal className="h-4 w-4" />
+                        <span>Read More</span>
+                    </div>
                 </Card>
             </motion.div>
         </div>
@@ -298,3 +324,5 @@ export default function WelcomePage() {
     </div>
   );
 }
+
+    
