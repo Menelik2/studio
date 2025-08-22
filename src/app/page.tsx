@@ -116,34 +116,25 @@ export default function WelcomePage() {
             initial="hidden"
             animate="visible"
             variants={FADE_IN_UP_VARIANTS}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-            className="w-full text-center mb-12"
+            transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 }}
+            className="w-full max-w-4xl bg-background/80 backdrop-blur-sm p-8 rounded-lg shadow-2xl text-center self-center mb-12"
         >
             <motion.h2 
             variants={FADE_IN_UP_VARIANTS}
-            className="text-3xl md:text-4xl font-headline font-bold bg-gradient-to-r from-primary to-chart-4 bg-clip-text text-transparent [text-shadow:2px_2px_4px_rgba(0,0,0,0.2)]"
+            className="text-3xl md:text-4xl font-headline font-bold bg-gradient-to-r from-primary to-chart-4 bg-clip-text text-transparent [text-shadow:2px_2px_4px_rgba(0,0,0,0.2)] mb-4"
             >
             {currentContent.title}
             </motion.h2>
-        </motion.div>
-        
-        <div className="grid md:grid-cols-2 items-start justify-center gap-8 w-full max-w-6xl">
-            <motion.div 
-              initial="hidden"
-              animate="visible"
-              variants={FADE_IN_UP_VARIANTS}
-              transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 }}
-              className="w-full bg-background/80 backdrop-blur-sm p-8 rounded-lg shadow-2xl text-center self-center"
-            >
-              <motion.p 
+            <motion.p 
                 variants={FADE_IN_UP_VARIANTS}
                 className="text-lg md:text-xl text-muted-foreground"
-              >
+            >
                 {currentContent.description}
-              </motion.p>
-            </motion.div>
-            
-             <motion.div
+            </motion.p>
+        </motion.div>
+        
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 items-start justify-center gap-8 w-full max-w-7xl">
+            <motion.div
                 initial="hidden"
                 animate="visible"
                 variants={FADE_IN_UP_VARIANTS}
@@ -169,9 +160,7 @@ export default function WelcomePage() {
                     </CardFooter>
                 </Card>
             </motion.div>
-        </div>
 
-        <div className="grid md:grid-cols-3 items-start justify-center gap-8 w-full max-w-6xl mt-8">
             <motion.div
                 initial="hidden"
                 animate="visible"
@@ -269,3 +258,5 @@ export default function WelcomePage() {
     </div>
   );
 }
+
+    
