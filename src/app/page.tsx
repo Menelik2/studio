@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { BookOpen, Phone, User } from 'lucide-react';
+import { BookOpen, Phone, User, ArrowRight, BookCheck } from 'lucide-react';
 import Link from 'next/link';
 import {
   Select,
@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { motion } from 'framer-motion';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 
 const content = {
   en: {
@@ -43,6 +44,13 @@ export default function WelcomePage() {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0 },
   };
+  
+  const cardItems = [
+    "አዕማደ ምስጢር",
+    "ነገረ ሃይማኖት መግቢያ",
+    "የነገረ ድኅነት መግቢያ",
+    "እና ሌሎችም"
+  ];
 
   return (
     <div className="relative flex flex-col min-h-screen bg-background text-foreground overflow-hidden animated-gradient-bg">
@@ -75,28 +83,57 @@ export default function WelcomePage() {
           </Button>
         </div>
       </motion.header>
-      <main className="relative z-10 flex-grow flex flex-col items-center justify-center text-center p-8">
-        <motion.div 
-          initial="hidden"
-          animate="visible"
-          variants={FADE_IN_UP_VARIANTS}
-          transition={{ duration: 0.6, ease: "easeOut", staggerChildren: 0.2 }}
-          whileHover={{ scale: 1.02, y: -5, transition: { type: 'spring', stiffness: 300 } }}
-          className="max-w-4xl bg-background/80 backdrop-blur-sm p-8 rounded-lg shadow-2xl"
-        >
-          <motion.h2 
-            variants={FADE_IN_UP_VARIANTS}
-            className="text-3xl md:text-4xl font-headline font-bold mb-4 bg-gradient-to-r from-primary to-chart-4 bg-clip-text text-transparent [text-shadow:2px_2px_4px_rgba(0,0,0,0.2)]"
-          >
-            {currentContent.title}
-          </motion.h2>
-          <motion.p 
-            variants={FADE_IN_UP_VARIANTS}
-            className="text-lg md:text-xl text-muted-foreground"
-          >
-            {currentContent.description}
-          </motion.p>
-        </motion.div>
+      <main className="relative z-10 flex-grow flex items-center justify-center p-8">
+        <div className="flex flex-col md:flex-row items-center justify-center gap-8 w-full max-w-6xl">
+            <motion.div 
+              initial="hidden"
+              animate="visible"
+              variants={FADE_IN_UP_VARIANTS}
+              transition={{ duration: 0.6, ease: "easeOut", staggerChildren: 0.2 }}
+              whileHover={{ scale: 1.02, y: -5, transition: { type: 'spring', stiffness: 300 } }}
+              className="w-full md:w-1/2 bg-background/80 backdrop-blur-sm p-8 rounded-lg shadow-2xl text-center"
+            >
+              <motion.h2 
+                variants={FADE_IN_UP_VARIANTS}
+                className="text-3xl md:text-4xl font-headline font-bold mb-4 bg-gradient-to-r from-primary to-chart-4 bg-clip-text text-transparent [text-shadow:2px_2px_4px_rgba(0,0,0,0.2)]"
+              >
+                {currentContent.title}
+              </motion.h2>
+              <motion.p 
+                variants={FADE_IN_UP_VARIANTS}
+                className="text-lg md:text-xl text-muted-foreground"
+              >
+                {currentContent.description}
+              </motion.p>
+            </motion.div>
+            
+            <motion.div
+                initial="hidden"
+                animate="visible"
+                variants={FADE_IN_UP_VARIANTS}
+                transition={{ duration: 0.6, ease: 'easeOut', delay: 0.2 }}
+                className="w-full md:w-1/2"
+            >
+                <Card className="bg-background/80 backdrop-blur-sm shadow-2xl">
+                    <CardHeader className="text-center">
+                        <CardTitle className="font-headline text-2xl font-bold text-primary">
+                            ኦርቶዶክሳዊ ትምህርተ ሃይማኖት (ዶግማ)
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                        {cardItems.map((item, index) => (
+                           <div key={index} className="flex items-center gap-3 p-3 rounded-lg bg-primary/10 border border-primary/20">
+                               <BookCheck className="h-5 w-5 text-primary" />
+                               <span className="font-medium text-foreground">{item}</span>
+                           </div>
+                        ))}
+                    </CardContent>
+                    <CardFooter className="justify-center">
+                        <p className="text-sm text-muted-foreground font-semibold">ማንኛውም ሰው መሳተፍ ይችላል</p>
+                    </CardFooter>
+                </Card>
+            </motion.div>
+        </div>
       </main>
       <motion.footer 
         initial="hidden"
@@ -119,4 +156,3 @@ export default function WelcomePage() {
     </div>
   );
 }
-
