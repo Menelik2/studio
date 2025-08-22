@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { BookOpen, Phone, User, ArrowRight, BookCheck, Target, Goal, ShieldCheck, Info, Library, CalendarDays, ScrollText, MoreHorizontal } from 'lucide-react';
+import { BookOpen, Phone, User, ArrowRight, BookCheck, Target, Goal, ShieldCheck, Info, Library, CalendarDays, ScrollText, MoreHorizontal, User as UserIcon, Wind, Heart } from 'lucide-react';
 import Link from 'next/link';
 import {
   Select,
@@ -17,6 +17,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+
 
 const content = {
   en: {
@@ -83,20 +85,20 @@ export default function WelcomePage() {
       "5.ጴጥሮስ ወጳውሎስ፣ አቡነ ገብረ መንፈስ ቅዱስ",
       "***",
       "6. ኢየሱስ፣ ቁስቋም፣ አርሴማ",
-      "7.ሥላሴ፣ ፊሊሞና፣ አብላዮናስ",
+      "7.ሥላሴ፣ ፊሊሞና、 አብላዮናስ",
       "8.ማቴዎስ፣ ዮልያኖስ፣ አባ ኪሮስ",
-      "9. ቶማስ ሐዋሪያ፣ እንድርያስ ሐዋርያ፣ አውሳብዮስ፣ አባ ሰማእታት",
+      "9. ቶማስ ሐዋሪያ፣ እንድርያስ ሐዋርያ、 አውሳብዮስ、 አባ ሰማእታት",
       "10.በዓለ መስቀሉ ለእግዚእን",
       "***",
       "11.ሃና ወያቄም፣ ፋሲለደስ ሰማዕት",
-      "12. ቅዱስ ሚካኤል፣ ክርስቶስ ሠምራ",
+      "12. ቅዱስ ሚካኤል、 ክርስቶስ ሠምራ",
       "13.እግዚአብሔር ለአብ፣ ቅዱስ ሩፋኤል ሊቀ መላእክት",
       "14.አባ አረጋዊ፣ አባ ገብር ክርስቶስ፣ ድምጥያኖስ ሰማዕት",
-      "15. ቂርቆስና ኢየሉጣ፣ ሰልፋኮስ",
+      "15. ቂርቆስና ኢየሉጣ، ሰልፋኮስ",
       "***",
-      "16.ኪዳነ ምሕረት፣ ሚካኤል ጳጳስ",
+      "16.ኪዳነ ምሕረት، ሚካኤል ጳጳስ",
       "17.ቅዱስ እስጢፋኖስ፣ ሉቃስ ዘዓም ብርሃን",
-      "18.ፊሊጶስ ሐዋርያ፣ ኤስድሮስ ሰማዕት፣ ኤዎስጣጤዎስ ሰማዕት",
+      "18.ፊሊጶስ ሐዋርያ، ኤስድሮስ ሰማዕት، ኤዎስጣጤዎስ ሰማዕት",
       "19.ቅዱስ ገብርኤል፣ አርቃዲዎስ",
       "20. ጽንሰታ ለማርያም፣ ነብዩ ኤልሳ፣ ሐጌ ነብይ፣ አባ ሰላም መተርጉም",
       "***",
@@ -104,13 +106,43 @@ export default function WelcomePage() {
       "22.ቅዱስ ዑራኤል፣ ያዕቆብ ምሥራቃዊ፣ ድቅስዮስ",
       "23. ቅዱስ ጊዮርጊስ፣ ለጊዮስ ሰማዕት",
       "24.አቡነ ተክለ ሃይማኖት",
-      "25.መርቆሬዎስ፣ አኒፍኖስ",
+      "25.መርቆሬዎስ، አኒፍኖስ",
       "***",
-      "26. ሆሴዕ ነብይ፣ ሳዶቅ ሰማዕት",
+      "26. ሆሴዕ ነብይ، ሳዶቅ ሰማዕት",
       "27.መድኃኔዓለም، ሕዝቂያስ ነብይ، አባ ዮሐንስ",
       "28.አማኑኤል، ቆስጠንጢኖስ، አብርሃም",
       "29.በዓል ወልድ، ሰሙኤል ዘወጋግ",
       "30.መጥምቁ ዮሐንስ، ማርቆስ ወንጌላዊ"
+  ];
+  
+  const trinityItems = [
+    {
+      title: "አብ",
+      icon: Heart,
+      content: [
+        "ወላዲ (አባት)፣ አሥራፂ",
+        "አይወለድም፣ አይሰርፅም",
+        "አብ፡ አባት፣ ልብ፣ 'ከእኛ በላይ ያለው' አምላክ"
+      ]
+    },
+    {
+      title: "ወልድ",
+      icon: UserIcon,
+      content: [
+        "ተወላዲ (ልጅ)",
+        "አይወልድም፣ አያሰርፅም፣ አይሰርጽም",
+        "ወልድ፡ ልጅ(የባሕርይ)፣ ቃል፣ 'ከእኛ ጋር ያለው'አምላክ፣ የእግዚአብሔር ክንዱ፣ የአብ ቀኝ እጅ"
+      ]
+    },
+    {
+      title: "መንፈስ ቅዱስ",
+      icon: Wind,
+      content: [
+        "ሠራፂ (የሠረፀ)",
+        "አይወለድም፣ አይወልድም፣ አያሰርፅም",
+        "መንፈስ ቅዱስ፡ እስትንፋስ፣ “በውስጣችን ያለው'አምላክ፣ የአብ ምክሩ"
+      ]
+    }
   ];
 
 
@@ -170,7 +202,7 @@ export default function WelcomePage() {
             </motion.p>
         </motion.div>
         
-        <div className="grid md:grid-cols-2 lg:grid-cols-2 items-start justify-center gap-8 w-full max-w-6xl">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 items-start justify-center gap-8 w-full max-w-6xl">
             <motion.div
                 initial="hidden"
                 animate="visible"
@@ -301,6 +333,47 @@ export default function WelcomePage() {
                     </div>
                 </Card>
             </motion.div>
+            <motion.div
+                initial="hidden"
+                animate="visible"
+                variants={FADE_IN_UP_VARIANTS}
+                transition={{ duration: 0.6, ease: 'easeOut', delay: 1.2 }}
+                className="w-full group md:col-span-2 lg:col-span-1"
+            >
+                <Card className="bg-background/80 backdrop-blur-sm shadow-2xl h-80 overflow-hidden relative transition-all duration-300 ease-in-out group-hover:h-auto">
+                    <CardHeader className="text-center">
+                        <CardTitle className="font-headline text-2xl font-bold text-primary">
+                            ምሥጢረ ሥላሴ
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <Accordion type="single" collapsible className="w-full">
+                           {trinityItems.map((item, index) => (
+                            <AccordionItem value={`item-${index}`} key={index}>
+                                <AccordionTrigger>
+                                  <div className="flex items-center gap-2">
+                                    <item.icon className="h-4 w-4 text-primary"/>
+                                    {item.title}
+                                  </div>
+                                </AccordionTrigger>
+                                <AccordionContent>
+                                    <ul className="space-y-2 pl-4">
+                                    {item.content.map((line, lineIndex) => (
+                                        <li key={lineIndex} className="text-sm text-foreground">{line}</li>
+                                    ))}
+                                    </ul>
+                                </AccordionContent>
+                            </AccordionItem>
+                           ))}
+                        </Accordion>
+                    </CardContent>
+                     <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent group-hover:hidden" />
+                     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 text-muted-foreground text-sm group-hover:hidden">
+                        <MoreHorizontal className="h-4 w-4" />
+                        <span>Read More</span>
+                    </div>
+                </Card>
+            </motion.div>
         </div>
       </main>
       <motion.footer 
@@ -324,5 +397,3 @@ export default function WelcomePage() {
     </div>
   );
 }
-
-    
