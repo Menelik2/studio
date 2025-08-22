@@ -1,9 +1,9 @@
 
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { BookOpen, Phone, User, ArrowRight, BookCheck, Target, Goal, ShieldCheck, Info, Library } from 'lucide-react';
+import { BookOpen, Phone, User, ArrowRight, BookCheck, Target, Goal, ShieldCheck, Info, Library, CalendarDays } from 'lucide-react';
 import Link from 'next/link';
 import {
   Select,
@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/select';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 
 const content = {
   en: {
@@ -70,6 +71,44 @@ export default function WelcomePage() {
       "ምሥጢረ ጥምቀት (ስለ ዳግም መወለድ)",
       "ምሥጢረ ቁርባን (ስለ ክርስቶስ ሥጋና ደም)",
       "ምሥጢረ ትንሣኤ ሙታን (ስለ ዳግም ምጽዓት)",
+  ];
+
+  const holidaysList = [
+      "1.ልደታ፣ ራጉኤል፣ ኤሊያስ",
+      "2.ታድዮስ ሐዋርያ፣ ኢዮብ ጻድቅ",
+      "3.በዓታ ማርያም፣ ዜና ማርቆስ፣ ነአኩቶ ለአብ",
+      "4. ዮሐንስ ነጎድጓድ",
+      "5.ጴጥሮስ ወጳውሎስ፣ አቡነ ገብረ መንፈስ ቅዱስ",
+      "***",
+      "6. ኢየሱስ፣ ቁስቋም፣ አርሴማ",
+      "7.ሥላሴ፣ ፊሊሞና፣ አብላዮናስ",
+      "8.ማቴዎስ፣ ዮልያኖስ፣ አባ ኪሮስ",
+      "9. ቶማስ ሐዋሪያ፣ እንድርያስ ሐዋርያ፣ አውሳብዮስ፣ አባ ሰማእታት",
+      "10.በዓለ መስቀሉ ለእግዚእን",
+      "***",
+      "11.ሃና ወያቄም፣ ፋሲለደስ ሰማዕት",
+      "12. ቅዱስ ሚካኤል፣ ክርስቶስ ሠምራ",
+      "13.እግዚአብሔር ለአብ፣ ቅዱስ ሩፋኤል ሊቀ መላእክት",
+      "14.አባ አረጋዊ፣ አባ ገብር ክርስቶስ፣ ድምጥያኖስ ሰማዕት",
+      "15. ቂርቆስና ኢየሉጣ፣ ሰልፋኮስ",
+      "***",
+      "16.ኪዳነ ምሕረት፣ ሚካኤል ጳጳስ",
+      "17.ቅዱስ እስጢፋኖስ፣ ሉቃስ ዘዓም ብርሃን",
+      "18.ፊሊጶስ ሐዋርያ፣ ኤስድሮስ ሰማዕት፣ ኤዎስጣጤዎስ ሰማዕት",
+      "19.ቅዱስ ገብርኤል፣ አርቃዲዎስ",
+      "20. ጽንሰታ ለማርያም፣ ነብዩ ኤልሳ፣ ሐጌ ነብይ፣ አባ ሰላም መተርጉም",
+      "***",
+      "21.በዓለ እግዚእትነ ማርያም",
+      "22.ቅዱስ ዑራኤል፣ ያዕቆብ ምሥራቃዊ፣ ድቅስዮስ",
+      "23. ቅዱስ ጊዮርጊስ፣ ለጊዮስ ሰማዕት",
+      "24.አቡነ ተክለ ሃይማኖት",
+      "25.መርቆሬዎስ፣ አኒፍኖስ",
+      "***",
+      "26. ሆሴዕ ነብይ፣ ሳዶቅ ሰማዕት",
+      "27.መድኃኔዓለም፣ ሕዝቂያስ ነብይ፣ አባ ዮሐንስ",
+      "28.አማኑኤል፣ ቆስጠንጢኖስ፣ አብርሃም",
+      "29.በዓል ወልድ፣ ሰሙኤል ዘወጋግ",
+      "30.መጥምቁ ዮሐንስ፣ ማርቆስ ወንጌላዊ"
   ];
 
 
@@ -129,7 +168,7 @@ export default function WelcomePage() {
             </motion.p>
         </motion.div>
         
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 items-start justify-center gap-8 w-full max-w-6xl">
+        <div className="grid md:grid-cols-2 lg:grid-cols-2 items-start justify-center gap-8 w-full max-w-6xl">
             <motion.div
                 initial="hidden"
                 animate="visible"
@@ -203,6 +242,35 @@ export default function WelcomePage() {
                                <Library className="h-4 w-4 text-primary mt-1 flex-shrink-0" />
                                <span className="text-foreground">{item}</span>
                            </div>
+                        ))}
+                    </CardContent>
+                </Card>
+            </motion.div>
+             <motion.div
+                initial="hidden"
+                animate="visible"
+                variants={FADE_IN_UP_VARIANTS}
+                transition={{ duration: 0.6, ease: 'easeOut', delay: 1.0 }}
+                className="w-full"
+            >
+                <Card className="bg-background/80 backdrop-blur-sm shadow-2xl h-full">
+                    <CardHeader className="text-center">
+                        <CardTitle className="font-headline text-2xl font-bold text-primary">
+                           ከ1 እስክ 30 ያሉ የኢትዮጵያ ኦርቶዶክስ በዓላት!!!
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2 text-sm">
+                        {holidaysList.map((item, index) => (
+                          <React.Fragment key={index}>
+                            {item === '***' ? (
+                                <Separator className="my-2" />
+                            ) : (
+                               <div className="flex items-start gap-3 p-1">
+                                   <CalendarDays className="h-4 w-4 text-primary mt-1 flex-shrink-0" />
+                                   <span className="text-foreground">{item}</span>
+                               </div>
+                            )}
+                          </React.Fragment>
                         ))}
                     </CardContent>
                 </Card>
