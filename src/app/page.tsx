@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { BookOpen, Phone, User, BookCheck, Target, Goal, ShieldCheck, Info, Library, CalendarDays, ScrollText, MoreHorizontal, User as UserIcon, Wind, Heart } from 'lucide-react';
+import { BookOpen, Phone, User, BookCheck, Target, Goal, ShieldCheck, Info, Library, CalendarDays, ScrollText, MoreHorizontal, User as UserIcon, Wind, Heart, Clock } from 'lucide-react';
 import Link from 'next/link';
 import {
   Select,
@@ -176,6 +176,37 @@ export default function WelcomePage() {
     }
   ];
 
+  const prayerTimes = [
+    {
+        title: "ነግኅ (ማለዳ ጧት)፡-(6:00)",
+        content: "መዝ.5÷3፡- ‹‹በማለዳ ድማፄን ትሰማለህበማለዳ በፊትኽ እቆማለሁ›› ብሎ ነብየ እግዚአብሔር ለጸሎት እናለምሰጋና በፊቱ እንደቆመ ሁሉ አምላካችን እግዚአብሔር ሌሊቱንበሰላም እና በምህረት ጠብቆ የማለዳውን ብርሃን እንድናይ ስለረዳንእናመሰግነዋለን፡፡"
+    },
+    {
+        title: "ሠለስት (ሦስት ሰዓት)፡-(9:00)",
+        content: "በዚህ ሰዓት የሁላችንም እናት ሔዋን የተፈጠረችበት ሰዓት ነውና(ዘፍ.2÷21-24) እናቶቻችን ፣የትዳር አጋሮች፣እህቶች፣ሴት ልጆች የማግኘታችን መሠረት ነውና በዚህ ሰዓት እግዚአብሔር አምላካችንእናታችን ሔዋንን ስለፈጠረልን እናመሰግነዋለን፡፡"
+    },
+    {
+        title: "ቀትር (ስድስት ሰዓት)፡- (12:00)",
+        content: "በዚህ ሰዓት ፀሐይ ስትበረታ ሰውነታችን ሲዝል አዕምሮአችን ይሰንፋልእና አጋንንት ይበረታሉ፡፡ በዚህም ምክንያት ሰውነታችንን አበርትተንህሊናችንን ሰብስበን ወደ እግዚአብሔር እንጸልያለን፡፡(መዝ.54÷17፤90÷6)"
+    },
+    {
+        title: "ተሰዓት (ዘጠኝ ሰዓት) (15:00)",
+        content: "በዚህ ሰዓት ቅዱሳን መላዕክት የሰው ልጅ የጸለየውን፣ጸሎት፣ልመና፣እጣን፣የሠራውን ሥራ ሁሉ የሚያሳርጉበት ሰዓት ነው፡፡ (የሐዋ.10÷3)"
+    },
+    {
+        title: "ሠርክ (ዐሥራ አንድ ሰዓት)(17:00)",
+        content: "በዚህ ሰዓት ላይ ሰው ሁሉ ሥራ ሠርቶ ከሥራው የሚያርፍበት እናዋጋውን የሚቀበልበት ሰዓት ሲሆን እኛም ምግባር ቱሩፋት ሰርተ ዋጋችንን ከአምላካችን የምንቀበልበት ሰዓት ነው፡፡ (ማቴ.20÷1-16)"
+    },
+    {
+        title: "ንዋም (የመኝታ ሰዓት) (19:00)",
+        content: "በዚህ ሰዓት ቀኑን ሙሉ ስንወጣ ስንወርድ የጠበቀንን አምላክ አመሰግነን፤ ዳግመኛም የሌሊቱን ሰዓት ባርኩ የሰላም እንቅልፍ ይሰጠን ዘንድ ለጸሎት እንቆማለን፡፡"
+    },
+    {
+        title: "መንፈቀ ሌሊት (0:00)",
+        content: "ይህ ሰዓት ታላቅ ሰዓት ነው፡፡ አምላካችን ጌታችን መድኃኒታችን ኢየሱስ ክርስቶስ የተወለደበት፣ የተጠመቀበት፣ ከሙታን መካከል ተለይቶ የተነሣበት ዳግመኛም በህያዋን እና በሙታን ለመፍረድ የሚመጣባት ሠዓት ስለሆነች ይህን ሁሉ በማሰብ እና እግዚአብሔር ለእኛ ሲል ያደረገዉን ነገር ሁሉ በማሰብ የሚጸለይበት ሠዓት ነው። -(ሉቃ.2÷7-8፤3÷21.ዮሐ.20÷1፤ማቴ.25÷6፤ማር.13÷35)"
+    }
+  ];
+
 
   return (
     <div className="relative flex flex-col min-h-screen bg-background text-foreground overflow-hidden animated-gradient-bg">
@@ -233,7 +264,7 @@ export default function WelcomePage() {
             </motion.p>
         </motion.div>
         
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 items-start justify-center gap-8 w-full max-w-6xl">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 items-start justify-center gap-8 w-full max-w-7xl">
             <motion.div
                 initial="hidden"
                 animate="visible"
@@ -454,6 +485,44 @@ export default function WelcomePage() {
                                 <AccordionTrigger>
                                   <div className="flex items-center gap-2">
                                     <ScrollText className="h-4 w-4 text-primary"/>
+                                    {item.title}
+                                  </div>
+                                </AccordionTrigger>
+                                <AccordionContent>
+                                    <p className="text-sm text-foreground whitespace-pre-wrap">{item.content}</p>
+                                </AccordionContent>
+                            </AccordionItem>
+                           ))}
+                        </Accordion>
+                    </CardContent>
+                     <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent group-hover:hidden" />
+                     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 text-muted-foreground text-sm group-hover:hidden">
+                        <MoreHorizontal className="h-4 w-4" />
+                        <span>Read More</span>
+                    </div>
+                </Card>
+            </motion.div>
+             <motion.div
+                initial="hidden"
+                animate="visible"
+                variants={FADE_IN_UP_VARIANTS}
+                transition={{ duration: 0.6, ease: 'easeOut', delay: 1.6 }}
+                className="w-full group"
+            >
+                <Card className="bg-background/80 backdrop-blur-sm shadow-2xl h-80 overflow-hidden relative transition-all duration-300 ease-in-out group-hover:h-auto">
+                    <CardHeader className="text-center">
+                        <CardTitle className="font-headline text-2xl font-bold text-primary">
+                            ፯ቱ የጸሎት ጊዜያት
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                         <p className="text-sm text-foreground mb-4">በቅድስት ቤተ ክርስቲያን ሥርዓት መሠረት ሰባት የጸሎት ጊዜያት አሉ፡፡</p>
+                        <Accordion type="single" collapsible className="w-full">
+                           {prayerTimes.map((item, index) => (
+                            <AccordionItem value={`item-${index}`} key={index}>
+                                <AccordionTrigger>
+                                  <div className="flex items-center gap-2">
+                                    <Clock className="h-4 w-4 text-primary"/>
                                     {item.title}
                                   </div>
                                 </AccordionTrigger>
