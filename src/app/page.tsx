@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -80,7 +81,8 @@ export default function WelcomePage() {
           animate="visible"
           variants={FADE_IN_UP_VARIANTS}
           transition={{ duration: 0.6, ease: "easeOut", staggerChildren: 0.2 }}
-          className="max-w-4xl bg-background/80 backdrop-blur-sm p-8 rounded-lg shadow-xl"
+          whileHover={{ scale: 1.02, y: -5, transition: { type: 'spring', stiffness: 300 } }}
+          className="max-w-4xl bg-background/80 backdrop-blur-sm p-8 rounded-lg shadow-2xl"
         >
           <motion.h2 
             variants={FADE_IN_UP_VARIANTS}
@@ -117,3 +119,4 @@ export default function WelcomePage() {
     </div>
   );
 }
+
