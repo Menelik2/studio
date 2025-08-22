@@ -9,7 +9,7 @@ export default function LoginPage() {
         <div className="text-center text-white">
           <BookOpen className="mx-auto h-12 w-12" />
           <h1 className="mt-4 font-headline text-3xl font-bold tracking-tight">
-            Local Library Lore
+            እንኳን በደህና መጡ
           </h1>
           <p className="mt-2 text-lg text-white/80">
             Welcome back! Please sign in to continue.
