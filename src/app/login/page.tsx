@@ -12,7 +12,7 @@ export default function LoginPage() {
             እንኳን በደህና መጡ
           </h1>
           <p className="mt-2 text-lg text-white/80">
-            Welcome back! Please sign in to continue.
+            ባህር ዳር ፈ/ገ/ቅ/ጊዮርጊስ ካ/ሰ/ት/ቤት
           </p>
         </div>
         <LoginForm />
