@@ -84,9 +84,9 @@ export default function WelcomePage() {
       "4. ዮሐንስ ነጎድጓድ",
       "5.ጴጥሮስ ወጳውሎስ፣ አቡነ ገብረ መንፈስ ቅዱስ",
       "***",
-      "6. ኢየሱስ፣ ቁስቋም፣ አርሴማ",
+      "6. ኢየሱስ፣ ቁስቋም、 አርሴማ",
       "7.ሥላሴ፣ ፊሊሞና、 አብላዮናስ",
-      "8.ማቴዎስ፣ ዮልያኖስ፣ አባ ኪሮስ",
+      "8.ማቴዎስ፣ ዮልያኖስ、 አባ ኪሮስ",
       "9. ቶማስ ሐዋሪያ፣ እንድርያስ ሐዋርያ、 አውሳብዮስ、 አባ ሰማእታት",
       "10.በዓለ መስቀሉ ለእግዚእን",
       "***",
@@ -347,6 +347,34 @@ export default function WelcomePage() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
+                         <div className="text-sm text-foreground space-y-3 mb-4">
+                            <h3 className="font-bold text-center text-base">ሥላሴ</h3>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <h4 className="font-semibold">አንድነት</h4>
+                                    <ul className="list-disc list-inside text-xs">
+                                        <li>በባሕርይ</li>
+                                        <li>በመለኮት</li>
+                                        <li>በአምላክነት</li>
+                                        <li>በሕልውና</li>
+                                        <li>በፈቃድ</li>
+                                        <li>በፈጣሪነት</li>
+                                        <li>በአገዛዝ</li>
+                                        <li>በሥልጣን</li>
+                                    </ul>
+                                    <p className="text-xs mt-1">(ዘዳ 6:4, ኢሳ 44:6, ኢሳ 43:1, ዮሐ 10:30)</p>
+                                </div>
+                                <div>
+                                    <h4 className="font-semibold">ሦስትነት</h4>
+                                     <ul className="list-disc list-inside text-xs">
+                                        <li>በአካል</li>
+                                        <li>በስም</li>
+                                        <li>በግብር</li>
+                                    </ul>
+                                     <p className="text-xs mt-1">(ማቴ 28:19, 1ኛ ቆሮ 12:4-6, ሮሜ 14:17)</p>
+                                </div>
+                            </div>
+                         </div>
                         <Accordion type="single" collapsible className="w-full">
                            {trinityItems.map((item, index) => (
                             <AccordionItem value={`item-${index}`} key={index}>
@@ -397,3 +425,5 @@ export default function WelcomePage() {
     </div>
   );
 }
+
+    
