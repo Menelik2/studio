@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { BookOpen, Phone, User, ArrowRight, BookCheck } from 'lucide-react';
+import { BookOpen, Phone, User, ArrowRight, BookCheck, Target } from 'lucide-react';
 import Link from 'next/link';
 import {
   Select,
@@ -51,6 +51,16 @@ export default function WelcomePage() {
     "የነገረ ድኅነት መግቢያ",
     "እና ሌሎችም"
   ];
+  
+  const missionItems = [
+    "በአጥቢያው የሚገኙ ወጣቶች እና ህፃናት ትክክለኛውን ትምህርተ ሃይማኖት እና የአብነት ትምህርትን በማስተማር የቤተክርስትያኗን ዶግማ ፣ትውፊት ፣ ቀኖና ፣ ስርአት እና ታሪክ እንዲያውቁ ማድረግ።",
+    "የሰ/ት/ቤቱ አባላት በመናፍቃን እንዳይነጠቁ አስፈላጊውን እንቅስቃሴዎችን ማድረግ ።",
+    "የተለያዩ መንፈሳዊ ጉባኤዎችን በማዘጋጀት ለምዕመኑ ቃለ እግዚአብሔርን ማስተማር ።",
+    "በቤተክርስቲያኑ ውስጥ በሚደረጉ ልዩ ልዩ መርሀ ግብራት ላይ በመሳተፍ የቤተክርስቲያኑን አገልግሎት ማገዝ ።",
+    "አባላቱ በሰ/ት/ቤቱ ውስጥ ባሉ ክፍላት ላይ በመሳተፍ መክሊታቸውን እንዲያተርፉበት ማድረግ።",
+    "ሕፃናት እና ወጣቶችን የቤተክርስትያንን ሚስጥራት በማስተማር የሚስጢር ተሳታፊ እንዲሆኑ ማስቻል።"
+  ];
+
 
   return (
     <div className="relative flex flex-col min-h-screen bg-background text-foreground overflow-hidden animated-gradient-bg">
@@ -84,14 +94,13 @@ export default function WelcomePage() {
         </div>
       </motion.header>
       <main className="relative z-10 flex-grow flex items-center justify-center p-8">
-        <div className="flex flex-col md:flex-row items-center justify-center gap-8 w-full max-w-6xl">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 items-start justify-center gap-8 w-full max-w-7xl">
             <motion.div 
               initial="hidden"
               animate="visible"
               variants={FADE_IN_UP_VARIANTS}
               transition={{ duration: 0.6, ease: "easeOut", staggerChildren: 0.2 }}
-              whileHover={{ scale: 1.02, y: -5, transition: { type: 'spring', stiffness: 300 } }}
-              className="w-full md:w-1/2 bg-background/80 backdrop-blur-sm p-8 rounded-lg shadow-2xl text-center"
+              className="w-full bg-background/80 backdrop-blur-sm p-8 rounded-lg shadow-2xl text-center md:col-span-2 lg:col-span-1 lg:self-center"
             >
               <motion.h2 
                 variants={FADE_IN_UP_VARIANTS}
@@ -112,9 +121,9 @@ export default function WelcomePage() {
                 animate="visible"
                 variants={FADE_IN_UP_VARIANTS}
                 transition={{ duration: 0.6, ease: 'easeOut', delay: 0.2 }}
-                className="w-full md:w-1/2"
+                className="w-full"
             >
-                <Card className="bg-background/80 backdrop-blur-sm shadow-2xl">
+                <Card className="bg-background/80 backdrop-blur-sm shadow-2xl h-full">
                     <CardHeader className="text-center">
                         <CardTitle className="font-headline text-2xl font-bold text-primary">
                             ኦርቶዶክሳዊ ትምህርተ ሃይማኖት (ዶግማ)
@@ -131,6 +140,33 @@ export default function WelcomePage() {
                     <CardFooter className="justify-center">
                         <p className="text-sm text-muted-foreground font-semibold">ማንኛውም ሰው መሳተፍ ይችላል</p>
                     </CardFooter>
+                </Card>
+            </motion.div>
+            
+            <motion.div
+                initial="hidden"
+                animate="visible"
+                variants={FADE_IN_UP_VARIANTS}
+                transition={{ duration: 0.6, ease: 'easeOut', delay: 0.4 }}
+                className="w-full"
+            >
+                <Card className="bg-background/80 backdrop-blur-sm shadow-2xl h-full">
+                    <CardHeader className="text-center">
+                        <CardTitle className="font-headline text-2xl font-bold text-primary">
+                            የሰ/ት/ቤቱ ተልዕኮ
+                        </CardTitle>
+                         <CardDescription className="text-xs pt-2">
+                           (ያዘዝኋችኹም ሁሉ እንዲጠብቁ እያስተማራቿቸው ደቀ መዛሙርት አድርጓቸው፤) ማቴ 28-20
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                        {missionItems.map((item, index) => (
+                           <div key={index} className="flex items-start gap-3 p-2 text-sm">
+                               <Target className="h-4 w-4 text-primary mt-1 flex-shrink-0" />
+                               <span className="text-foreground">{item}</span>
+                           </div>
+                        ))}
+                    </CardContent>
                 </Card>
             </motion.div>
         </div>
