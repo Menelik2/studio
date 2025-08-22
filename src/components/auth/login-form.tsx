@@ -3,7 +3,7 @@
 
 import { useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -44,8 +44,12 @@ export function LoginForm() {
   };
 
   return (
-    <Card className="w-full shadow-none border-0">
-      <CardContent className="p-0">
+    <Card className="bg-background/80 backdrop-blur-sm border-white/20">
+        <CardHeader className="text-center">
+            <CardTitle className="text-2xl font-bold tracking-tight text-primary">የአስተዳዳሪ መግቢያ</CardTitle>
+            <CardDescription>Enter your credentials to access the dashboard.</CardDescription>
+        </CardHeader>
+      <CardContent>
         <motion.form 
           action={formAction} 
           className="space-y-4"
