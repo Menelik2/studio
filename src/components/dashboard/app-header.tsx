@@ -16,6 +16,9 @@ import {
 import {
   Sheet,
   SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
@@ -42,6 +45,12 @@ export function AppHeader() {
                 </Button>
             </SheetTrigger>
             <SheetContent side="left" className="sm:max-w-xs">
+                <SheetHeader className="mb-6">
+                  <SheetTitle>Navigation Menu</SheetTitle>
+                  <SheetDescription>
+                    Select a page to navigate to.
+                  </SheetDescription>
+                </SheetHeader>
                 <nav className="grid gap-6 text-lg font-medium">
                 <Link
                     href="/dashboard"
