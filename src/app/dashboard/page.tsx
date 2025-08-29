@@ -40,7 +40,7 @@ export default async function DashboardPage() {
         <p className="text-muted-foreground animate-fade-in-up [text-shadow:1px_1px_2px_rgba(0,0,0,0.1)]">Welcome to your Dashboard</p>
       </div>
       
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard
           title="ጠቅላላ መጽሐፍት"
           value={totalBooks}
