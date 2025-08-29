@@ -38,5 +38,15 @@
     "description": "ስለ ንባብ አስፈላጊነት እና ጥቅሞች የሚያብራራ መነባንብ።",
     "filePath": "/pdfs/sample-3.pdf",
     "comment": ""
+  },
+  {
+    "id": "5",
+    "title": "ፍቅር",
+    "author": "ተወልደ",
+    "category": "ግጥም",
+    "year": 2025,
+    "description": "ፍቅርን በፍቅር",
+    "filePath": "https://teacher-network.in/OER/images/9/9a/ICT_student_textbook.pdf",
+    "comment": ""
   }
 ]
