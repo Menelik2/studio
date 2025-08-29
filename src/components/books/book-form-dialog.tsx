@@ -349,10 +349,9 @@ export function BookFormDialog() {
                   </div>
                   <Input
                     id="filePath"
-                    placeholder="Upload a file to get a URL"
+                    placeholder="Paste a URL or upload a file to get a URL"
                     {...register('filePath')}
                     disabled={isUploading}
-                    readOnly
                   />
                    {errors.filePath && <p className="text-red-500 text-xs text-right">{errors.filePath.message}</p>}
                    {formState.errors?.filePath && <p className="text-red-500 text-xs text-right">{formState.errors.filePath[0]}</p>}
