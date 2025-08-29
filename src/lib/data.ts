@@ -16,13 +16,40 @@ import {
   limit,
   writeBatch
 } from 'firebase/firestore';
+import { z } from 'zod';
+
+
+// Schema for validating book data read from Firestore
+const BookSchemaFromDb = z.object({
+  id: z.string(),
+  title: z.string().default(''),
+  author: z.string().default(''),
+  category: z.enum(['ግጥም', 'ወግ', 'ድራማ', 'መነባንብ', 'መጣጥፍ', 'ሌሎች መፅሐፍት']).default('ሌሎች መፅሐፍት'),
+  year: z.number().default(new Date().getFullYear()),
+  description: z.string().default(''),
+  filePath: z.string().default(''),
+  comment: z.string().optional().default(''),
+});
 
 // --- BOOK FUNCTIONS ---
 
 export async function getBooks(): Promise<Book[]> {
   const booksCol = collection(db, 'books');
   const bookSnapshot = await getDocs(booksCol);
-  const bookList = bookSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Book));
+  
+  const bookList = bookSnapshot.docs.map(doc => {
+    const data = { id: doc.id, ...doc.data() };
+    // Validate and clean data on read to prevent undefined values
+    const parsed = BookSchemaFromDb.safeParse(data);
+    if (parsed.success) {
+      return parsed.data as Book;
+    } else {
+      console.warn(`Invalid book data found for doc ${doc.id}:`, parsed.error.issues);
+      // Return a default book structure or null
+      return null;
+    }
+  }).filter((book): book is Book => book !== null); // Filter out any nulls from failed parsing
+
   return bookList;
 }
 
