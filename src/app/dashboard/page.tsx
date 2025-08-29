@@ -2,12 +2,10 @@
 import { getBooks } from '@/lib/data';
 import type { Book, Category } from '@/lib/definitions';
 import { StatCard } from '@/components/dashboard/stat-card';
-import { Book as BookIcon, Feather, Scroll, Theater, BookCopy, Folder, TrendingUp, Calendar, Library, PlusCircle, BookText } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { BookFormDialog, useBookDialog } from '@/components/books/book-form-dialog';
-import { DeleteBookDialog, useDeleteBookDialog } from '@/components/books/delete-book-dialog';
+import { Book as BookIcon, Feather, Scroll, Theater, BookCopy, Folder, TrendingUp, Calendar, Library, BookText } from 'lucide-react';
 import Link from 'next/link';
-import { DashboardClient } from '@/components/dashboard/dashboard-client';
+import { BookFormDialog } from '@/components/books/book-form-dialog';
+import { DeleteBookDialog } from '@/components/books/delete-book-dialog';
 
 export default async function DashboardPage() {
   const books = await getBooks();
@@ -41,13 +39,14 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <DashboardClient />
+      <BookFormDialog />
+      <DeleteBookDialog />
       <div className="w-full text-center">
-        <h1 className="font-headline text-3xl font-bold tracking-tight">ባህር ዳር ፈ/ገ/ቅ/ጊዮርጊስ ካ/ሰ/ት/ቤት</h1>
-        <p className="text-muted-foreground animate-fade-in-up [text-shadow:1px_1px_2px_rgba(0,0,0,0.1)]">እንኳን በደህና መጡ</p>
+        <h1 className="font-headline text-2xl md:text-3xl font-bold tracking-tight">ባህር ዳር ፈ/ገ/ቅ/ጊዮርጊስ ካ/ሰ/ት/ቤት</h1>
+        <p className="text-muted-foreground animate-fade-in-up [text-shadow:1px_1px_2px_rgba(0,0,0,0.1)]">Welcome to your Dashboard</p>
       </div>
       
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard
           title="ጠቅላላ መጽሐፍት"
           value={totalBooks}
@@ -74,7 +73,7 @@ export default async function DashboardPage() {
         />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
          {categoryCards.map(cat => (
             <Link key={cat.title} href={`/dashboard/books?category=${cat.title}`}>
                 <StatCard
