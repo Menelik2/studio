@@ -22,12 +22,6 @@ export default async function DashboardPage() {
     return acc;
   }, {} as Record<Category, number>);
   
-  const recentlyAddedCount = books.filter(book => {
-    // This is a placeholder logic. In a real app, you'd store creation dates.
-    // For now, let's assume books with IDs > 4 are "recent".
-    return parseInt(book.id) > 4;
-  }).length;
-
   const categoryCards = [
     { title: 'ግጥም', icon: Feather, count: categoryCounts['ግጥም'] || 0 },
     { title: 'ወግ', icon: Scroll, count: categoryCounts['ወግ'] || 0 },
@@ -46,7 +40,7 @@ export default async function DashboardPage() {
         <p className="text-muted-foreground animate-fade-in-up [text-shadow:1px_1px_2px_rgba(0,0,0,0.1)]">Welcome to your Dashboard</p>
       </div>
       
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
         <StatCard
           title="ጠቅላላ መጽሐፍት"
           value={totalBooks}
@@ -54,19 +48,13 @@ export default async function DashboardPage() {
           description="Across all categories"
         />
         <StatCard
-          title="Recently Added"
-          value={recentlyAddedCount}
-          icon={TrendingUp}
-          description="This month"
-        />
-        <StatCard
-          title="Categories"
+          title="Total Categories"
           value={totalCategories}
           icon={BookCopy}
           description="Active categories"
         />
         <StatCard
-          title="This Year"
+          title="Current Year"
           value={thisYear}
           icon={Calendar}
           description="Current year focus"

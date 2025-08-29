@@ -1,15 +1,5 @@
 [
   {
-    "id": "1",
-    "title": "Sonnets",
-    "author": "William Shakespeare",
-    "category": "ግጥም",
-    "year": 1609,
-    "description": "A collection of 154 sonnets by William Shakespeare.",
-    "filePath": "https://teacher-network.in/OER/images/9/9a/ICT_student_textbook.pdf",
-    "comment": "hjhjh"
-  },
-  {
     "id": "2",
     "title": "The Odyssey",
     "author": "Homer",
@@ -19,12 +9,13 @@
     "filePath": "/pdfs/odyssey.pdf"
   },
   {
-    "id": "4",
-    "title": "Leaves of Grass",
-    "author": "Walt Whitman",
+    "id": "3",
+    "title": "ምፍድብ",
+    "author": "ስድስብ",
     "category": "ግጥም",
-    "year": 1855,
-    "description": "A poetry collection by American poet Walt Whitman.",
-    "filePath": "/pdfs/leaves_of_grass.pdf"
+    "year": 2025,
+    "description": "ብሽብብሽ",
+    "filePath": "https://teacher-network.in/OER/images/9/9a/ICT_student_textbook.pdf",
+    "comment": ""
   }
 ]
