@@ -164,7 +164,12 @@ export async function getPlannerSignaturesAction(year: number): Promise<Omit<Pla
 
 export async function savePlannerSignaturesAction(signatures: PlannerSignatures): Promise<{success: boolean}> {
     try {
-        await savePlannerSignatures(signatures);
+        const dataToSave = {
+            ...signatures,
+            preparationOfficer: signatures.preparationOfficer || '',
+            reviewOfficer: signatures.reviewOfficer || '',
+        };
+        await savePlannerSignatures(dataToSave);
         revalidatePath('/dashboard/planner');
         return { success: true };
     } catch (error) {

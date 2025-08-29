@@ -40,8 +40,8 @@ export function Planner() {
     try {
         const signatures = await getPlannerSignaturesAction(currentYear);
         if (signatures) {
-            setPreparationOfficer(signatures.preparationOfficer);
-            setReviewOfficer(signatures.reviewOfficer);
+            setPreparationOfficer(signatures.preparationOfficer || '');
+            setReviewOfficer(signatures.reviewOfficer || '');
         } else {
             setPreparationOfficer('');
             setReviewOfficer('');
