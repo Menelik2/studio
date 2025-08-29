@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { addBook, deleteBook, updateBook, getPlanner1Items, savePlanner1Items, getPlanner2Items, savePlanner2Items, getPlannerSignatures, savePlannerSignatures } from './data';
-import type { Book, Planner1Item, Planner2Item, PlannerSignatures } from './definitions';
+import type { Book, PlannerItem, Planner2Item, PlannerSignatures } from './definitions';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -62,7 +62,7 @@ async function handleBookAction(book: Book, action: 'create' | 'update') {
       errors: validatedFields.error.flatten().fieldErrors,
     };
   }
-
+  
   const finalData = {
     ...validatedFields.data,
     comment: validatedFields.data.comment || '',
@@ -75,7 +75,6 @@ async function handleBookAction(book: Book, action: 'create' | 'update') {
       await updateBook(finalData as Book);
     }
   } catch (error) {
-    console.error("Firebase error:", error);
     return {
       message: 'Database Error: Failed to save book.',
     };
@@ -174,7 +173,7 @@ export async function getPlanner2ItemsAction(): Promise<Planner2Item[]> {
 export async function savePlanner2ItemsAction(items: Planner2Item[]): Promise<{success:boolean}> {
   try {
     await savePlanner2Items(items);
-    revalidatePath('/dashboard/planner-2');
+revalidatePath('/dashboard/planner-2');
     return { success: true };
   } catch (error) {
     console.error('Failed to save planner 2 items:', error);
