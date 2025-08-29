@@ -10,16 +10,14 @@ import {
   updateBook as updateBookFromFile,
   getBooks,
   saveBooks,
-  getPlanner1Items, 
-  savePlanner1Items,
-  getPlanner2Items,
-  savePlanner2Items,
-  getPlannerSignatures,
-  savePlannerSignatures,
-  uploadPdfToBlob as uploadPdfToVercelBlob,
-  readDataFromBlob,
-  writeDataToBlob
+  getPlanner1Items as getLocalPlanner1Items, 
+  savePlanner1Items as saveLocalPlanner1Items,
+  getPlanner2Items as getLocalPlanner2Items,
+  savePlanner2Items as saveLocalPlanner2Items,
+  getPlannerSignatures as getLocalPlannerSignatures,
+  savePlannerSignatures as saveLocalPlannerSignatures,
 } from './data';
+import { readDataFromBlob, writeDataToBlob, uploadPdfToBlob } from './blob';
 import type { Book, PlannerItem, Planner2Item, PlannerSignatures } from './definitions';
 
 // Mock login action
@@ -82,31 +80,19 @@ async function handleBookAction(bookData: unknown, action: 'create' | 'update') 
   
   const finalData = {
     ...validatedFields.data,
-<<<<<<< HEAD
     comment: validatedFields.data.comment || '',
   }
-=======
-    comment: validatedFields.data.comment || ''
-  };
-
->>>>>>> refs/remotes/origin/main
 
   try {
     let updatedBooks;
     if (action === 'create') {
-<<<<<<< HEAD
       updatedBooks = await addBookToFile(finalData as Omit<Book, 'id'>);
     } else {
       updatedBooks = await updateBookFromFile(finalData as Book);
     }
     // Sync with Vercel Blob
-    if (process.env.VERCEL_ENV) {
+    if (process.env.VERCEL_ENV && updatedBooks) {
       await writeDataToBlob('books.json', updatedBooks);
-=======
-      await addBook(finalData as Omit<Book, 'id'>);
-    } else {
-      await updateBook(finalData as Book);
->>>>>>> refs/remotes/origin/main
     }
   } catch (error) {
     console.error("Error handling book action:", error);
@@ -140,15 +126,9 @@ export async function deleteBookAction(prevState: any, formData: FormData) {
     return { message: 'Error: Book ID is missing.' };
   }
   try {
-<<<<<<< HEAD
     const updatedBooks = await deleteBookFromFile(id);
     if(updatedBooks && process.env.VERCEL_ENV) {
       await writeDataToBlob('books.json', updatedBooks);
-=======
-    const deleted = await deleteBook(id);
-    if (!deleted) {
-      return { message: 'Error: Book not found for deletion.' };
->>>>>>> refs/remotes/origin/main
     }
     revalidatePath('/dashboard/books');
     revalidatePath('/dashboard');
@@ -162,42 +142,21 @@ export async function getBooksAction(): Promise<Book[]> {
   // On Vercel, sync from blob first
   if (process.env.VERCEL_ENV) {
     const blobData = await readDataFromBlob<Book>('books.json');
-    await saveBooks(blobData);
+    if (blobData) {
+        await saveBooks(blobData);
+    }
   }
   return getBooks();
 }
 
 
 export async function uploadPdfAction(formData: FormData) {
-<<<<<<< HEAD
     const file = formData.get('file') as File | null;
     if (!file || file.size === 0) {
         return { success: false, error: 'No file provided.' };
-=======
-    const file = formData.get('file') as File;
-    if (!file || file.type !== 'application/pdf') {
-        return { success: false, error: 'Invalid file type. Please upload a PDF.' };
-    }
-
-    try {
-        const publicDir = path.join(process.cwd(), 'public', 'pdfs');
-        await fs.mkdir(publicDir, { recursive: true });
-
-        const sanitizedFilename = path.basename(file.name).replace(/[^a-z0-9_.\-]/gi, '_');
-        const filePath = path.join(publicDir, sanitizedFilename);
-        const fileBuffer = Buffer.from(await file.arrayBuffer());
-        await fs.writeFile(filePath, fileBuffer);
-
-        const relativePath = `/pdfs/${sanitizedFilename}`;
-        return { success: true, path: relativePath };
-
-    } catch (error) {
-        console.error('File upload failed:', error);
-        return { success: false, error: 'An unexpected error occurred during file upload.' };
->>>>>>> refs/remotes/origin/main
     }
     // This function can only be used on the server, so it's safe here
-    return uploadPdfToVercelBlob(file);
+    return uploadPdfToBlob(file);
 }
 
 
@@ -205,14 +164,16 @@ export async function uploadPdfAction(formData: FormData) {
 export async function getPlanner1ItemsAction(): Promise<Planner1Item[]> {
   if (process.env.VERCEL_ENV) {
     const blobData = await readDataFromBlob<Planner1Item>('planner1.json');
-    await savePlanner1Items(blobData);
+    if (blobData) {
+        await saveLocalPlanner1Items(blobData);
+    }
   }
-  return getPlanner1Items();
+  return getLocalPlanner1Items();
 }
 
 export async function savePlanner1ItemsAction(items: Planner1Item[]): Promise<{success: boolean}> {
   try {
-    await savePlanner1Items(items); // save to local file
+    await saveLocalPlanner1Items(items); // save to local file
     if (process.env.VERCEL_ENV) {
       await writeDataToBlob('planner1.json', items);
     }
@@ -227,9 +188,11 @@ export async function savePlanner1ItemsAction(items: Planner1Item[]): Promise<{s
 export async function getPlannerSignaturesAction(year: number): Promise<Omit<PlannerSignatures, 'year'> | null> {
     if (process.env.VERCEL_ENV) {
       const blobData = await readDataFromBlob<PlannerSignatures>('planner-signatures.json');
-      await savePlannerSignatures(blobData);
+      if (blobData) {
+          await saveLocalPlannerSignatures(blobData);
+      }
     }
-    const allSignatures = await getPlannerSignatures();
+    const allSignatures = await getLocalPlannerSignatures();
     const signatures = allSignatures.find(sig => sig.year === year);
     if (signatures) {
         return { preparationOfficer: signatures.preparationOfficer, reviewOfficer: signatures.reviewOfficer };
@@ -239,14 +202,14 @@ export async function getPlannerSignaturesAction(year: number): Promise<Omit<Pla
 
 export async function savePlannerSignaturesAction(signatures: PlannerSignatures): Promise<{success: boolean}> {
     try {
-        let allSignatures = await getPlannerSignatures();
+        let allSignatures = await getLocalPlannerSignatures();
         const index = allSignatures.findIndex(sig => sig.year === signatures.year);
         if (index !== -1) {
             allSignatures[index] = signatures;
         } else {
             allSignatures.push(signatures);
         }
-        await savePlannerSignatures(allSignatures); // save to local file
+        await saveLocalPlannerSignatures(allSignatures); // save to local file
         if (process.env.VERCEL_ENV) {
             await writeDataToBlob('planner-signatures.json', allSignatures);
         }
@@ -263,14 +226,16 @@ export async function savePlannerSignaturesAction(signatures: PlannerSignatures)
 export async function getPlanner2ItemsAction(): Promise<Planner2Item[]> {
     if (process.env.VERCEL_ENV) {
         const blobData = await readDataFromBlob<Planner2Item>('planner2.json');
-        await savePlanner2Items(blobData);
+        if (blobData) {
+            await saveLocalPlanner2Items(blobData);
+        }
     }
-    return getPlanner2Items();
+    return getLocalPlanner2Items();
 }
 
 export async function savePlanner2ItemsAction(items: Planner2Item[]): Promise<{success:boolean}> {
   try {
-    await savePlanner2Items(items); // save to local file
+    await saveLocalPlanner2Items(items); // save to local file
     if (process.env.VERCEL_ENV) {
         await writeDataToBlob('planner2.json', items);
     }
