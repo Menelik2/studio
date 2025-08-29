@@ -72,7 +72,10 @@ async function handleBookAction(bookData: unknown, action: 'create' | 'update') 
     if (action === 'create') {
       await addBook(validatedFields.data as Omit<Book, 'id'>);
     } else {
-      await updateBook(validatedFields.data as Book);
+      const bookToUpdate = validatedFields.data as Book;
+      // Ensure comment is a string, not undefined.
+      bookToUpdate.comment = bookToUpdate.comment || '';
+      await updateBook(bookToUpdate);
     }
   } catch (error) {
     return {

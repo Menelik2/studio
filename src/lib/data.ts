@@ -57,7 +57,11 @@ export async function getBookById(id: string): Promise<Book | undefined> {
   const bookDocRef = doc(db, 'books', id);
   const bookSnap = await getDoc(bookDocRef);
   if (bookSnap.exists()) {
-    return { id: bookSnap.id, ...bookSnap.data() } as Book;
+    const data = { id: bookSnap.id, ...bookSnap.data() };
+    const parsed = BookSchemaFromDb.safeParse(data);
+     if (parsed.success) {
+      return parsed.data as Book;
+    }
   }
   return undefined;
 }
