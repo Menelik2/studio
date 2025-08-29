@@ -81,6 +81,10 @@ async function handleBookAction(bookData: unknown, action: 'create' | 'update') 
 
 export async function createBookAction(prevState: FormState, formData: FormData) {
   const book = Object.fromEntries(formData.entries());
+  // The 'id' field for new books might be an empty string from the form, so we remove it.
+  if (book.id === '') {
+    delete book.id;
+  }
   return handleBookAction(book, 'create');
 }
 
@@ -117,11 +121,13 @@ export async function uploadPdfAction(formData: FormData) {
         const publicDir = path.join(process.cwd(), 'public', 'pdfs');
         await fs.mkdir(publicDir, { recursive: true });
 
-        const filePath = path.join(publicDir, file.name);
+        // Sanitize filename to prevent directory traversal
+        const sanitizedFilename = path.basename(file.name).replace(/[^a-z0-9_.\-]/gi, '_');
+        const filePath = path.join(publicDir, sanitizedFilename);
         const fileBuffer = Buffer.from(await file.arrayBuffer());
         await fs.writeFile(filePath, fileBuffer);
 
-        const relativePath = `/pdfs/${file.name}`;
+        const relativePath = `/pdfs/${sanitizedFilename}`;
         return { success: true, path: relativePath };
 
     } catch (error) {

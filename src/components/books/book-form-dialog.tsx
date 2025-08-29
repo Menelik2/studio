@@ -120,7 +120,7 @@ export function BookFormDialog() {
   const [isUploading, startUploadTransition] = useTransition();
 
   
-  const action = isEditOrComment ? updateBookAction : createBookAction;
+  const action = mode === 'create' ? createBookAction : updateBookAction;
   
   const [formState, formAction] = useActionState(action, {
     message: '',
@@ -160,12 +160,12 @@ export function BookFormDialog() {
 
   useEffect(() => {
     if (formState.message && !formState.errors) {
-      toast({ title: isEditOrComment ? 'Book Updated' : 'Book Added', description: formState.message });
+      toast({ title: mode === 'create' ? 'Book Added' : 'Book Updated', description: formState.message });
       onClose();
     } else if (formState.message && formState.errors) {
       toast({ variant: 'destructive', title: 'Error', description: formState.message });
     }
-  }, [formState, toast, onClose, isEditOrComment]);
+  }, [formState, toast, onClose, mode]);
   
   const handleDragEnter = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();

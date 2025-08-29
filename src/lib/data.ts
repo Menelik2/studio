@@ -10,8 +10,8 @@ const booksDbPath = path.join(process.cwd(), 'src', 'lib', 'books.json');
 let books: Book[] | null = null;
 
 async function readBooksDb(): Promise<Book[]> {
-  // Use cached data if available
-  if (books) return books;
+  // Use cached data if available in dev, but always re-read in production
+  if (books && process.env.NODE_ENV === 'development') return books;
   try {
     const data = await fs.readFile(booksDbPath, 'utf-8');
     books = JSON.parse(data);
@@ -40,7 +40,7 @@ const planner1DbPath = path.join(process.cwd(), 'src', 'lib', 'planner1.json');
 let planner1Items: Planner1Item[] | null = null;
 
 async function readPlanner1Db(): Promise<Planner1Item[]> {
-    if (planner1Items) return planner1Items;
+    if (planner1Items && process.env.NODE_ENV === 'development') return planner1Items;
     try {
         const data = await fs.readFile(planner1DbPath, 'utf-8');
         planner1Items = JSON.parse(data);
@@ -65,7 +65,7 @@ const planner2DbPath = path.join(process.cwd(), 'src', 'lib', 'planner2.json');
 let planner2Items: Planner2Item[] | null = null;
 
 async function readPlanner2Db(): Promise<Planner2Item[]> {
-    if (planner2Items) return planner2Items;
+    if (planner2Items && process.env.NODE_ENV === 'development') return planner2Items;
     try {
         const data = await fs.readFile(planner2DbPath, 'utf-8');
         planner2Items = JSON.parse(data);
@@ -90,7 +90,7 @@ const plannerSignaturesDbPath = path.join(process.cwd(), 'src', 'lib', 'planner-
 let plannerSignatures: PlannerSignatures[] | null = null;
 
 async function readPlannerSignaturesDb(): Promise<PlannerSignatures[]> {
-    if (plannerSignatures) return plannerSignatures;
+    if (plannerSignatures && process.env.NODE_ENV === 'development') return plannerSignatures;
     try {
         const data = await fs.readFile(plannerSignaturesDbPath, 'utf-8');
         plannerSignatures = JSON.parse(data);
@@ -131,7 +131,9 @@ export async function getBookById(id: string): Promise<Book | undefined> {
 export async function addBook(book: Omit<Book, 'id'>): Promise<Book> {
   await delay(300);
   const allBooks = await readBooksDb();
-  const numericIds = allBooks.map(b => parseInt(b.id, 10)).filter(id => !isNaN(id));
+  const numericIds = allBooks
+    .map(b => parseInt(b.id, 10))
+    .filter(id => !isNaN(id));
   const newId = numericIds.length > 0 ? Math.max(...numericIds) + 1 : 1;
 
   const newBook: Book = {
@@ -184,7 +186,7 @@ export async function getPlannerSignatures(year: number): Promise<Omit<PlannerSi
     const allSignatures = await readPlannerSignaturesDb();
     const signaturesForYear = allSignatures.find(s => s.year === year);
     if (signaturesForYear) {
-        const { year, ...rest } = signaturesForYear;
+        const { year: sigYear, ...rest } = signaturesForYear;
         return rest;
     }
     return null;
