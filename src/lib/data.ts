@@ -16,7 +16,6 @@ async function readJsonFile<T>(filePath: string): Promise<T> {
     return JSON.parse(fileContent);
   } catch (error: any) {
     if (error.code === 'ENOENT') {
-      // If the file doesn't exist, return a default value based on the file path
       if (filePath.includes('signatures')) return {} as T;
       return [] as T;
     }
@@ -32,7 +31,9 @@ async function writeJsonFile<T>(filePath: string, data: T): Promise<void> {
 // --- BOOK FUNCTIONS ---
 
 export async function getBooks(): Promise<Book[]> {
-  return await readJsonFile<Book[]>(booksPath);
+  const books = await readJsonFile<Book[]>(booksPath);
+  // Ensure every book has a comment field
+  return books.map(book => ({ ...book, comment: book.comment || '' }));
 }
 
 export async function getBookById(id: string): Promise<Book | undefined> {
@@ -42,7 +43,7 @@ export async function getBookById(id: string): Promise<Book | undefined> {
 
 export async function addBook(book: Omit<Book, 'id'>): Promise<Book> {
   const books = await getBooks();
-  const newBook: Book = { ...book, id: Date.now().toString() };
+  const newBook: Book = { ...book, comment: book.comment || '', id: Date.now().toString() };
   books.push(newBook);
   await writeJsonFile(booksPath, books);
   return newBook;
@@ -52,7 +53,8 @@ export async function updateBook(updatedBook: Book): Promise<Book | null> {
   const books = await getBooks();
   const index = books.findIndex(b => b.id === updatedBook.id);
   if (index === -1) return null;
-  books[index] = updatedBook;
+  // Ensure comment is not undefined before saving
+  books[index] = { ...updatedBook, comment: updatedBook.comment || '' };
   await writeJsonFile(booksPath, books);
   return updatedBook;
 }
