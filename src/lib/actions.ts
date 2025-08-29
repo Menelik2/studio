@@ -63,13 +63,19 @@ async function handleBookAction(book: Book, action: 'create' | 'update') {
     };
   }
 
+  const finalData = {
+    ...validatedFields.data,
+    comment: validatedFields.data.comment || '',
+  }
+
   try {
     if (action === 'create') {
-      await addBook(validatedFields.data as Omit<Book, 'id'>);
+      await addBook(finalData as Omit<Book, 'id'>);
     } else {
-      await updateBook(validatedFields.data as Book);
+      await updateBook(finalData as Book);
     }
   } catch (error) {
+    console.error("Firebase error:", error);
     return {
       message: 'Database Error: Failed to save book.',
     };
