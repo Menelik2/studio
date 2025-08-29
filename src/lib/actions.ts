@@ -11,7 +11,7 @@ import {
   updateBook, 
   getPlanner1Items, 
   savePlanner1Items, 
-  getPlanner2Items, 
+  getPlanner2Items, _
   savePlanner2Items, 
   getPlannerSignatures, 
   savePlannerSignatures,
@@ -126,7 +126,10 @@ export async function deleteBookAction(prevState: any, formData: FormData) {
 }
 
 export async function uploadPdfAction(formData: FormData) {
-    const file = formData.get('file') as File;
+    const file = formData.get('file') as File | null;
+    if (!file || file.size === 0) {
+        return { success: false, error: 'No file provided.' };
+    }
     return uploadPdfToBlob(file);
 }
 
