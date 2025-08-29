@@ -68,8 +68,7 @@ export const usePlanner2Dialog = (): Planner2DialogStore => {
   };
 };
 
-const getInitialFormState = (): Planner2Item => ({
-    id: '',
+const getInitialFormState = (): Omit<Planner2Item, 'id'> => ({
     activity: '',
     measure: '',
     annualPlan: '',
@@ -82,7 +81,7 @@ const getInitialFormState = (): Planner2Item => ({
 
 export function Planner2FormDialog() {
   const { isOpen, item, onClose, onSubmit } = usePlanner2Dialog();
-  const [formState, setFormState] = useState<Planner2Item>(getInitialFormState());
+  const [formState, setFormState] = useState<Planner2Item | Omit<Planner2Item, 'id'>>(getInitialFormState());
 
   const isEdit = !!item;
 
@@ -99,7 +98,7 @@ export function Planner2FormDialog() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if(onSubmit) {
-        onSubmit(formState);
+        onSubmit(formState as Planner2Item);
     }
     onClose();
   };

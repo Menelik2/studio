@@ -64,8 +64,7 @@ export function Planner2() {
   };
 
   const handleAddItem = () => {
-    const newItemTemplate: Planner2Item = {
-      id: '',
+    const newItemTemplate: Omit<Planner2Item, 'id'> = {
       activity: '',
       measure: '',
       annualPlan: '',
@@ -74,8 +73,9 @@ export function Planner2() {
       executionPercentage: '',
       year: year.toString(),
     };
-    onOpen(newItemTemplate, (newItem) => {
-      const updatedItems = [...items, { ...newItem, id: (items.length + 1).toString() }];
+    onOpen(null, (newItem) => {
+      const newId = (Math.max(0, ...items.map(b => parseInt(b.id, 10) || 0)) + 1).toString();
+      const updatedItems = [...items, { ...newItem, id: newId }];
       handleSaveItems(updatedItems);
     });
   };
