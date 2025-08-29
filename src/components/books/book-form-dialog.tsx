@@ -102,11 +102,11 @@ type BookFormValues = z.infer<typeof bookSchema>;
 
 function SubmitButton({ mode }: { mode: 'create' | 'edit' | 'comment' }) {
   const { pending } = useFormStatus();
-  const isEditOrComment = mode === 'edit' || mode === 'comment';
+  const isCreate = mode === 'create';
 
   return (
     <Button type="submit" disabled={pending}>
-      {pending ? (isEditOrComment ? 'Saving...' : 'Adding...') : (isEditOrComment ? 'Save Changes' : 'Add Book')}
+      {pending ? (isCreate ? 'Adding...' : 'Saving...') : (isCreate ? 'Add Book' : 'Save Changes')}
       <Save className="ml-2 h-4 w-4" />
     </Button>
   );
