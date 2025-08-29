@@ -44,6 +44,12 @@ export async function addBook(book: Omit<Book, 'id'>): Promise<Book> {
 export async function updateBook(updatedBook: Book): Promise<Book | null> {
   const { id, ...bookData } = updatedBook;
   if (!id) return null;
+
+  // Ensure comment is not undefined, which Firestore rejects.
+  if (bookData.comment === undefined || bookData.comment === null) {
+      bookData.comment = '';
+  }
+  
   const bookDocRef = doc(db, 'books', id);
   await updateDoc(bookDocRef, bookData);
   return updatedBook;
