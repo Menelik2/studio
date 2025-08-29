@@ -1,5 +1,4 @@
 
-// @ts-nocheck
 'use server';
 
 import { z } from 'zod';
@@ -53,8 +52,8 @@ export type FormState = {
   };
 };
 
-async function handleBookAction(book: Book, action: 'create' | 'update') {
-  const validatedFields = bookSchema.safeParse(book);
+async function handleBookAction(bookData: unknown, action: 'create' | 'update') {
+  const validatedFields = bookSchema.safeParse(bookData);
 
   if (!validatedFields.success) {
     return {
@@ -82,18 +81,24 @@ async function handleBookAction(book: Book, action: 'create' | 'update') {
 
 export async function createBookAction(prevState: FormState, formData: FormData) {
   const book = Object.fromEntries(formData.entries());
-  return handleBookAction(book as unknown as Book, 'create');
+  return handleBookAction(book, 'create');
 }
 
 export async function updateBookAction(prevState: FormState, formData: FormData) {
   const book = Object.fromEntries(formData.entries());
-  return handleBookAction(book as unknown as Book, 'update');
+  return handleBookAction(book, 'update');
 }
 
 export async function deleteBookAction(prevState: any, formData: FormData) {
   const id = formData.get('id') as string;
+  if (!id) {
+    return { message: 'Error: Book ID is missing.' };
+  }
   try {
-    await deleteBook(id);
+    const deleted = await deleteBook(id);
+    if (!deleted) {
+      return { message: 'Error: Book not found for deletion.' };
+    }
     revalidatePath('/dashboard/books');
     revalidatePath('/dashboard');
     return { message: 'Book deleted successfully.' };

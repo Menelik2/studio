@@ -1,3 +1,4 @@
+
 'use server';
 
 import type { Book, Planner1Item, Planner2Item, PlannerSignatures } from './definitions';
@@ -9,15 +10,18 @@ const booksDbPath = path.join(process.cwd(), 'src', 'lib', 'books.json');
 let books: Book[] | null = null;
 
 async function readBooksDb(): Promise<Book[]> {
+  // Use cached data if available
   if (books) return books;
   try {
     const data = await fs.readFile(booksDbPath, 'utf-8');
     books = JSON.parse(data);
   } catch (error: any) {
     if (error.code === 'ENOENT') {
+      // If the file doesn't exist, create it with an empty array
       books = [];
       await writeBooksDb(books);
     } else {
+      // For other errors, re-throw them
       throw error;
     }
   }
@@ -25,7 +29,9 @@ async function readBooksDb(): Promise<Book[]> {
 }
 
 async function writeBooksDb(data: Book[]) {
+  // Update cache
   books = data;
+  // Write to file
   await fs.writeFile(booksDbPath, JSON.stringify(data, null, 2), 'utf-8');
 }
 
@@ -126,10 +132,10 @@ export async function addBook(book: Omit<Book, 'id'>): Promise<Book> {
   await delay(300);
   const allBooks = await readBooksDb();
   const numericIds = allBooks.map(b => parseInt(b.id, 10)).filter(id => !isNaN(id));
-  const newId = (Math.max(0, ...numericIds) + 1).toString();
+  const newId = numericIds.length > 0 ? Math.max(...numericIds) + 1 : 1;
 
   const newBook: Book = {
-    id: newId,
+    id: newId.toString(),
     ...book,
   };
   const updatedBooks = [...allBooks, newBook];
