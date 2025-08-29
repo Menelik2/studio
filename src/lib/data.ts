@@ -9,14 +9,27 @@ import type { Book, Planner1Item, Planner2Item, PlannerSignatures } from './defi
 // Generic function to read a JSON file from Vercel Blob
 async function readData<T>(fileName: string): Promise<T[]> {
   try {
-    const { blobs } = await list({ prefix: fileName, limit: 1 });
+    const { blobs } = await list({ 
+        prefix: fileName, 
+        limit: 1,
+        token: process.env.BLOB_READ_WRITE_TOKEN 
+    });
     if (blobs.length === 0) {
       // If the file doesn't exist, create it with an empty array
       await writeData(fileName, []);
       return [];
     }
     const blob = blobs[0];
+    // The public URL doesn't need a token
     const response = await fetch(blob.url);
+    if (!response.ok) {
+        // If the file was deleted but list cache hasn't updated, this might fail
+        if (response.status === 404) {
+             await writeData(fileName, []);
+             return [];
+        }
+        throw new Error(`Failed to fetch ${fileName}: ${response.statusText}`);
+    }
     const data = await response.json();
     return (data as T[]) || [];
   } catch (error) {
@@ -33,6 +46,7 @@ async function writeData<T>(fileName: string, data: T[]): Promise<void> {
     access: 'public',
     contentType: 'application/json',
     addRandomSuffix: false, // Ensures we overwrite the same file
+    token: process.env.BLOB_READ_WRITE_TOKEN,
   });
 }
 
@@ -131,6 +145,7 @@ export async function uploadPdfToBlob(file: File): Promise<{ success: boolean; p
       const blob = await put(file.name, file, {
           access: 'public',
           contentType: 'application/pdf',
+          token: process.env.BLOB_READ_WRITE_TOKEN,
       });
       return { success: true, path: blob.url };
   } catch (error) {
