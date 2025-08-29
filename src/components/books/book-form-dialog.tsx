@@ -115,7 +115,6 @@ function SubmitButton({ mode }: { mode: 'create' | 'edit' | 'comment' }) {
 export function BookFormDialog() {
   const { isOpen, book, mode, onClose } = useBookDialog();
   const { toast } = useToast();
-  const isEditOrComment = mode === 'edit' || mode === 'comment';
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, startUploadTransition] = useTransition();
 
