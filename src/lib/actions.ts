@@ -11,7 +11,7 @@ import {
   updateBook, 
   getPlanner1Items, 
   savePlanner1Items, 
-  getPlanner2Items, _
+  getPlanner2Items,
   savePlanner2Items, 
   getPlannerSignatures, 
   savePlannerSignatures,
