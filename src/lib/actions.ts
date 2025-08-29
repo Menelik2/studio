@@ -21,7 +21,6 @@ export async function loginAction(prevState: { error: string } | undefined, form
 }
 
 const bookSchema = z.object({
-  id: z.string().optional(),
   title: z.string().min(1, { message: 'Title is required' }),
   author: z.string().min(1, { message: 'Author is required' }),
   category: z.enum(['ግጥም', 'ወግ', 'ድራማ', 'መነባንብ', 'መጣጥፍ', 'ሌሎች መፅሐፍት'], {
@@ -39,6 +38,11 @@ const bookSchema = z.object({
   comment: z.string().optional(),
 });
 
+const bookSchemaWithId = bookSchema.extend({
+  id: z.string(),
+});
+
+
 export type FormState = {
   message: string;
   errors?: {
@@ -53,7 +57,8 @@ export type FormState = {
 };
 
 async function handleBookAction(bookData: unknown, action: 'create' | 'update') {
-  const validatedFields = bookSchema.safeParse(bookData);
+  const schema = action === 'create' ? bookSchema : bookSchemaWithId;
+  const validatedFields = schema.safeParse(bookData);
 
   if (!validatedFields.success) {
     return {
@@ -80,12 +85,10 @@ async function handleBookAction(bookData: unknown, action: 'create' | 'update') 
 }
 
 export async function createBookAction(prevState: FormState, formData: FormData) {
-  const book = Object.fromEntries(formData.entries());
+  const rawData = Object.fromEntries(formData.entries());
   // The 'id' field for new books might be an empty string from the form, so we remove it.
-  if (book.id === '') {
-    delete book.id;
-  }
-  return handleBookAction(book, 'create');
+  const { id, ...bookData } = rawData;
+  return handleBookAction(bookData, 'create');
 }
 
 export async function updateBookAction(prevState: FormState, formData: FormData) {
