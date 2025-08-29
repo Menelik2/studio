@@ -1,4 +1,5 @@
 import { AppSidebar } from '@/components/dashboard/app-sidebar';
+import { AppHeader } from '@/components/dashboard/app-header';
 
 export default function DashboardLayout({
   children,
@@ -11,6 +12,7 @@ export default function DashboardLayout({
         <AppSidebar />
       </div>
       <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14 print:p-0 print:pl-0">
+        <AppHeader />
         <main className="flex-1 flex flex-col gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 print:p-0 print:gap-0">
           {children}
         </main>
