@@ -2,216 +2,158 @@
 'use server';
 
 import type { Book, Planner1Item, Planner2Item, PlannerSignatures } from './definitions';
-import fs from 'fs/promises';
-import path from 'path';
+import { db } from './firebase';
+import { 
+  collection, 
+  getDocs, 
+  doc, 
+  getDoc, 
+  addDoc, 
+  updateDoc, 
+  deleteDoc,
+  query,
+  where,
+  limit,
+  writeBatch
+} from 'firebase/firestore';
 
-// --- BOOK DATA ---
-const booksDbPath = path.join(process.cwd(), 'src', 'lib', 'books.json');
-let books: Book[] | null = null;
+// --- BOOK FUNCTIONS ---
 
-async function readBooksDb(): Promise<Book[]> {
-  // Use cached data if available in dev, but always re-read in production
-  if (books && process.env.NODE_ENV === 'development') return books;
-  try {
-    const data = await fs.readFile(booksDbPath, 'utf-8');
-    books = JSON.parse(data);
-  } catch (error: any) {
-    if (error.code === 'ENOENT') {
-      // If the file doesn't exist, create it with an empty array
-      books = [];
-      await writeBooksDb(books);
-    } else {
-      // For other errors, re-throw them
-      throw error;
-    }
-  }
-  return books!;
-}
-
-async function writeBooksDb(data: Book[]) {
-  // Update cache
-  books = data;
-  // Write to file
-  await fs.writeFile(booksDbPath, JSON.stringify(data, null, 2), 'utf-8');
-}
-
-// --- PLANNER 1 DATA ---
-const planner1DbPath = path.join(process.cwd(), 'src', 'lib', 'planner1.json');
-let planner1Items: Planner1Item[] | null = null;
-
-async function readPlanner1Db(): Promise<Planner1Item[]> {
-    if (planner1Items && process.env.NODE_ENV === 'development') return planner1Items;
-    try {
-        const data = await fs.readFile(planner1DbPath, 'utf-8');
-        planner1Items = JSON.parse(data);
-    } catch (error: any) {
-        if (error.code === 'ENOENT') {
-            planner1Items = [];
-            await writePlanner1Db(planner1Items);
-        } else {
-            throw error;
-        }
-    }
-    return planner1Items!;
-}
-
-async function writePlanner1Db(data: Planner1Item[]) {
-    planner1Items = data;
-    await fs.writeFile(planner1DbPath, JSON.stringify(data, null, 2), 'utf-8');
-}
-
-// --- PLANNER 2 DATA ---
-const planner2DbPath = path.join(process.cwd(), 'src', 'lib', 'planner2.json');
-let planner2Items: Planner2Item[] | null = null;
-
-async function readPlanner2Db(): Promise<Planner2Item[]> {
-    if (planner2Items && process.env.NODE_ENV === 'development') return planner2Items;
-    try {
-        const data = await fs.readFile(planner2DbPath, 'utf-8');
-        planner2Items = JSON.parse(data);
-    } catch (error: any) {
-        if (error.code === 'ENOENT') {
-            planner2Items = [];
-            await writePlanner2Db(planner2Items);
-        } else {
-            throw error;
-        }
-    }
-    return planner2Items!;
-}
-
-async function writePlanner2Db(data: Planner2Item[]) {
-    planner2Items = data;
-    await fs.writeFile(planner2DbPath, JSON.stringify(data, null, 2), 'utf-8');
-}
-
-// --- PLANNER SIGNATURES DATA ---
-const plannerSignaturesDbPath = path.join(process.cwd(), 'src', 'lib', 'planner-signatures.json');
-let plannerSignatures: PlannerSignatures[] | null = null;
-
-async function readPlannerSignaturesDb(): Promise<PlannerSignatures[]> {
-    if (plannerSignatures && process.env.NODE_ENV === 'development') return plannerSignatures;
-    try {
-        const data = await fs.readFile(plannerSignaturesDbPath, 'utf-8');
-        plannerSignatures = JSON.parse(data);
-    } catch (error: any) {
-        if (error.code === 'ENOENT') {
-            plannerSignatures = [];
-            await writePlannerSignaturesDb(plannerSignatures);
-        } else {
-            throw error;
-        }
-    }
-    return plannerSignatures!;
-}
-
-async function writePlannerSignaturesDb(data: PlannerSignatures[]) {
-    plannerSignatures = data;
-    await fs.writeFile(plannerSignaturesDbPath, JSON.stringify(data, null, 2), 'utf-8');
-}
-
-
-// Simulate network delay
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-// --- EXPORTED FUNCTIONS ---
-
-// Book Functions
 export async function getBooks(): Promise<Book[]> {
-  await delay(500);
-  return await readBooksDb();
+  const booksCol = collection(db, 'books');
+  const bookSnapshot = await getDocs(booksCol);
+  const bookList = bookSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Book));
+  return bookList;
 }
 
 export async function getBookById(id: string): Promise<Book | undefined> {
-  await delay(200);
-  const allBooks = await readBooksDb();
-  return allBooks.find((book) => book.id === id);
+  const bookDocRef = doc(db, 'books', id);
+  const bookSnap = await getDoc(bookDocRef);
+  if (bookSnap.exists()) {
+    return { id: bookSnap.id, ...bookSnap.data() } as Book;
+  }
+  return undefined;
 }
 
 export async function addBook(book: Omit<Book, 'id'>): Promise<Book> {
-  await delay(300);
-  const allBooks = await readBooksDb();
-  const numericIds = allBooks
-    .map(b => parseInt(b.id, 10))
-    .filter(id => !isNaN(id));
-  const newId = numericIds.length > 0 ? Math.max(...numericIds) + 1 : 1;
-
-  const newBook: Book = {
-    id: newId.toString(),
-    ...book,
-  };
-  const updatedBooks = [...allBooks, newBook];
-  await writeBooksDb(updatedBooks);
-  return newBook;
+    const booksCol = collection(db, 'books');
+    // Firestore automatically generates a unique ID
+    const docRef = await addDoc(booksCol, book);
+    return { id: docRef.id, ...book };
 }
 
 export async function updateBook(updatedBook: Book): Promise<Book | null> {
-  await delay(300);
-  let allBooks = await readBooksDb();
-  const index = allBooks.findIndex((book) => book.id === updatedBook.id);
-  if (index !== -1) {
-    allBooks[index] = updatedBook;
-    await writeBooksDb(allBooks);
-    return allBooks[index];
-  }
-  return null;
+  const { id, ...bookData } = updatedBook;
+  if (!id) return null;
+  const bookDocRef = doc(db, 'books', id);
+  await updateDoc(bookDocRef, bookData);
+  return updatedBook;
 }
 
 export async function deleteBook(id: string): Promise<boolean> {
-  await delay(300);
-  let allBooks = await readBooksDb();
-  const initialLength = allBooks.length;
-  const updatedBooks = allBooks.filter((book) => book.id !== id);
-  if (updatedBooks.length < initialLength) {
-    await writeBooksDb(updatedBooks);
+  if (!id) return false;
+  try {
+    const bookDocRef = doc(db, 'books', id);
+    await deleteDoc(bookDocRef);
     return true;
+  } catch (error) {
+    console.error("Error deleting book:", error);
+    return false;
   }
-  return false;
 }
 
-// Planner 1 Functions
+// --- PLANNER 1 FUNCTIONS ---
+
 export async function getPlanner1Items(): Promise<Planner1Item[]> {
-    await delay(300);
-    return await readPlanner1Db();
+    const planner1Col = collection(db, 'planner1');
+    const planner1Snapshot = await getDocs(planner1Col);
+    return planner1Snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Planner1Item));
 }
 
 export async function savePlanner1Items(items: Planner1Item[]): Promise<void> {
-    await delay(300);
-    await writePlanner1Db(items);
+    const batch = writeBatch(db);
+    const planner1Col = collection(db, 'planner1');
+
+    // First, delete all existing items for simplicity.
+    // A more advanced implementation might diff the changes.
+    const existingItems = await getDocs(planner1Col);
+    existingItems.forEach(doc => {
+        batch.delete(doc.ref);
+    });
+    
+    // Now, add the new items
+    items.forEach(item => {
+        const { id, ...itemData } = item;
+        let docRef;
+        // If an item has an ID from Firestore, use it. Otherwise, create a new one.
+        if (id && !/^\d+$/.test(id)) { // check if it's a firestore id
+            docRef = doc(db, 'planner1', id);
+        } else {
+            docRef = doc(planner1Col); // create a new doc
+        }
+        batch.set(docRef, itemData);
+    });
+    
+    await batch.commit();
 }
 
-// Planner Signatures Functions
+
+// --- PLANNER SIGNATURES FUNCTIONS ---
+
 export async function getPlannerSignatures(year: number): Promise<Omit<PlannerSignatures, 'year'> | null> {
-    await delay(200);
-    const allSignatures = await readPlannerSignaturesDb();
-    const signaturesForYear = allSignatures.find(s => s.year === year);
-    if (signaturesForYear) {
-        const { year: sigYear, ...rest } = signaturesForYear;
-        return rest;
+    const q = query(collection(db, 'plannerSignatures'), where("year", "==", year), limit(1));
+    const querySnapshot = await getDocs(q);
+    if (!querySnapshot.empty) {
+        const docData = querySnapshot.docs[0].data();
+        return {
+            preparationOfficer: docData.preparationOfficer,
+            reviewOfficer: docData.reviewOfficer
+        };
     }
     return null;
 }
 
 export async function savePlannerSignatures(signatures: PlannerSignatures): Promise<void> {
-    await delay(300);
-    let allSignatures = await readPlannerSignaturesDb();
-    const index = allSignatures.findIndex(s => s.year === signatures.year);
-    if (index !== -1) {
-        allSignatures[index] = signatures;
+    const signaturesCol = collection(db, 'plannerSignatures');
+    const q = query(signaturesCol, where("year", "==", signatures.year), limit(1));
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+        const docRef = querySnapshot.docs[0].ref;
+        await updateDoc(docRef, signatures);
     } else {
-        allSignatures.push(signatures);
+        await addDoc(signaturesCol, signatures);
     }
-    await writePlannerSignaturesDb(allSignatures);
 }
 
 
-// Planner 2 Functions
+// --- PLANNER 2 FUNCTIONS ---
+
 export async function getPlanner2Items(): Promise<Planner2Item[]> {
-    await delay(300);
-    return await readPlanner2Db();
+    const planner2Col = collection(db, 'planner2');
+    const planner2Snapshot = await getDocs(planner2Col);
+    return planner2Snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Planner2Item));
 }
 
 export async function savePlanner2Items(items: Planner2Item[]): Promise<void> {
-    await delay(300);
-    await writePlanner2Db(items);
+    const batch = writeBatch(db);
+    const planner2Col = collection(db, 'planner2');
+
+    const existingItems = await getDocs(planner2Col);
+    existingItems.forEach(doc => {
+        batch.delete(doc.ref);
+    });
+    
+    items.forEach(item => {
+        const { id, ...itemData } = item;
+        let docRef;
+        if (id && !/^\d+$/.test(id)) {
+            docRef = doc(db, 'planner2', id);
+        } else {
+            docRef = doc(planner2Col);
+        }
+        batch.set(docRef, itemData);
+    });
+    
+    await batch.commit();
 }
