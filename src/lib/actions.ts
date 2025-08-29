@@ -161,7 +161,7 @@ export async function uploadPdfAction(formData: FormData) {
 
 
 // Planner 1 Actions
-export async function getPlanner1ItemsAction(): Promise<Planner1Item[]> {
+export async function getPlanner1ItemsAction(): Promise<PlannerItem[]> {
   if (process.env.VERCEL_ENV) {
     const blobData = await readDataFromBlob<Planner1Item>('planner1.json');
     if (blobData) {
@@ -171,7 +171,7 @@ export async function getPlanner1ItemsAction(): Promise<Planner1Item[]> {
   return getLocalPlanner1Items();
 }
 
-export async function savePlanner1ItemsAction(items: Planner1Item[]): Promise<{success: boolean}> {
+export async function savePlanner1ItemsAction(items: PlannerItem[]): Promise<{success: boolean}> {
   try {
     await saveLocalPlanner1Items(items); // save to local file
     if (process.env.VERCEL_ENV) {
