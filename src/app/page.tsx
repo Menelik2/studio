@@ -215,16 +215,16 @@ export default function WelcomePage() {
         animate="visible"
         transition={{ duration: 0.5, ease: "easeOut" }}
         variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}
-        className="relative z-10 flex items-center justify-between p-4 border-b bg-background/80 backdrop-blur-sm"
+        className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-4 p-4 border-b bg-background/80 backdrop-blur-sm"
       >
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 self-start md:self-center">
           <BookOpen className="h-8 w-8 text-primary" />
           <div>
             <h1 className="text-xl font-bold">{currentContent.headerTitle}</h1>
             <p className="text-sm text-muted-foreground">{currentContent.headerSubtitle}</p>
           </div>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center justify-center gap-4">
             <Button asChild variant="link" className="text-foreground">
                 <Link href="/about">{currentContent.aboutUs}</Link>
             </Button>
@@ -563,7 +563,3 @@ export default function WelcomePage() {
     </div>
   );
 }
-
-    
-
-    
