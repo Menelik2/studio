@@ -47,9 +47,7 @@ const bookSchema = z.object({
     .min(1000, { message: 'Year must be a valid year' })
     .max(new Date().getFullYear(), { message: 'Year cannot be in the future' }),
   description: z.string().min(1, { message: 'Description is required' }),
-  filePath: z.string().min(1, { message: 'File path is required' }).refine(val => val.startsWith('https://') || val.startsWith('http://'), {
-    message: 'A valid URL is required. Please upload a file to get a URL.',
-  }),
+  filePath: z.string().url({ message: 'A valid URL is required. Please upload a file to get a URL.' }),
   comment: z.string().optional(),
 });
 
@@ -67,14 +65,6 @@ export type FormState = {
 };
 
 async function handleBookAction(book: Book, action: 'create' | 'update') {
-  if (book.filePath && book.filePath.startsWith('https://')) {
-    try {
-      const url = new URL(book.filePath);
-      book.filePath = url.pathname;
-    } catch (e) {
-      // Ignore if it's not a valid URL, validation will catch it.
-    }
-  }
   const validatedFields = bookSchema.safeParse(book);
 
   if (!validatedFields.success) {

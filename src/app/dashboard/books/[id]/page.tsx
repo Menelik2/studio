@@ -4,50 +4,22 @@ import { notFound } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-import { head } from '@vercel/blob';
-
-async function getBlobUrl(pathname: string): Promise<string | null> {
-    try {
-      // Remove leading '/' from pathname to match blob store
-      const blobPath = pathname.substring(1);
-      const blobInfo = await head(blobPath, {
-          token: process.env.BLOB_READ_WRITE_TOKEN,
-      });
-      return blobInfo.url;
-    } catch (error: any) {
-        if (error.status === 404) {
-            console.warn(`PDF not found in blob storage: ${pathname}`);
-            return null;
-        }
-        console.error(`Error fetching blob URL for ${pathname}:`, error);
-        return null;
-    }
-}
 
 export default async function BookViewerPage({ params }: { params: { id: string } }) {
   const { id } = params;
   const book = await getBookById(id);
 
-  if (!book) {
+  if (!book || !book.filePath) {
     notFound();
   }
   
-  // Filepath can be a direct external URL or a path to a blob
-  const isExternalUrl = book.filePath.startsWith('http');
-  // For Vercel deployment, the file path is now just the pathname, so we need the full blob URL
-  const blobUrl = process.env.VERCEL_ENV && !isExternalUrl
-    ? await getBlobUrl(book.filePath) 
-    : isExternalUrl 
-      ? book.filePath
-      // This case is for local dev where filepath might be a blob url
-      : book.filePath.includes('blob.vercel-storage.com') 
-        ? book.filePath
-        : notFound();
+  // The filePath should now always be a full, valid URL.
+  const isUrl = book.filePath.startsWith('http');
 
-
-  if (!blobUrl) {
-    // If we can't find the file, redirect to a 404 or back to the library
-    return notFound();
+  if (!isUrl) {
+    // If we somehow have a path that isn't a URL, we can't display it.
+    console.error(`Invalid file path for book ${id}: ${book.filePath}`);
+    notFound();
   }
 
   // Display the content in an iframe
@@ -67,7 +39,7 @@ export default async function BookViewerPage({ params }: { params: { id: string 
       </header>
       
       <div className="flex-grow border rounded-lg overflow-hidden m-4 mt-0">
-        <iframe src={blobUrl} className="w-full h-full" title={book.title} />
+        <iframe src={book.filePath} className="w-full h-full" title={book.title} />
       </div>
     </div>
   );

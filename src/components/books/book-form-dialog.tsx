@@ -92,9 +92,7 @@ const bookSchema = z.object({
   category: z.enum(['ግጥም', 'ወግ', 'ድራማ', 'መነባንብ', 'መጣጥፍ', 'ሌሎች መፅሐፍት']),
   year: z.coerce.number().int().min(1000).max(new Date().getFullYear()),
   description: z.string().min(1, 'Description is required'),
-  filePath: z.string().min(1, 'File path is required').refine(val => val.startsWith('https://'), {
-    message: 'A valid URL is required. Please upload a file to get a URL.',
-  }),
+  filePath: z.string().url({ message: 'A valid URL is required. Please upload a file to get a URL.' }),
   comment: z.string().optional(),
 });
 
