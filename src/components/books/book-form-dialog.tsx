@@ -92,8 +92,8 @@ const bookSchema = z.object({
   category: z.enum(['ግጥም', 'ወግ', 'ድራማ', 'መነባንብ', 'መጣጥፍ', 'ሌሎች መፅሐፍት']),
   year: z.coerce.number().int().min(1000).max(new Date().getFullYear()),
   description: z.string().min(1, 'Description is required'),
-  filePath: z.string().min(1, 'File path is required').refine(val => val.startsWith('/pdfs/') || val.startsWith('http'), {
-    message: 'Path must start with /pdfs/ or be a valid URL (http/https)',
+  filePath: z.string().min(1, 'File path is required').refine(val => val.startsWith('https://'), {
+    message: 'A valid URL is required. Please upload a file to get a URL.',
   }),
   comment: z.string().optional(),
 });
@@ -126,7 +126,7 @@ export function BookFormDialog() {
     errors: {},
   });
 
-  const { register, reset, control, formState: { errors }, setValue } = useForm<BookFormValues>({
+  const { register, reset, control, formState: { errors }, setValue, watch } = useForm<BookFormValues>({
     resolver: zodResolver(bookSchema),
     defaultValues: {
         title: '',
@@ -138,6 +138,8 @@ export function BookFormDialog() {
         comment: '',
     },
   });
+
+  const currentFilePath = watch('filePath');
 
   useEffect(() => {
     if (isOpen) {
@@ -190,14 +192,18 @@ export function BookFormDialog() {
 
     const files = e.dataTransfer.files;
     if (files && files.length > 0) {
-      const file = files[0];
-      if (file.type === 'application/pdf') {
+      handleFileUpload(files[0]);
+    }
+  }, [setValue, toast]);
+
+  const handleFileUpload = (file: File) => {
+    if (file.type === 'application/pdf') {
         const formData = new FormData();
         formData.append('file', file);
 
         startUploadTransition(async () => {
             const result = await uploadPdfAction(formData);
-            if(result.success) {
+            if(result.success && result.path) {
                 setValue('filePath', result.path, { shouldValidate: true });
                 toast({
                     title: 'File Uploaded!',
@@ -211,7 +217,6 @@ export function BookFormDialog() {
                 });
             }
         });
-
       } else {
         toast({
           variant: 'destructive',
@@ -219,8 +224,7 @@ export function BookFormDialog() {
           description: 'Please drop a PDF file.',
         });
       }
-    }
-  }, [setValue, toast]);
+  }
 
   if (!isOpen) return null;
   
@@ -235,7 +239,6 @@ export function BookFormDialog() {
     if (mode === 'edit') return 'Update the details of this book.';
     return 'Fill in the details for the new book.';
   }
-
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => {
@@ -311,18 +314,27 @@ export function BookFormDialog() {
               </div>
               
               <div className="grid grid-cols-4 items-start gap-4">
-                <Label htmlFor="filePath" className="text-right pt-2">PDF File or URL</Label>
+                <Label htmlFor="filePath" className="text-right pt-2">PDF File</Label>
                 <div className="col-span-3 space-y-2">
                   <div
                     onDragEnter={handleDragEnter}
                     onDragLeave={handleDragLeave}
                     onDragOver={handleDragOver}
                     onDrop={handleDrop}
+                    onClick={() => document.getElementById('pdf-upload-input')?.click()}
                     className={cn(
                       'relative flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50 transition-colors',
                       isDragging ? 'border-primary bg-muted/50' : 'border-input'
                     )}
                   >
+                    <input 
+                      type="file" 
+                      id="pdf-upload-input" 
+                      className="hidden"
+                      accept="application/pdf"
+                      onChange={(e) => e.target.files && handleFileUpload(e.target.files[0])}
+                      disabled={isUploading}
+                    />
                     {isUploading ? (
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <Loader2 className="h-6 w-6 animate-spin" />
@@ -332,17 +344,17 @@ export function BookFormDialog() {
                       <>
                         <UploadCloud className="h-8 w-8 text-muted-foreground" />
                         <p className="mt-2 text-sm text-muted-foreground">
-                          Drag & drop a PDF here
+                          Drag & drop or click to upload a PDF
                         </p>
-                        <p className="text-xs text-muted-foreground">or provide a URL below</p>
                       </>
                     )}
                   </div>
                   <Input
                     id="filePath"
-                    placeholder="/pdfs/example.pdf or https://..."
+                    placeholder="Upload a file to get a URL"
                     {...register('filePath')}
                     disabled={isUploading}
+                    readOnly
                   />
                    {errors.filePath && <p className="text-red-500 text-xs text-right">{errors.filePath.message}</p>}
                    {formState.errors?.filePath && <p className="text-red-500 text-xs text-right">{formState.errors.filePath[0]}</p>}

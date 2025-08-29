@@ -4,6 +4,23 @@ import { notFound, redirect } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import { head } from '@vercel/blob';
+
+async function getBlobUrl(pathname: string): Promise<string | null> {
+    try {
+      // Remove leading '/' from pathname to match blob store
+      const blobPath = pathname.substring(1);
+      const blobInfo = await head(blobPath);
+      return blobInfo.url;
+    } catch (error: any) {
+        if (error.status === 404) {
+            console.warn(`PDF not found in blob storage: ${pathname}`);
+            return null;
+        }
+        console.error(`Error fetching blob URL for ${pathname}:`, error);
+        return null;
+    }
+}
 
 export default async function BookViewerPage({ params }: { params: { id: string } }) {
   const { id } = params;
@@ -12,21 +29,22 @@ export default async function BookViewerPage({ params }: { params: { id: string 
   if (!book) {
     notFound();
   }
+  
+  // Filepath can be a direct external URL or a path to a blob
+  const isExternalUrl = book.filePath.startsWith('http');
+  const blobUrl = !isExternalUrl ? await getBlobUrl(book.filePath) : book.filePath;
 
-  const isExternal = book.filePath.startsWith('http');
-
-  // If the path is local, we want to serve it directly.
-  // Next.js will handle this from the `public` folder.
-  if (!isExternal) {
-    redirect(book.filePath);
+  if (!blobUrl) {
+    // If we can't find the file, redirect to a 404 or back to the library
+    return notFound();
   }
 
-  // If the path is external (http/https), we display it in an iframe.
+  // Display the content in an iframe
   return (
-    <div className="flex flex-col h-full">
-      <header className="flex items-center justify-between mb-4">
+    <div className="flex flex-col h-screen">
+      <header className="flex items-center justify-between p-4 border-b bg-background z-10">
         <div>
-          <h1 className="font-headline text-3xl font-bold tracking-tight">{book.title}</h1>
+          <h1 className="font-headline text-2xl font-bold tracking-tight">{book.title}</h1>
           <p className="text-muted-foreground">{book.author} ({book.year})</p>
         </div>
         <Button asChild variant="outline">
@@ -37,8 +55,8 @@ export default async function BookViewerPage({ params }: { params: { id: string 
         </Button>
       </header>
       
-      <div className="flex-grow border rounded-lg overflow-hidden">
-        <iframe src={book.filePath} className="w-full h-full" title={book.title} />
+      <div className="flex-grow border rounded-lg overflow-hidden m-4 mt-0">
+        <iframe src={blobUrl} className="w-full h-full" title={book.title} />
       </div>
     </div>
   );

@@ -1,40 +1,39 @@
 
 'use server';
 
+import { list, put, del, head } from '@vercel/blob';
 import type { Book, Planner1Item, Planner2Item, PlannerSignatures } from './definitions';
-import fs from 'fs/promises';
-import path from 'path';
-
-// Simulate network delay
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-const booksFilePath = path.join(process.cwd(), 'src/lib/books.json');
-const planner1FilePath = path.join(process.cwd(), 'src/lib/planner1.json');
-const planner2FilePath = path.join(process.cwd(), 'src/lib/planner2.json');
-const plannerSignaturesFilePath = path.join(process.cwd(), 'src/lib/planner-signatures.json');
-
 
 // --- HELPER FUNCTIONS ---
-async function readData<T>(filePath: string): Promise<T[]> {
+
+// Generic function to read a JSON file from Vercel Blob
+async function readData<T>(fileName: string): Promise<T[]> {
   try {
-    const fileContent = await fs.readFile(filePath, 'utf-8');
-    return JSON.parse(fileContent) as T[];
-  } catch (error: any) {
-    if (error.code === 'ENOENT') {
-      return []; // Return empty array if file doesn't exist
+    const { blobs } = await list({ prefix: fileName, limit: 1 });
+    if (blobs.length === 0) {
+      // If the file doesn't exist, create it with an empty array
+      await writeData(fileName, []);
+      return [];
     }
-    console.error(`Error reading data from ${filePath}:`, error);
-    throw new Error(`Could not read data from ${filePath}.`);
+    const blob = blobs[0];
+    const response = await fetch(blob.url);
+    const data = await response.json();
+    return (data as T[]) || [];
+  } catch (error) {
+    console.error(`Error reading data from ${fileName}:`, error);
+    // Return empty array on error to prevent app crash
+    return [];
   }
 }
 
-async function writeData<T>(filePath: string, data: T[]): Promise<void> {
-  try {
-    await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');
-  } catch (error) {
-    console.error(`Error writing data to ${filePath}:`, error);
-    throw new Error(`Could not write data to ${filePath}.`);
-  }
+
+// Generic function to write a JSON file to Vercel Blob
+async function writeData<T>(fileName: string, data: T[]): Promise<void> {
+  await put(fileName, JSON.stringify(data, null, 2), {
+    access: 'public',
+    contentType: 'application/json',
+    addRandomSuffix: false, // Ensures we overwrite the same file
+  });
 }
 
 
@@ -42,47 +41,42 @@ async function writeData<T>(filePath: string, data: T[]): Promise<void> {
 
 // Book Functions
 export async function getBooks(): Promise<Book[]> {
-  await delay(500);
-  return readData<Book>(booksFilePath);
+  return readData<Book>('books.json');
 }
 
 export async function getBookById(id: string): Promise<Book | undefined> {
-  await delay(200);
   const books = await getBooks();
   return books.find((book) => book.id === id);
 }
 
 export async function addBook(book: Omit<Book, 'id'>): Promise<Book> {
-  await delay(300);
   const books = await getBooks();
   const newBook: Book = {
-    id: (Math.max(0, ...books.map(b => parseInt(b.id))) + 1).toString(),
+    id: (Math.max(0, ...books.map(b => parseInt(b.id, 10) || 0)) + 1).toString(),
     ...book,
   };
   const updatedBooks = [...books, newBook];
-  await writeData(booksFilePath, updatedBooks);
+  await writeData('books.json', updatedBooks);
   return newBook;
 }
 
 export async function updateBook(updatedBook: Book): Promise<Book | null> {
-  await delay(300);
-  const books = await getBooks();
+  let books = await getBooks();
   const index = books.findIndex(book => book.id === updatedBook.id);
   if (index !== -1) {
     books[index] = updatedBook;
-    await writeData(booksFilePath, books);
+    await writeData('books.json', books);
     return updatedBook;
   }
   return null;
 }
 
 export async function deleteBook(id: string): Promise<boolean> {
-  await delay(300);
   let books = await getBooks();
   const initialLength = books.length;
   books = books.filter(book => book.id !== id);
   if (books.length < initialLength) {
-    await writeData(booksFilePath, books);
+    await writeData('books.json', books);
     return true;
   }
   return false;
@@ -90,19 +84,16 @@ export async function deleteBook(id: string): Promise<boolean> {
 
 // Planner 1 Functions
 export async function getPlanner1Items(): Promise<Planner1Item[]> {
-    await delay(300);
-    return readData<Planner1Item>(planner1FilePath);
+    return readData<Planner1Item>('planner1.json');
 }
 
 export async function savePlanner1Items(items: Planner1Item[]): Promise<void> {
-    await delay(300);
-    await writeData<Planner1Item>(planner1FilePath, items);
+    await writeData('planner1.json', items);
 }
 
 // Planner Signatures Functions
 export async function getPlannerSignatures(year: number): Promise<Omit<PlannerSignatures, 'year'> | null> {
-    await delay(200);
-    const allSignatures = await readData<PlannerSignatures>(plannerSignaturesFilePath);
+    const allSignatures = await readData<PlannerSignatures>('planner-signatures.json');
     const signatures = allSignatures.find(sig => sig.year === year);
     if (signatures) {
         return { preparationOfficer: signatures.preparationOfficer, reviewOfficer: signatures.reviewOfficer };
@@ -111,25 +102,39 @@ export async function getPlannerSignatures(year: number): Promise<Omit<PlannerSi
 }
 
 export async function savePlannerSignatures(signatures: PlannerSignatures): Promise<void> {
-    await delay(300);
-    let allSignatures = await readData<PlannerSignatures>(plannerSignaturesFilePath);
+    let allSignatures = await readData<PlannerSignatures>('planner-signatures.json');
     const index = allSignatures.findIndex(sig => sig.year === signatures.year);
     if (index !== -1) {
         allSignatures[index] = signatures;
     } else {
         allSignatures.push(signatures);
     }
-    await writeData(plannerSignaturesFilePath, allSignatures);
+    await writeData('planner-signatures.json', allSignatures);
 }
-
 
 // Planner 2 Functions
 export async function getPlanner2Items(): Promise<Planner2Item[]> {
-    await delay(300);
-    return readData<Planner2Item>(planner2FilePath);
+    return readData<Planner2Item>('planner2.json');
 }
 
 export async function savePlanner2Items(items: Planner2Item[]): Promise<void> {
-    await delay(300);
-    await writeData<Planner2Item>(planner2FilePath, items);
+    await writeData('planner2.json', items);
+}
+
+// PDF Upload function for Vercel Blob
+export async function uploadPdfToBlob(file: File): Promise<{ success: boolean; path?: string; error?: string }> {
+  if (!file || file.type !== 'application/pdf') {
+      return { success: false, error: 'Invalid file type. Please upload a PDF.' };
+  }
+
+  try {
+      const blob = await put(file.name, file, {
+          access: 'public',
+          contentType: 'application/pdf',
+      });
+      return { success: true, path: blob.url };
+  } catch (error) {
+      console.error('File upload to Blob failed:', error);
+      return { success: false, error: 'An unexpected error occurred during file upload.' };
+  }
 }

@@ -5,10 +5,19 @@
 import { z } from 'zod';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
-import { addBook, deleteBook, updateBook, getPlanner1Items, savePlanner1Items, getPlanner2Items, savePlanner2Items, getPlannerSignatures, savePlannerSignatures } from './data';
+import { 
+  addBook, 
+  deleteBook, 
+  updateBook, 
+  getPlanner1Items, 
+  savePlanner1Items, 
+  getPlanner2Items, 
+  savePlanner2Items, 
+  getPlannerSignatures, 
+  savePlannerSignatures,
+  uploadPdfToBlob
+} from './data';
 import type { Book, PlannerItem, Planner2Item, PlannerSignatures } from './definitions';
-import fs from 'fs/promises';
-import path from 'path';
 
 // Mock login action
 export async function loginAction(prevState: { error: string } | undefined, formData: FormData) {
@@ -34,8 +43,8 @@ const bookSchema = z.object({
     .min(1000, { message: 'Year must be a valid year' })
     .max(new Date().getFullYear(), { message: 'Year cannot be in the future' }),
   description: z.string().min(1, { message: 'Description is required' }),
-  filePath: z.string().min(1, { message: 'File path is required' }).refine(val => val.startsWith('/pdfs/') || val.startsWith('http'), {
-    message: 'Path must start with /pdfs/ or be a valid URL (http/https)',
+  filePath: z.string().min(1, { message: 'File path is required' }).refine(val => val.startsWith('https://') || val.startsWith('http://'), {
+    message: 'A valid URL is required. Please upload a file to get a URL.',
   }),
   comment: z.string().optional(),
 });
@@ -54,6 +63,15 @@ export type FormState = {
 };
 
 async function handleBookAction(book: Book, action: 'create' | 'update') {
+  // Remap filePath from URL to just the pathname for PDF viewer redirection
+  if (book.filePath && book.filePath.startsWith('https://')) {
+    try {
+      const url = new URL(book.filePath);
+      book.filePath = url.pathname;
+    } catch (e) {
+      // Ignore if it's not a valid URL, validation will catch it.
+    }
+  }
   const validatedFields = bookSchema.safeParse(book);
 
   if (!validatedFields.success) {
@@ -109,25 +127,7 @@ export async function deleteBookAction(prevState: any, formData: FormData) {
 
 export async function uploadPdfAction(formData: FormData) {
     const file = formData.get('file') as File;
-    if (!file || file.type !== 'application/pdf') {
-        return { success: false, error: 'Invalid file type. Please upload a PDF.' };
-    }
-
-    try {
-        const publicDir = path.join(process.cwd(), 'public', 'pdfs');
-        await fs.mkdir(publicDir, { recursive: true });
-
-        const filePath = path.join(publicDir, file.name);
-        const fileBuffer = Buffer.from(await file.arrayBuffer());
-        await fs.writeFile(filePath, fileBuffer);
-
-        const relativePath = `/pdfs/${file.name}`;
-        return { success: true, path: relativePath };
-
-    } catch (error) {
-        console.error('File upload failed:', error);
-        return { success: false, error: 'An unexpected error occurred during file upload.' };
-    }
+    return uploadPdfToBlob(file);
 }
 
 
