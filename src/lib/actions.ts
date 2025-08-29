@@ -68,12 +68,18 @@ async function handleBookAction(bookData: unknown, action: 'create' | 'update') 
       errors: validatedFields.error.flatten().fieldErrors,
     };
   }
+  
+  const finalData = {
+    ...validatedFields.data,
+    comment: validatedFields.data.comment || ''
+  }
+
 
   try {
     if (action === 'create') {
-      await addBook(validatedFields.data as Omit<Book, 'id'>);
+      await addBook(finalData as Omit<Book, 'id'>);
     } else {
-      await updateBook(validatedFields.data as Book);
+      await updateBook(finalData as Book);
     }
   } catch (error) {
     return {
@@ -166,12 +172,7 @@ export async function getPlannerSignaturesAction(year: number): Promise<Omit<Pla
 
 export async function savePlannerSignaturesAction(signatures: PlannerSignatures): Promise<{success: boolean}> {
     try {
-        const dataToSave = {
-            ...signatures,
-            preparationOfficer: signatures.preparationOfficer || '',
-            reviewOfficer: signatures.reviewOfficer || '',
-        };
-        await savePlannerSignatures(dataToSave);
+        await savePlannerSignatures(signatures);
         revalidatePath('/dashboard/planner');
         return { success: true };
     } catch (error) {

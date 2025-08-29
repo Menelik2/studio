@@ -1,0 +1,28 @@
+
+[
+  {
+    "id": "1",
+    "task": "የግጥም ምሽት ማዘጋጀት",
+    "measure": "ዝግጅት",
+    "quantity": "1",
+    "collaborator": "የባህል ክፍል",
+    "budgetRequested": "5000",
+    "approvedCost": "4500",
+    "approvedIncome": "0",
+    "year": "2024",
+    "months": {
+      "ሐምሌ": false,
+      "ነሐሴ": false,
+      "መስከረም": true,
+      "ጥቅምት": false,
+      "ህዳር": false,
+      "ታህሳስ": false,
+      "ጥር": false,
+      "የካቲት": false,
+      "መጋቢት": false,
+      "ሚያዝያ": false,
+      "ግንቦት": false,
+      "ሰኔ": false
+    }
+  }
+]
