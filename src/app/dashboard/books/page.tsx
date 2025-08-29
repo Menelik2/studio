@@ -4,6 +4,8 @@ import { getBooks } from '@/lib/data';
 import { BookList } from '@/components/books/book-list';
 import { Skeleton } from '@/components/ui/skeleton';
 
+export const dynamic = 'force-dynamic';
+
 function BooksPageSkeleton() {
   return (
     <div className="space-y-6">
