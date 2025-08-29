@@ -39,16 +39,14 @@ export async function getBooks(): Promise<Book[]> {
   
   const bookList = bookSnapshot.docs.map(doc => {
     const data = { id: doc.id, ...doc.data() };
-    // Validate and clean data on read to prevent undefined values
     const parsed = BookSchemaFromDb.safeParse(data);
     if (parsed.success) {
       return parsed.data as Book;
     } else {
       console.warn(`Invalid book data found for doc ${doc.id}:`, parsed.error.issues);
-      // Return a default book structure or null
       return null;
     }
-  }).filter((book): book is Book => book !== null); // Filter out any nulls from failed parsing
+  }).filter((book): book is Book => book !== null);
 
   return bookList;
 }
@@ -79,11 +77,13 @@ export async function updateBook(updatedBook: Book): Promise<Book | null> {
   const { id, ...bookData } = updatedBook;
   if (!id) return null;
 
-  // Ensure comment is not undefined, which Firestore rejects.
-  if (bookData.comment === undefined || bookData.comment === null) {
-      bookData.comment = '';
-  }
-  
+  // Final failsafe: ensure no undefined values are sent to Firestore
+  Object.keys(bookData).forEach(key => {
+    if (bookData[key as keyof typeof bookData] === undefined) {
+      delete bookData[key as keyof typeof bookData];
+    }
+  });
+
   const bookDocRef = doc(db, 'books', id);
   await updateDoc(bookDocRef, bookData);
   return updatedBook;
@@ -113,22 +113,18 @@ export async function savePlanner1Items(items: Planner1Item[]): Promise<void> {
     const batch = writeBatch(db);
     const planner1Col = collection(db, 'planner1');
 
-    // First, delete all existing items for simplicity.
-    // A more advanced implementation might diff the changes.
     const existingItems = await getDocs(planner1Col);
     existingItems.forEach(doc => {
         batch.delete(doc.ref);
     });
     
-    // Now, add the new items
     items.forEach(item => {
         const { id, ...itemData } = item;
         let docRef;
-        // If an item has an ID from Firestore, use it. Otherwise, create a new one.
-        if (id && !/^\d+$/.test(id)) { // check if it's a firestore id
+        if (id && !/^\d+$/.test(id)) {
             docRef = doc(db, 'planner1', id);
         } else {
-            docRef = doc(planner1Col); // create a new doc
+            docRef = doc(planner1Col);
         }
         batch.set(docRef, itemData);
     });

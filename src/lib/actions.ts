@@ -20,7 +20,7 @@ export async function loginAction(prevState: { error: string } | undefined, form
   }
 }
 
-const bookSchema = z.object({
+const bookSchemaBase = z.object({
   title: z.string().min(1, { message: 'Title is required' }),
   author: z.string().min(1, { message: 'Author is required' }),
   category: z.enum(['ግጥም', 'ወግ', 'ድራማ', 'መነባንብ', 'መጣጥፍ', 'ሌሎች መፅሐፍት'], {
@@ -38,7 +38,8 @@ const bookSchema = z.object({
   comment: z.string().optional(),
 });
 
-const bookSchemaWithId = bookSchema.extend({
+const createBookSchema = bookSchemaBase;
+const updateBookSchema = bookSchemaBase.extend({
   id: z.string().min(1, { message: 'ID is required for updates' }),
 });
 
@@ -58,7 +59,7 @@ export type FormState = {
 };
 
 async function handleBookAction(bookData: unknown, action: 'create' | 'update') {
-  const schema = action === 'create' ? bookSchema : bookSchemaWithId;
+  const schema = action === 'create' ? createBookSchema : updateBookSchema;
   const validatedFields = schema.safeParse(bookData);
 
   if (!validatedFields.success) {
@@ -72,10 +73,7 @@ async function handleBookAction(bookData: unknown, action: 'create' | 'update') 
     if (action === 'create') {
       await addBook(validatedFields.data as Omit<Book, 'id'>);
     } else {
-      const bookToUpdate = validatedFields.data as Book;
-      // Ensure comment is a string, not undefined.
-      bookToUpdate.comment = bookToUpdate.comment || '';
-      await updateBook(bookToUpdate);
+      await updateBook(validatedFields.data as Book);
     }
   } catch (error) {
     return {
@@ -90,7 +88,6 @@ async function handleBookAction(bookData: unknown, action: 'create' | 'update') 
 
 export async function createBookAction(prevState: FormState, formData: FormData) {
   const rawData = Object.fromEntries(formData.entries());
-  // The 'id' field for new books might be an empty string from the form, so we remove it.
   delete rawData.id;
   return handleBookAction(rawData, 'create');
 }
@@ -128,7 +125,6 @@ export async function uploadPdfAction(formData: FormData) {
         const publicDir = path.join(process.cwd(), 'public', 'pdfs');
         await fs.mkdir(publicDir, { recursive: true });
 
-        // Sanitize filename to prevent directory traversal
         const sanitizedFilename = path.basename(file.name).replace(/[^a-z0-9_.\-]/gi, '_');
         const filePath = path.join(publicDir, sanitizedFilename);
         const fileBuffer = Buffer.from(await file.arrayBuffer());
