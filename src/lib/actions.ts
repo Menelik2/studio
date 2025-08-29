@@ -109,7 +109,7 @@ async function handleBookAction(bookData: unknown, action: 'create' | 'update') 
 export async function createBookAction(prevState: FormState, formData: FormData) {
   const rawData = Object.fromEntries(formData.entries());
   // The ID from the form will be an empty string for new books, so we remove it.
-  if (rawData.id === '') {
+  if ('id' in rawData && rawData.id === '') {
     delete rawData.id;
   }
   return handleBookAction(rawData, 'create');

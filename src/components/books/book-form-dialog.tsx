@@ -237,6 +237,8 @@ export function BookFormDialog() {
     if (mode === 'edit') return 'Update the details of this book.';
     return 'Fill in the details for the new book.';
   }
+  
+  const isCreate = mode === 'create';
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => {
@@ -257,7 +259,11 @@ export function BookFormDialog() {
           
           {mode !== 'comment' && (
             <>
-              <input type="hidden" {...register('comment')} value={book?.comment ?? ''} />
+              {isCreate ? (
+                 <input type="hidden" {...register('comment')} value="" />
+              ) : (
+                 <input type="hidden" {...register('comment')} value={book?.comment ?? ''} />
+              )}
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="title" className="text-right">Title</Label>
                 <Input id="title" {...register('title')} className="col-span-3" />
