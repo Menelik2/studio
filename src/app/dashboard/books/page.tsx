@@ -1,6 +1,6 @@
 
 import { Suspense } from 'react';
-import { getBooks } from '@/lib/data';
+import { getBooksAction } from '@/lib/actions';
 import { BookList } from '@/components/books/book-list';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -30,7 +30,7 @@ function BooksPageSkeleton() {
 
 
 export default async function BooksPage() {
-  const books = await getBooks();
+  const books = await getBooksAction();
 
   return (
     <Suspense fallback={<BooksPageSkeleton />}>

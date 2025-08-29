@@ -1,5 +1,5 @@
 
-import { getBooks } from '@/lib/data';
+import { getBooksAction } from '@/lib/actions';
 import type { Book, Category } from '@/lib/definitions';
 import { StatCard } from '@/components/dashboard/stat-card';
 import { Book as BookIcon, Feather, Scroll, Theater, BookCopy, Folder, TrendingUp, Calendar, Library, BookText } from 'lucide-react';
@@ -8,7 +8,7 @@ import { BookFormDialog } from '@/components/books/book-form-dialog';
 import { DeleteBookDialog } from '@/components/books/delete-book-dialog';
 
 export default async function DashboardPage() {
-  const books = await getBooks();
+  const books = await getBooksAction();
 
   const totalBooks = books.length;
   

@@ -1,6 +1,6 @@
 
 import { getBookById } from '@/lib/data';
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
@@ -10,7 +10,9 @@ async function getBlobUrl(pathname: string): Promise<string | null> {
     try {
       // Remove leading '/' from pathname to match blob store
       const blobPath = pathname.substring(1);
-      const blobInfo = await head(blobPath);
+      const blobInfo = await head(blobPath, {
+          token: process.env.BLOB_READ_WRITE_TOKEN,
+      });
       return blobInfo.url;
     } catch (error: any) {
         if (error.status === 404) {
@@ -32,7 +34,16 @@ export default async function BookViewerPage({ params }: { params: { id: string 
   
   // Filepath can be a direct external URL or a path to a blob
   const isExternalUrl = book.filePath.startsWith('http');
-  const blobUrl = !isExternalUrl ? await getBlobUrl(book.filePath) : book.filePath;
+  // For Vercel deployment, the file path is now just the pathname, so we need the full blob URL
+  const blobUrl = process.env.VERCEL_ENV && !isExternalUrl
+    ? await getBlobUrl(book.filePath) 
+    : isExternalUrl 
+      ? book.filePath
+      // This case is for local dev where filepath might be a blob url
+      : book.filePath.includes('blob.vercel-storage.com') 
+        ? book.filePath
+        : notFound();
+
 
   if (!blobUrl) {
     // If we can't find the file, redirect to a 404 or back to the library

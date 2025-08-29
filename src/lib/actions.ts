@@ -8,17 +8,18 @@ import { revalidatePath } from 'next/cache';
 import { 
   addBook as addBookToFile, 
   deleteBook as deleteBookFromFile, 
-  updateBook as updateBookFromFile, 
-  getPlanner1Items as getPlanner1ItemsFromFile, 
-  savePlanner1Items as savePlanner1ItemsToFile,
-  getPlanner2Items as getPlanner2ItemsFromFile,
-  savePlanner2Items as savePlanner2ItemsToFile,
-  getPlannerSignatures as getPlannerSignaturesFromFile,
-  savePlannerSignatures as savePlannerSignaturesToFile,
-  uploadPdfToBlob,
-  getBooks as getBooksFromFile,
-  writeDataToBlob,
-  readDataFromBlob
+  updateBook as updateBookFromFile,
+  getBooks,
+  saveBooks,
+  getPlanner1Items, 
+  savePlanner1Items,
+  getPlanner2Items,
+  savePlanner2Items,
+  getPlannerSignatures,
+  savePlannerSignatures,
+  uploadPdfToBlob as uploadPdfToVercelBlob,
+  readDataFromBlob,
+  writeDataToBlob
 } from './data';
 import type { Book, PlannerItem, Planner2Item, PlannerSignatures } from './definitions';
 
@@ -66,7 +67,6 @@ export type FormState = {
 };
 
 async function handleBookAction(book: Book, action: 'create' | 'update') {
-  // Remap filePath from URL to just the pathname for PDF viewer redirection
   if (book.filePath && book.filePath.startsWith('https://')) {
     try {
       const url = new URL(book.filePath);
@@ -96,8 +96,12 @@ async function handleBookAction(book: Book, action: 'create' | 'update') {
     } else {
       updatedBooks = await updateBookFromFile(finalData as Book);
     }
-    await writeDataToBlob('books.json', updatedBooks);
+    // Sync with Vercel Blob
+    if (process.env.VERCEL_ENV) {
+      await writeDataToBlob('books.json', updatedBooks);
+    }
   } catch (error) {
+    console.error("Error handling book action:", error);
     return {
       message: 'Database Error: Failed to save book.',
     };
@@ -122,7 +126,7 @@ export async function deleteBookAction(prevState: any, formData: FormData) {
   const id = formData.get('id') as string;
   try {
     const updatedBooks = await deleteBookFromFile(id);
-    if(updatedBooks) {
+    if(updatedBooks && process.env.VERCEL_ENV) {
       await writeDataToBlob('books.json', updatedBooks);
     }
     revalidatePath('/dashboard/books');
@@ -133,23 +137,41 @@ export async function deleteBookAction(prevState: any, formData: FormData) {
   }
 }
 
+export async function getBooksAction(): Promise<Book[]> {
+  // On Vercel, sync from blob first
+  if (process.env.VERCEL_ENV) {
+    const blobData = await readDataFromBlob<Book>('books.json');
+    await saveBooks(blobData);
+  }
+  return getBooks();
+}
+
+
 export async function uploadPdfAction(formData: FormData) {
     const file = formData.get('file') as File | null;
     if (!file || file.size === 0) {
         return { success: false, error: 'No file provided.' };
     }
-    return uploadPdfToBlob(file);
+    // This function can only be used on the server, so it's safe here
+    return uploadPdfToVercelBlob(file);
 }
 
 
 // Planner 1 Actions
 export async function getPlanner1ItemsAction(): Promise<Planner1Item[]> {
-  return await readDataFromBlob<Planner1Item>('planner1.json');
+  if (process.env.VERCEL_ENV) {
+    const blobData = await readDataFromBlob<Planner1Item>('planner1.json');
+    await savePlanner1Items(blobData);
+  }
+  return getPlanner1Items();
 }
 
 export async function savePlanner1ItemsAction(items: Planner1Item[]): Promise<{success: boolean}> {
   try {
-    await writeDataToBlob('planner1.json', items);
+    await savePlanner1Items(items); // save to local file
+    if (process.env.VERCEL_ENV) {
+      await writeDataToBlob('planner1.json', items);
+    }
     revalidatePath('/dashboard/planner');
     return { success: true };
   } catch (error) {
@@ -159,7 +181,11 @@ export async function savePlanner1ItemsAction(items: Planner1Item[]): Promise<{s
 }
 
 export async function getPlannerSignaturesAction(year: number): Promise<Omit<PlannerSignatures, 'year'> | null> {
-    const allSignatures = await readDataFromBlob<PlannerSignatures>('planner-signatures.json');
+    if (process.env.VERCEL_ENV) {
+      const blobData = await readDataFromBlob<PlannerSignatures>('planner-signatures.json');
+      await savePlannerSignatures(blobData);
+    }
+    const allSignatures = await getPlannerSignatures();
     const signatures = allSignatures.find(sig => sig.year === year);
     if (signatures) {
         return { preparationOfficer: signatures.preparationOfficer, reviewOfficer: signatures.reviewOfficer };
@@ -169,14 +195,17 @@ export async function getPlannerSignaturesAction(year: number): Promise<Omit<Pla
 
 export async function savePlannerSignaturesAction(signatures: PlannerSignatures): Promise<{success: boolean}> {
     try {
-        let allSignatures = await readDataFromBlob<PlannerSignatures>('planner-signatures.json');
+        let allSignatures = await getPlannerSignatures();
         const index = allSignatures.findIndex(sig => sig.year === signatures.year);
         if (index !== -1) {
             allSignatures[index] = signatures;
         } else {
             allSignatures.push(signatures);
         }
-        await writeDataToBlob('planner-signatures.json', allSignatures);
+        await savePlannerSignatures(allSignatures); // save to local file
+        if (process.env.VERCEL_ENV) {
+            await writeDataToBlob('planner-signatures.json', allSignatures);
+        }
         revalidatePath('/dashboard/planner');
         return { success: true };
     } catch (error) {
@@ -188,12 +217,19 @@ export async function savePlannerSignaturesAction(signatures: PlannerSignatures)
 
 // Planner 2 Actions
 export async function getPlanner2ItemsAction(): Promise<Planner2Item[]> {
-    return await readDataFromBlob<Planner2Item>('planner2.json');
+    if (process.env.VERCEL_ENV) {
+        const blobData = await readDataFromBlob<Planner2Item>('planner2.json');
+        await savePlanner2Items(blobData);
+    }
+    return getPlanner2Items();
 }
 
 export async function savePlanner2ItemsAction(items: Planner2Item[]): Promise<{success:boolean}> {
   try {
-    await writeDataToBlob('planner2.json', items);
+    await savePlanner2Items(items); // save to local file
+    if (process.env.VERCEL_ENV) {
+        await writeDataToBlob('planner2.json', items);
+    }
     revalidatePath('/dashboard/planner-2');
     return { success: true };
   } catch (error) {
