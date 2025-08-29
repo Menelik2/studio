@@ -39,13 +39,14 @@ const bookSchema = z.object({
 });
 
 const bookSchemaWithId = bookSchema.extend({
-  id: z.string(),
+  id: z.string().min(1, { message: 'ID is required for updates' }),
 });
 
 
 export type FormState = {
   message: string;
   errors?: {
+    id?: string[];
     title?: string[];
     author?: string[];
     category?: string[];
@@ -87,8 +88,8 @@ async function handleBookAction(bookData: unknown, action: 'create' | 'update') 
 export async function createBookAction(prevState: FormState, formData: FormData) {
   const rawData = Object.fromEntries(formData.entries());
   // The 'id' field for new books might be an empty string from the form, so we remove it.
-  const { id, ...bookData } = rawData;
-  return handleBookAction(bookData, 'create');
+  delete rawData.id;
+  return handleBookAction(rawData, 'create');
 }
 
 export async function updateBookAction(prevState: FormState, formData: FormData) {

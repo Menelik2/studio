@@ -37,7 +37,6 @@ export async function getBookById(id: string): Promise<Book | undefined> {
 
 export async function addBook(book: Omit<Book, 'id'>): Promise<Book> {
     const booksCol = collection(db, 'books');
-    // Firestore automatically generates a unique ID
     const docRef = await addDoc(booksCol, book);
     return { id: docRef.id, ...book };
 }
