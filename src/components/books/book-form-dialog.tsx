@@ -98,12 +98,13 @@ const bookSchema = z.object({
 
 type BookFormValues = z.infer<typeof bookSchema>;
 
-function SubmitButton({ isEdit }: { isEdit: boolean }) {
+function SubmitButton({ mode }: { mode: 'create' | 'edit' | 'comment' }) {
   const { pending } = useFormStatus();
+  const isCreate = mode === 'create';
 
   return (
     <Button type="submit" disabled={pending}>
-      {pending ? (isEdit ? 'Saving...' : 'Adding...') : (isEdit ? 'Save Changes' : 'Add Book')}
+      {pending ? (isCreate ? 'Adding...' : 'Saving...') : (isCreate ? 'Add Book' : 'Save Changes')}
       <Save className="ml-2 h-4 w-4" />
     </Button>
   );
@@ -112,12 +113,11 @@ function SubmitButton({ isEdit }: { isEdit: boolean }) {
 export function BookFormDialog() {
   const { isOpen, book, mode, onClose } = useBookDialog();
   const { toast } = useToast();
-  const isEdit = !!book;
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, startUploadTransition] = useTransition();
 
   
-  const action = isEdit ? updateBookAction : createBookAction;
+  const action = mode === 'create' ? createBookAction : updateBookAction;
   
   const [formState, formAction] = useActionState(action, {
     message: '',
@@ -159,12 +159,12 @@ export function BookFormDialog() {
 
   useEffect(() => {
     if (formState.message && !formState.errors) {
-      toast({ title: isEdit ? 'Book Updated' : 'Book Added', description: formState.message });
+      toast({ title: mode === 'create' ? 'Book Added' : 'Book Updated', description: formState.message });
       onClose();
     } else if (formState.message && formState.errors) {
       toast({ variant: 'destructive', title: 'Error', description: formState.message });
     }
-  }, [formState, toast, onClose, isEdit]);
+  }, [formState, toast, onClose, mode]);
   
   const handleDragEnter = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -382,7 +382,7 @@ export function BookFormDialog() {
                 reset();
                 onClose();
             }}>Cancel</Button>
-            <SubmitButton isEdit={isEdit} />
+            <SubmitButton mode={mode} />
           </DialogFooter>
         </form>
       </DialogContent>
