@@ -61,6 +61,9 @@ export async function getBookById(id: string): Promise<Book | undefined> {
     const parsed = BookSchemaFromDb.safeParse(data);
      if (parsed.success) {
       return parsed.data as Book;
+    } else {
+      console.warn(`Invalid book data found for doc ${id}:`, parsed.error.issues);
+      return undefined;
     }
   }
   return undefined;
