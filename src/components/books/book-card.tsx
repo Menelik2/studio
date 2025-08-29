@@ -44,7 +44,7 @@ export function BookCard({ book }: { book: Book }) {
       <Card className="flex flex-col h-full transition-shadow duration-300 hover:shadow-xl">
         <CardHeader>
           <CardTitle className="font-headline hover:underline">
-             <Link href={`/dashboard/books/${book.id}`} target="_blank" rel="noopener noreferrer">
+             <Link href={book.filePath} target="_blank" rel="noopener noreferrer">
               {book.title}
             </Link>
           </CardTitle>
