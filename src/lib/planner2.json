@@ -1,13 +1,150 @@
+'use server';
 
-[
-  {
-    "id": "1",
-    "activity": "የድራማ ስልጠና መስጠት",
-    "measure": "የሰልጣኞች ብዛት",
-    "annualPlan": "50",
-    "approvedBudget": "10000",
-    "performance": "45",
-    "executionPercentage": "90%",
-    "year": "2024"
+import { db } from './firebase';
+import { collection, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc, query, where, writeBatch } from 'firebase/firestore';
+import type { Book, Planner1Item, Planner2Item, PlannerSignatures } from './definitions';
+import { z } from 'zod';
+
+const BookSchemaFromDb = z.object({
+  id: z.string(),
+  title: z.string().default(''),
+  author: z.string().default(''),
+  category: z.enum(['ግጥም', 'ወግ', 'ድራማ', 'መነባንብ', 'መጣጥፍ', 'ሌሎች መፅሐፍት']).default('ሌሎች መፅሐፍት'),
+  year: z.coerce.number().default(new Date().getFullYear()),
+  description: z.string().default(''),
+  filePath: z.string().default(''),
+  comment: z.string().default(''),
+});
+
+
+// --- BOOK FUNCTIONS ---
+
+export async function getBooks(): Promise<Book[]> {
+  const booksCol = collection(db, 'books');
+  const bookSnapshot = await getDocs(booksCol);
+  const books = bookSnapshot.docs.map(doc => {
+    const data = doc.data();
+    const validatedData = BookSchemaFromDb.safeParse({ id: doc.id, ...data });
+    if (validatedData.success) {
+      return validatedData.data;
+    }
+    console.warn('Invalid book data found in Firestore:', doc.id, validatedData.error);
+    return null;
+  });
+  return books.filter((book): book is Book => book !== null);
+}
+
+export async function getBookById(id: string): Promise<Book | undefined> {
+    if (!id) return undefined;
+    const bookDocRef = doc(db, 'books', id);
+    const bookDoc = await getDoc(bookDocRef);
+
+    if (!bookDoc.exists()) {
+        return undefined;
+    }
+    
+    const data = bookDoc.data();
+    const validatedData = BookSchemaFromDb.safeParse({ id: bookDoc.id, ...data });
+
+    if (validatedData.success) {
+      return validatedData.data;
+    }
+    console.warn('Invalid book data found in Firestore for ID:', id, validatedData.error);
+    return undefined;
+}
+
+export async function addBook(book: Omit<Book, 'id'>): Promise<Book> {
+    const { ...bookData } = book;
+    const docRef = await addDoc(collection(db, 'books'), bookData);
+    return { id: docRef.id, ...bookData };
+}
+
+export async function updateBook(bookData: Book): Promise<Book> {
+  const { id, ...dataToUpdate } = bookData;
+  if (!id) {
+    throw new Error('Book ID is required for updates.');
   }
-]
+  const bookDoc = doc(db, 'books', id);
+  // Ensure comment is not undefined
+  if (dataToUpdate.comment === undefined || dataToUpdate.comment === null) {
+      dataToUpdate.comment = '';
+  }
+  await updateDoc(bookDoc, dataToUpdate);
+  return bookData;
+}
+
+export async function deleteBook(id: string): Promise<boolean> {
+    if (!id) return false;
+    const bookDoc = doc(db, 'books', id);
+    await deleteDoc(bookDoc);
+    return true;
+}
+
+// --- PLANNER 1 FUNCTIONS ---
+
+export async function getPlanner1Items(): Promise<Planner1Item[]> {
+  const itemsCol = collection(db, 'planner1');
+  const itemsSnapshot = await getDocs(itemsCol);
+  return itemsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Planner1Item[];
+}
+
+export async function savePlanner1Items(items: Planner1Item[]): Promise<void> {
+  const batch = writeBatch(db);
+  const itemsCol = collection(db, 'planner1');
+
+  // First, delete all existing items for simplicity in this context.
+  // For a large-scale app, a more granular update would be better.
+  const snapshot = await getDocs(itemsCol);
+  snapshot.docs.forEach(doc => batch.delete(doc.ref));
+
+  // Now, add all the new items.
+  items.forEach(item => {
+    const { id, ...data } = item;
+    const docRef = id ? doc(itemsCol, id) : doc(itemsCol);
+    batch.set(docRef, data);
+  });
+
+  await batch.commit();
+}
+
+
+// --- PLANNER SIGNATURES FUNCTIONS ---
+
+export async function getPlannerSignatures(year: number): Promise<Omit<PlannerSignatures, 'year'> | null> {
+    const signaturesDocRef = doc(db, 'plannerSignatures', year.toString());
+    const docSnap = await getDoc(signaturesDocRef);
+    if (docSnap.exists()) {
+        return docSnap.data() as Omit<PlannerSignatures, 'year'>;
+    }
+    return null;
+}
+
+export async function savePlannerSignatures(signatures: PlannerSignatures): Promise<void> {
+    const { year, ...data } = signatures;
+    const signaturesDocRef = doc(db, 'plannerSignatures', year.toString());
+    await updateDoc(signaturesDocRef, data, { merge: true });
+}
+
+// --- PLANNER 2 FUNCTIONS ---
+
+export async function getPlanner2Items(): Promise<Planner2Item[]> {
+  const itemsCol = collection(db, 'planner2');
+  const itemsSnapshot = await getDocs(itemsCol);
+  return itemsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Planner2Item[];
+}
+
+export async function savePlanner2Items(items: Planner2Item[]): Promise<void> {
+    const batch = writeBatch(db);
+    const itemsCol = collection(db, 'planner2');
+
+    const snapshot = await getDocs(itemsCol);
+    snapshot.docs.forEach(doc => batch.delete(doc.ref));
+
+    items.forEach(item => {
+        const { id, ...data } = item;
+        const docRef = id ? doc(itemsCol, id) : doc(itemsCol);
+        batch.set(docRef, data);
+    });
+
+    await batch.commit();
+}
