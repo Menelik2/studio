@@ -6,16 +6,19 @@ import { z } from 'zod';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { 
-  addBook, 
-  deleteBook, 
-  updateBook, 
-  getPlanner1Items, 
-  savePlanner1Items, 
-  getPlanner2Items,
-  savePlanner2Items, 
-  getPlannerSignatures, 
-  savePlannerSignatures,
-  uploadPdfToBlob
+  addBook as addBookToFile, 
+  deleteBook as deleteBookFromFile, 
+  updateBook as updateBookFromFile, 
+  getPlanner1Items as getPlanner1ItemsFromFile, 
+  savePlanner1Items as savePlanner1ItemsToFile,
+  getPlanner2Items as getPlanner2ItemsFromFile,
+  savePlanner2Items as savePlanner2ItemsToFile,
+  getPlannerSignatures as getPlannerSignaturesFromFile,
+  savePlannerSignatures as savePlannerSignaturesToFile,
+  uploadPdfToBlob,
+  getBooks as getBooksFromFile,
+  writeDataToBlob,
+  readDataFromBlob
 } from './data';
 import type { Book, PlannerItem, Planner2Item, PlannerSignatures } from './definitions';
 
@@ -87,11 +90,13 @@ async function handleBookAction(book: Book, action: 'create' | 'update') {
   }
 
   try {
+    let updatedBooks;
     if (action === 'create') {
-      await addBook(finalData as Omit<Book, 'id'>);
+      updatedBooks = await addBookToFile(finalData as Omit<Book, 'id'>);
     } else {
-      await updateBook(finalData as Book);
+      updatedBooks = await updateBookFromFile(finalData as Book);
     }
+    await writeDataToBlob('books.json', updatedBooks);
   } catch (error) {
     return {
       message: 'Database Error: Failed to save book.',
@@ -116,7 +121,10 @@ export async function updateBookAction(prevState: FormState, formData: FormData)
 export async function deleteBookAction(prevState: any, formData: FormData) {
   const id = formData.get('id') as string;
   try {
-    await deleteBook(id);
+    const updatedBooks = await deleteBookFromFile(id);
+    if(updatedBooks) {
+      await writeDataToBlob('books.json', updatedBooks);
+    }
     revalidatePath('/dashboard/books');
     revalidatePath('/dashboard');
     return { message: 'Book deleted successfully.' };
@@ -136,13 +144,12 @@ export async function uploadPdfAction(formData: FormData) {
 
 // Planner 1 Actions
 export async function getPlanner1ItemsAction(): Promise<Planner1Item[]> {
-  const items = await getPlanner1Items();
-  return items;
+  return await readDataFromBlob<Planner1Item>('planner1.json');
 }
 
 export async function savePlanner1ItemsAction(items: Planner1Item[]): Promise<{success: boolean}> {
   try {
-    await savePlanner1Items(items);
+    await writeDataToBlob('planner1.json', items);
     revalidatePath('/dashboard/planner');
     return { success: true };
   } catch (error) {
@@ -152,12 +159,24 @@ export async function savePlanner1ItemsAction(items: Planner1Item[]): Promise<{s
 }
 
 export async function getPlannerSignaturesAction(year: number): Promise<Omit<PlannerSignatures, 'year'> | null> {
-    return await getPlannerSignatures(year);
+    const allSignatures = await readDataFromBlob<PlannerSignatures>('planner-signatures.json');
+    const signatures = allSignatures.find(sig => sig.year === year);
+    if (signatures) {
+        return { preparationOfficer: signatures.preparationOfficer, reviewOfficer: signatures.reviewOfficer };
+    }
+    return null;
 }
 
 export async function savePlannerSignaturesAction(signatures: PlannerSignatures): Promise<{success: boolean}> {
     try {
-        await savePlannerSignatures(signatures);
+        let allSignatures = await readDataFromBlob<PlannerSignatures>('planner-signatures.json');
+        const index = allSignatures.findIndex(sig => sig.year === signatures.year);
+        if (index !== -1) {
+            allSignatures[index] = signatures;
+        } else {
+            allSignatures.push(signatures);
+        }
+        await writeDataToBlob('planner-signatures.json', allSignatures);
         revalidatePath('/dashboard/planner');
         return { success: true };
     } catch (error) {
@@ -169,14 +188,13 @@ export async function savePlannerSignaturesAction(signatures: PlannerSignatures)
 
 // Planner 2 Actions
 export async function getPlanner2ItemsAction(): Promise<Planner2Item[]> {
-  const items = await getPlanner2Items();
-  return items;
+    return await readDataFromBlob<Planner2Item>('planner2.json');
 }
 
 export async function savePlanner2ItemsAction(items: Planner2Item[]): Promise<{success:boolean}> {
   try {
-    await savePlanner2Items(items);
-revalidatePath('/dashboard/planner-2');
+    await writeDataToBlob('planner2.json', items);
+    revalidatePath('/dashboard/planner-2');
     return { success: true };
   } catch (error) {
     console.error('Failed to save planner 2 items:', error);

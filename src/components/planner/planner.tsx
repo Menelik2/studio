@@ -55,25 +55,26 @@ export function Planner() {
     }
   }, [toast]);
 
-  useEffect(() => {
-    async function loadData() {
-      setIsLoading(true);
-      try {
-        const loadedItems = await getPlanner1ItemsAction();
-        setItems(loadedItems);
-        await loadSignatures(year);
-      } catch (error) {
-        toast({
-            title: 'Error loading planner data',
-            description: 'Could not fetch planner items from the server.',
-            variant: 'destructive',
-        });
-      } finally {
-        setIsLoading(false);
-      }
+  const loadData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const loadedItems = await getPlanner1ItemsAction();
+      setItems(loadedItems);
+      await loadSignatures(year);
+    } catch (error) {
+      toast({
+          title: 'Error loading planner data',
+          description: 'Could not fetch planner items from the server.',
+          variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
     }
+  }, [year, toast, loadSignatures]);
+
+  useEffect(() => {
     loadData();
-  }, [toast, year, loadSignatures]);
+  }, [loadData]);
 
   const handleSaveItems = async (updatedItems: PlannerItem[]) => {
     const result = await savePlanner1ItemsAction(updatedItems);
