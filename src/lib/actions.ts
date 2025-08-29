@@ -72,7 +72,7 @@ async function handleBookAction(bookData: unknown, action: 'create' | 'update') 
   const finalData = {
     ...validatedFields.data,
     comment: validatedFields.data.comment || ''
-  }
+  };
 
 
   try {
