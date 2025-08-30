@@ -25,7 +25,7 @@ function SubmitButton() {
 }
 
 export function LoginForm() {
-  const [state, formAction] = useActionState(loginAction, { error: '' });
+  const [state, formAction] = useActionState(loginAction, undefined);
 
   const formVariants = {
     hidden: { opacity: 0, y: 20 },
