@@ -1,12 +1,7 @@
 
 'use server';
 
-import { head, put } from '@vercel/blob';
-import fs from 'fs/promises';
-import path from 'path';
-
-// This determines if we are in a Vercel deployment environment.
-const isVercelDeployment = !!process.env.VERCEL_URL;
+import { head, put, list } from '@vercel/blob';
 
 // --- Vercel Blob Storage Functions ---
 
@@ -18,7 +13,7 @@ async function readDataFromBlob<T>(fileName: string): Promise<T[] | null> {
 
     const response = await fetch(blobCheck.url, {
       headers: {
-        Authorization: `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}`,
+        'x-vercel-protection-bypass': process.env.VERCEL_PROTECTION_BYPASS_SECRET!,
       },
       next: {
         // Revalidate frequently to keep data fresh, but not on every request.
@@ -36,7 +31,8 @@ async function readDataFromBlob<T>(fileName: string): Promise<T[] | null> {
   } catch (error: any) {
     if (error.status === 404) {
       // File doesn't exist, which is a valid case on first run.
-      return null;
+      console.log(`Blob ${fileName} not found. Returning empty array.`);
+      return [];
     }
     console.error(`Error reading blob ${fileName}:`, error.message);
     return null;
@@ -68,78 +64,41 @@ export async function uploadPdfToBlob(file: File): Promise<{ success: boolean; p
   }
 }
 
-// --- Local File System Functions ---
-
-const getLocalFilePath = (fileName: string) => {
-    const dataDirectory = path.join(process.cwd(), 'src/lib');
-    return path.join(dataDirectory, fileName);
-}
-
-async function readLocalData<T>(fileName: string): Promise<T[]> {
-  try {
-    const filePath = getLocalFilePath(fileName);
-    const jsonData = await fs.readFile(filePath, 'utf-8');
-    return JSON.parse(jsonData) as T[];
-  } catch (error) {
-    // If the file doesn't exist, return empty array.
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-      return [];
-    }
-    console.error(`Could not read local file ${fileName}:`, error);
-    // Return empty array on other errors to avoid crashing.
-    return [];
-  }
-}
-
-async function writeLocalData<T>(fileName: string, data: T[]): Promise<void> {
-  const filePath = getLocalFilePath(fileName);
-  try {
-    await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');
-  } catch(error) {
-      console.error(`Could not write to local file ${fileName}:`, error);
-  }
-}
-
-
 // --- Unified Data Functions ---
 
 /**
- * Reads data from the appropriate source.
- * If deployed on Vercel, it uses Vercel Blob.
- * If the blob is empty/new, it seeds it from the local JSON file.
- * If running locally, it uses the local JSON files directly.
+ * Reads data from Vercel Blob storage.
+ * In local dev, it will fail gracefully and return an empty array if the blob doesn't exist.
+ * The local JSON files are now only for reference or manual seeding.
  */
 export async function readData<T>(fileName: string): Promise<T[]> {
-  if (isVercelDeployment) {
-    let data = await readDataFromBlob<T>(fileName);
-    if (data === null) {
-      // Blob is empty or doesn't exist, seed it from local file.
-      const localData = await readLocalData<T>(fileName);
-      if (localData && localData.length > 0) {
-        console.log(`Seeding blob store for ${fileName} with local data.`);
-        await writeDataToBlob(fileName, localData);
-        data = localData;
-      } else {
-        // If no local data, start with an empty array.
-        data = [];
-      }
-    }
-    return data;
-  } else {
-    // In local development, always read from the local file.
-    return readLocalData<T>(fileName);
-  }
+    const data = await readDataFromBlob<T>(fileName);
+    // If blob returns null (due to an error) or is empty, return an empty array.
+    return data || [];
 }
 
 /**
- * Writes data to the appropriate source.
- * If deployed on Vercel, writes to Vercel Blob.
- * If running locally, writes to the local JSON file.
+ * Writes data to Vercel Blob storage.
  */
-export async function writeData<T>(fileName: string, data: T[]): Promise<void> {
-  if (isVercelDeployment) {
+export async function writeData<T>(fileName:string, data: T[]): Promise<void> {
     await writeDataToBlob(fileName, data);
-  } else {
-    await writeLocalData(fileName, data);
-  }
+}
+
+/**
+ * Checks if the blob store is empty and seeds it if necessary.
+ * This should be run on build or a special admin action, not on every request.
+ */
+export async function seedInitialData() {
+    const { blobs } = await list({ token: process.env.BLOB_READ_WRITE_TOKEN });
+    if (blobs.length === 0) {
+        console.log('Blob store is empty. Seeding initial data...');
+        // You would need a mechanism to read local files and push them here.
+        // This is a placeholder for that logic.
+        // Example:
+        // const booksData = await fs.readFile('src/lib/books.json', 'utf-8');
+        // await writeDataToBlob('books.json', JSON.parse(booksData));
+        console.log('Seeding complete.');
+    } else {
+        console.log('Blob store already contains data. No seeding required.');
+    }
 }

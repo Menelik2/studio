@@ -1,7 +1,6 @@
-import type {NextConfig} from 'next';
-require('dotenv').config({ path: './.env' });
 
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   /* config options here */
   typescript: {
     ignoreBuildErrors: true,
@@ -17,6 +16,12 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
+       {
+        protocol: 'https',
+        hostname: 's3-alpha-sig.figma.com',
+        port: '',
+        pathname: '/**',
+      }
     ],
   },
 };
