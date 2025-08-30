@@ -13,7 +13,6 @@ import { put } from '@vercel/blob';
 export async function loginAction(prevState: { error?: string } | undefined, formData: FormData) {
   const password = formData.get('password');
   
-  // This is a mock authentication. In a real app, use a proper auth service.
   if (password === '123!@#admin') {
     redirect('/dashboard');
   } else {
@@ -37,36 +36,26 @@ const bookSchemaBase = z.object({
   comment: z.string().optional(),
 });
 
-// Schema for creating a new book. ID is not needed.
 const createBookSchema = bookSchemaBase;
 
-// Schema for updating. ID is required. All other fields are passed through.
 const updateBookSchema = bookSchemaBase.extend({
   id: z.string().min(1, { message: 'ID is required for updates' }),
 });
 
-// Schema specifically for updating a comment. This ensures other fields aren't accidentally changed.
 const commentSchema = z.object({
     id: z.string(),
     comment: z.string().optional(),
-    __comment_update: z.literal(true), // Internal flag
-}).passthrough(); // Allow other fields to be present but not validated.
+});
 
 export type FormState = {
   message: string;
   errors?: {
-    id?: string[];
-    title?: string[];
-    author?: string[];
-    category?: string[];
-    year?: string[];
-    description?: string[];
-    filePath?: string[];
-    comment?: string[];
+    [key: string]: string[] | undefined;
   };
 };
 
-export async function createBookAction(rawData: unknown): Promise<FormState> {
+export async function createBookAction(formData: FormData): Promise<FormState> {
+  const rawData = Object.fromEntries(formData.entries());
   const validatedFields = createBookSchema.safeParse(rawData);
 
   if (!validatedFields.success) {
@@ -97,10 +86,11 @@ export async function createBookAction(rawData: unknown): Promise<FormState> {
   return { message: 'Book successfully added.', errors: {} };
 }
 
-export async function updateBookAction(rawData: unknown): Promise<FormState> {
-  const isCommentUpdate = (rawData as any)?.__comment_update === true;
-  const schema = isCommentUpdate ? commentSchema : updateBookSchema;
+export async function updateBookAction(formData: FormData): Promise<FormState> {
+  const rawData = Object.fromEntries(formData.entries());
+  const isCommentUpdate = rawData.__comment_update === 'true';
 
+  const schema = isCommentUpdate ? commentSchema : updateBookSchema;
   const validatedFields = schema.safeParse(rawData);
 
   if (!validatedFields.success) {
@@ -112,10 +102,12 @@ export async function updateBookAction(rawData: unknown): Promise<FormState> {
   
   const { id, ...bookData } = validatedFields.data;
 
+  if (!id) {
+    return { message: 'Error: Book ID is missing for update.' };
+  }
+
   try {
     const bookRef = doc(db, 'books', id);
-    // Use `setDoc` with `merge: true` to update fields.
-    // This is perfect for partial updates like adding a comment.
     await setDoc(bookRef, bookData, { merge: true });
 
   } catch (error) {
@@ -154,7 +146,6 @@ export async function getBooksAction(): Promise<Book[]> {
         const booksCol = collection(db, 'books');
         const booksSnapshot = await getDocs(booksCol);
         const booksList = booksSnapshot.docs.map(doc => doc.data() as Book);
-        // Sort books by title alphabetically
         booksList.sort((a, b) => a.title.localeCompare(b.title));
         return booksList;
     } catch (error) {
@@ -214,19 +205,16 @@ export async function savePlanner1ItemsAction(items: PlannerItem[]): Promise<{ s
     const batch = writeBatch(db);
     const existingIds = new Set<string>();
 
-    // Get all existing documents to determine which ones to delete
     const querySnapshot = await getDocs(collection(db, 'planner1'));
     querySnapshot.forEach(doc => existingIds.add(doc.id));
     
     const currentIds = new Set(items.map(item => item.id));
 
-    // Set/update current items
     items.forEach(item => {
       const docRef = doc(db, 'planner1', item.id);
       batch.set(docRef, item);
     });
 
-    // Delete items that are no longer in the list
     existingIds.forEach(id => {
       if (!currentIds.has(id)) {
         batch.delete(doc(db, 'planner1', id));

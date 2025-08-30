@@ -52,11 +52,15 @@ const commentFormSchema = z.object({
 type BookFormValues = z.infer<typeof bookFormSchema>;
 
 function SubmitButton({ isPending }: { isPending: boolean }) {
+  const { onClose } = useBookDialogStore();
   return (
-    <Button type="submit" disabled={isPending}>
-      {isPending ? 'Saving...' : 'Save Changes'}
-      <Save className="ml-2 h-4 w-4" />
-    </Button>
+    <>
+      <Button variant="outline" type="button" onClick={onClose}>Cancel</Button>
+      <Button type="submit" disabled={isPending}>
+        {isPending ? 'Saving...' : 'Save Changes'}
+        <Save className="ml-2 h-4 w-4" />
+      </Button>
+    </>
   );
 }
 
@@ -64,16 +68,17 @@ export function BookFormDialog() {
   const { isOpen, book, mode, onClose } = useBookDialogStore();
   const { toast } = useToast();
   const [isUploading, startUploadTransition] = useTransition();
-  const [isSubmitting, startSubmitTransition] = useTransition();
-  const [serverErrors, setServerErrors] = useState<FormState['errors'] | null>(null);
 
   const isCommentMode = mode === 'comment';
+  const isEditMode = mode === 'edit';
+  const isCreateMode = mode === 'create';
   
   const currentSchema = isCommentMode ? commentFormSchema : bookFormSchema;
 
-  const { register, handleSubmit, reset, control, formState: { errors }, setValue, watch } = useForm<BookFormValues>({
+  const form = useForm<BookFormValues>({
     resolver: zodResolver(currentSchema),
     defaultValues: {
+        id: '',
         title: '',
         author: '',
         category: 'ግጥም',
@@ -83,6 +88,8 @@ export function BookFormDialog() {
         comment: '',
     },
   });
+  
+  const { formState: { isSubmitting, errors }, setValue, control, register, reset } = form;
 
   useEffect(() => {
     if (isOpen) {
@@ -90,6 +97,7 @@ export function BookFormDialog() {
         reset(book);
       } else {
         reset({
+          id: '',
           title: '',
           author: '',
           category: 'ግጥም',
@@ -99,7 +107,6 @@ export function BookFormDialog() {
           comment: '',
         });
       }
-      setServerErrors(null);
     }
   }, [book, reset, isOpen]);
 
@@ -143,48 +150,35 @@ export function BookFormDialog() {
     }
   };
 
-  const onSubmit = (data: BookFormValues) => {
-    startSubmitTransition(async () => {
-        let result: FormState;
-        
-        if (mode === 'create') {
-            result = await createBookAction(data);
-        } else {
-            // For edit and comment modes, we need the original book data.
-            if (!book) return; 
-
-            let payload;
-            if (mode === 'comment') {
-                // Merge original book data with the new comment.
-                payload = { ...book, comment: data.comment, __comment_update: true };
-            } else {
-                // For edit mode, just send the form data.
-                payload = data;
-            }
-            result = await updateBookAction(payload);
-        }
-
-        if (result.message && !result.errors) {
-            toast({ title: mode === 'create' ? 'Book Added' : 'Book Updated', description: result.message });
-            onClose();
-        } else if (result.message && result.errors) {
-            toast({ variant: 'destructive', title: 'Error', description: result.message });
-            setServerErrors(result.errors);
-        }
-    });
+  const formAction = async (formData: FormData) => {
+    let result: FormState;
+    if (isCreateMode) {
+      result = await createBookAction(formData);
+    } else {
+      // For both 'edit' and 'comment' mode, we use update
+      result = await updateBookAction(formData);
+    }
+    
+    if (result.message && !result.errors) {
+        toast({ title: mode === 'create' ? 'Book Added' : 'Book Updated', description: result.message });
+        onClose();
+    } else if (result.message && result.errors) {
+        toast({ variant: 'destructive', title: 'Error', description: result.message });
+        // You can set form errors here if needed, e.g. for server-side validation
+    }
   };
-
+  
   if (!isOpen) return null;
 
   const getTitle = () => {
-    if (mode === 'comment') return `Comment on "${book?.title}"`;
-    if (mode === 'edit') return 'Edit Book';
+    if (isCommentMode) return `Comment on "${book?.title}"`;
+    if (isEditMode) return 'Edit Book';
     return 'Add New Book';
   }
 
   const getDescription = () => {
-    if (mode === 'comment') return 'Add or update the comment for this book.';
-    if (mode === 'edit') return 'Update the details of this book.';
+    if (isCommentMode) return 'Add or update the comment for this book.';
+    if (isEditMode) return 'Update the details of this book.';
     return 'Fill in the details for the new book.';
   }
   
@@ -201,21 +195,24 @@ export function BookFormDialog() {
             {getDescription()}
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 py-4">
+        <form action={formAction} className="grid gap-4 py-4">
           <input type="hidden" {...register('id')} />
+
+          {/* This hidden input helps the server action distinguish comment updates */}
+          {isCommentMode && <input type="hidden" name="__comment_update" value="true" />}
 
           {mode !== 'comment' ? (
             <>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="title" className="text-right">Title</Label>
                 <Input id="title" {...register('title')} className="col-span-3" />
-                {(errors.title || serverErrors?.title) && <p className="col-span-4 text-red-500 text-xs text-right">{errors.title?.message || serverErrors?.title?.[0]}</p>}
+                {errors.title && <p className="col-span-4 text-red-500 text-xs text-right">{errors.title?.message}</p>}
               </div>
 
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="author" className="text-right">Author</Label>
                 <Input id="author" {...register('author')} className="col-span-3" />
-                {(errors.author || serverErrors?.author) && <p className="col-span-4 text-red-500 text-xs text-right">{errors.author?.message || serverErrors?.author?.[0]}</p>}
+                {errors.author && <p className="col-span-4 text-red-500 text-xs text-right">{errors.author?.message}</p>}
               </div>
 
               <div className="grid grid-cols-4 items-center gap-4">
@@ -239,19 +236,19 @@ export function BookFormDialog() {
                     </Select>
                   )}
                 />
-                {(errors.category || serverErrors?.category) && <p className="col-span-4 text-red-500 text-xs text-right">{errors.category?.message || serverErrors?.category?.[0]}</p>}
+                {errors.category && <p className="col-span-4 text-red-500 text-xs text-right">{errors.category?.message}</p>}
               </div>
 
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="year" className="text-right">Year</Label>
                 <Input id="year" type="number" {...register('year')} className="col-span-3" />
-                {(errors.year || serverErrors?.year) && <p className="col-span-4 text-red-500 text-xs text-right">{errors.year?.message || serverErrors?.year?.[0]}</p>}
+                {errors.year && <p className="col-span-4 text-red-500 text-xs text-right">{errors.year?.message}</p>}
               </div>
 
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="description" className="text-right">Description</Label>
                 <Textarea id="description" {...register('description')} className="col-span-3" />
-                {(errors.description || serverErrors?.description) && <p className="col-span-4 text-red-500 text-xs text-right">{errors.description?.message || serverErrors?.description?.[0]}</p>}
+                {errors.description && <p className="col-span-4 text-red-500 text-xs text-right">{errors.description?.message}</p>}
               </div>
 
               <div className="grid grid-cols-4 items-start gap-4">
@@ -295,25 +292,24 @@ export function BookFormDialog() {
                     {...register('filePath')}
                     disabled={isUploading}
                   />
-                   {(errors.filePath || serverErrors?.filePath) && <p className="text-red-500 text-xs text-right">{errors.filePath?.message || serverErrors?.filePath?.[0]}</p>}
+                   {errors.filePath && <p className="text-red-500 text-xs text-right">{errors.filePath?.message}</p>}
                 </div>
               </div>
                <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="comment" className="text-right">Comment</Label>
                 <Textarea id="comment" {...register('comment')} className="col-span-3" placeholder="Add an optional comment..."/>
-                {(errors.comment || serverErrors?.comment) && <p className="col-span-4 text-red-500 text-xs text-right">{errors.comment?.message || serverErrors?.comment?.[0]}</p>}
+                {errors.comment && <p className="col-span-4 text-red-500 text-xs text-right">{errors.comment?.message}</p>}
               </div>
             </>
           ) : (
              <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="comment" className="text-right">Comment</Label>
                 <Textarea id="comment" {...register('comment')} className="col-span-3" placeholder="Add a comment..."/>
-                {(errors.comment || serverErrors?.comment) && <p className="col-span-4 text-red-500 text-xs text-right">{errors.comment?.message || serverErrors?.comment?.[0]}</p>}
+                {errors.comment && <p className="col-span-4 text-red-500 text-xs text-right">{errors.comment?.message}</p>}
               </div>
           )}
 
           <DialogFooter>
-            <Button variant="outline" type="button" onClick={onClose}>Cancel</Button>
             <SubmitButton isPending={isSubmitting} />
           </DialogFooter>
         </form>
