@@ -1,11 +1,11 @@
 
 'use client';
 
-import React, { useEffect, useState, useTransition } from 'react';
+import React, { useEffect, useActionState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { updateBookAction, createBookAction } from '@/lib/actions';
 import { useBookDialogStore } from '@/hooks/use-book-dialog-store';
-import type { Book, FormState } from '@/lib/definitions';
+import type { FormState } from '@/lib/definitions';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, Controller } from 'react-hook-form';
 import { z } from 'zod';
@@ -48,7 +48,6 @@ const commentFormSchema = z.object({
   comment: z.string().optional(),
 });
 
-
 type BookFormValues = z.infer<typeof bookFormSchema>;
 
 function SubmitButton({ isPending }: { isPending: boolean }) {
@@ -67,7 +66,7 @@ function SubmitButton({ isPending }: { isPending: boolean }) {
 export function BookFormDialog() {
   const { isOpen, book, mode, onClose } = useBookDialogStore();
   const { toast } = useToast();
-  const [isUploading, startUploadTransition] = useTransition();
+  const [isUploading, setIsUploading] = React.useState(false);
 
   const isCommentMode = mode === 'comment';
   const isEditMode = mode === 'edit';
@@ -89,7 +88,12 @@ export function BookFormDialog() {
     },
   });
   
-  const { formState: { isSubmitting, errors }, setValue, control, register, reset } = form;
+  const { formState: { isSubmitting, errors }, setValue, control, register, reset, watch } = form;
+  const filePathValue = watch('filePath');
+
+  const [formState, formAction] = useActionState(isCreateMode ? createBookAction : updateBookAction, {
+    message: '',
+  });
 
   useEffect(() => {
     if (isOpen) {
@@ -109,28 +113,41 @@ export function BookFormDialog() {
       }
     }
   }, [book, reset, isOpen]);
+  
+  useEffect(() => {
+    if (formState?.message) {
+      if (formState.errors) {
+        toast({ variant: 'destructive', title: 'Error', description: formState.message });
+      } else {
+        toast({ title: mode === 'create' ? 'Book Added' : 'Book Updated', description: formState.message });
+        onClose();
+      }
+    }
+  }, [formState, toast, onClose, mode]);
 
-  const handleFileUpload = (file: File) => {
+
+  const handleFileUpload = async (file: File) => {
     if (file && file.type === 'application/pdf') {
         const formData = new FormData();
         formData.append('file', file);
 
-        startUploadTransition(async () => {
-            const result = await uploadPdfAction(formData);
-            if(result.success && result.path) {
-                setValue('filePath', result.path, { shouldValidate: true });
-                toast({
-                    title: 'File Uploaded!',
-                    description: `Successfully uploaded "${file.name}"`
-                });
-            } else {
-                toast({
-                    variant: 'destructive',
-                    title: 'Upload Failed',
-                    description: result.error,
-                });
-            }
-        });
+        setIsUploading(true);
+        const result = await uploadPdfAction(formData);
+        setIsUploading(false);
+
+        if(result.success && result.path) {
+            setValue('filePath', result.path, { shouldValidate: true });
+            toast({
+                title: 'File Uploaded!',
+                description: `Successfully uploaded "${file.name}"`
+            });
+        } else {
+            toast({
+                variant: 'destructive',
+                title: 'Upload Failed',
+                description: result.error,
+            });
+        }
       } else if (file) {
         toast({
           variant: 'destructive',
@@ -143,28 +160,11 @@ export function BookFormDialog() {
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
+    e.currentTarget.classList.remove('border-primary');
 
     const files = e.dataTransfer.files;
     if (files && files.length > 0) {
       handleFileUpload(files[0]);
-    }
-  };
-
-  const formAction = async (formData: FormData) => {
-    let result: FormState;
-    if (isCreateMode) {
-      result = await createBookAction(formData);
-    } else {
-      // For both 'edit' and 'comment' mode, we use update
-      result = await updateBookAction(formData);
-    }
-    
-    if (result.message && !result.errors) {
-        toast({ title: mode === 'create' ? 'Book Added' : 'Book Updated', description: result.message });
-        onClose();
-    } else if (result.message && result.errors) {
-        toast({ variant: 'destructive', title: 'Error', description: result.message });
-        // You can set form errors here if needed, e.g. for server-side validation
     }
   };
   
@@ -198,7 +198,6 @@ export function BookFormDialog() {
         <form action={formAction} className="grid gap-4 py-4">
           <input type="hidden" {...register('id')} />
 
-          {/* This hidden input helps the server action distinguish comment updates */}
           {isCommentMode && <input type="hidden" name="__comment_update" value="true" />}
 
           {mode !== 'comment' ? (
@@ -255,13 +254,14 @@ export function BookFormDialog() {
                 <Label htmlFor="filePath" className="text-right pt-2">PDF File</Label>
                 <div className="col-span-3 space-y-2">
                   <div
-                    onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                    onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                    onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); e.currentTarget.classList.add('border-primary'); }}
+                    onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); e.currentTarget.classList.remove('border-primary'); }}
                     onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
                     onDrop={handleDrop}
                     onClick={() => document.getElementById('pdf-upload-input')?.click()}
                     className={cn(
-                      'relative flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50 transition-colors border-input'
+                      'relative flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50 transition-colors border-input',
+                       (isUploading || filePathValue) && 'border-primary'
                     )}
                   >
                     <input
@@ -288,18 +288,20 @@ export function BookFormDialog() {
                   </div>
                   <Input
                     id="filePath"
-                    placeholder="Paste a URL or upload a file to get a URL"
+                    placeholder="Paste a URL or upload a file"
                     {...register('filePath')}
                     disabled={isUploading}
                   />
                    {errors.filePath && <p className="text-red-500 text-xs text-right">{errors.filePath?.message}</p>}
                 </div>
               </div>
-               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="comment" className="text-right">Comment</Label>
-                <Textarea id="comment" {...register('comment')} className="col-span-3" placeholder="Add an optional comment..."/>
-                {errors.comment && <p className="col-span-4 text-red-500 text-xs text-right">{errors.comment?.message}</p>}
-              </div>
+              {isEditMode && (
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="comment" className="text-right">Comment</Label>
+                  <Textarea id="comment" {...register('comment')} className="col-span-3" placeholder="Add an optional comment..."/>
+                  {errors.comment && <p className="col-span-4 text-red-500 text-xs text-right">{errors.comment?.message}</p>}
+                </div>
+              )}
             </>
           ) : (
              <div className="grid grid-cols-4 items-center gap-4">
