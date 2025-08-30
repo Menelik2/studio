@@ -165,7 +165,10 @@ export async function uploadPdfAction(formData: FormData) {
         return { success: false, error: 'No file provided.' };
     }
     const { head } = await import('@vercel/blob');
-    const blobCheck = await head(file.name).catch(() => null);
+    const blobCheck = await head(file.name, {
+        token: process.env.BLOB_READ_WRITE_TOKEN,
+    }).catch(() => null);
+
     if (blobCheck) {
       return { success: true, path: blobCheck.url };
     }
