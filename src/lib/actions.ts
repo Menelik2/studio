@@ -109,7 +109,7 @@ async function handleBookAction(bookData: unknown, action: 'create' | 'update') 
 export async function createBookAction(prevState: FormState, formData: FormData) {
   const rawData = Object.fromEntries(formData.entries());
   // The ID from the form will be an empty string for new books, so we remove it.
-  if ('id' in rawData && rawData.id === '') {
+  if ('id' in rawData && !rawData.id) {
     delete rawData.id;
   }
   return handleBookAction(rawData, 'create');
@@ -139,14 +139,22 @@ export async function deleteBookAction(prevState: any, formData: FormData) {
 }
 
 export async function getBooksAction(): Promise<Book[]> {
-  // On Vercel, sync from blob first
+  // Always try to read local data first to prevent render-blocking crashes.
+  let localData = await getBooks();
+
   if (process.env.VERCEL_ENV) {
-    const blobData = await readDataFromBlob<Book>('books.json');
-    if (blobData) {
+    try {
+      const blobData = await readDataFromBlob<Book>('books.json');
+      if (blobData) {
+        // If blob data is available, update local file and use it.
         await saveBooks(blobData);
+        localData = blobData;
+      }
+    } catch (error) {
+        console.error("Failed to sync books from blob, serving local data:", error);
     }
   }
-  return getBooks();
+  return localData;
 }
 
 
@@ -162,13 +170,19 @@ export async function uploadPdfAction(formData: FormData) {
 
 // Planner 1 Actions
 export async function getPlanner1ItemsAction(): Promise<PlannerItem[]> {
+  let localData = await getLocalPlanner1Items();
   if (process.env.VERCEL_ENV) {
-    const blobData = await readDataFromBlob<Planner1Item>('planner1.json');
-    if (blobData) {
-        await saveLocalPlanner1Items(blobData);
+    try {
+        const blobData = await readDataFromBlob<PlannerItem>('planner1.json');
+        if (blobData) {
+            await saveLocalPlanner1Items(blobData);
+            localData = blobData;
+        }
+    } catch (error) {
+        console.error("Failed to sync planner1 from blob, serving local data:", error);
     }
   }
-  return getLocalPlanner1Items();
+  return localData;
 }
 
 export async function savePlanner1ItemsAction(items: PlannerItem[]): Promise<{success: boolean}> {
@@ -186,13 +200,19 @@ export async function savePlanner1ItemsAction(items: PlannerItem[]): Promise<{su
 }
 
 export async function getPlannerSignaturesAction(year: number): Promise<Omit<PlannerSignatures, 'year'> | null> {
+    let allSignatures = await getLocalPlannerSignatures();
     if (process.env.VERCEL_ENV) {
-      const blobData = await readDataFromBlob<PlannerSignatures>('planner-signatures.json');
-      if (blobData) {
-          await saveLocalPlannerSignatures(blobData);
+      try {
+        const blobData = await readDataFromBlob<PlannerSignatures>('planner-signatures.json');
+        if (blobData) {
+            await saveLocalPlannerSignatures(blobData);
+            allSignatures = blobData;
+        }
+      } catch (error) {
+        console.error("Failed to sync signatures from blob, serving local data:", error);
       }
     }
-    const allSignatures = await getLocalPlannerSignatures();
+
     const signatures = allSignatures.find(sig => sig.year === year);
     if (signatures) {
         return { preparationOfficer: signatures.preparationOfficer, reviewOfficer: signatures.reviewOfficer };
@@ -224,13 +244,19 @@ export async function savePlannerSignaturesAction(signatures: PlannerSignatures)
 
 // Planner 2 Actions
 export async function getPlanner2ItemsAction(): Promise<Planner2Item[]> {
+    let localData = await getLocalPlanner2Items();
     if (process.env.VERCEL_ENV) {
-        const blobData = await readDataFromBlob<Planner2Item>('planner2.json');
-        if (blobData) {
-            await saveLocalPlanner2Items(blobData);
+        try {
+            const blobData = await readDataFromBlob<Planner2Item>('planner2.json');
+            if (blobData) {
+                await saveLocalPlanner2Items(blobData);
+                localData = blobData;
+            }
+        } catch (error) {
+            console.error("Failed to sync planner2 from blob, serving local data:", error);
         }
     }
-    return getLocalPlanner2Items();
+    return localData;
 }
 
 export async function savePlanner2ItemsAction(items: Planner2Item[]): Promise<{success:boolean}> {
