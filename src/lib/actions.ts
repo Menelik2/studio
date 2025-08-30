@@ -54,42 +54,34 @@ export type FormState = {
   };
 };
 
-async function handleBookAction(bookData: unknown, action: 'create' | 'update') {
-  const schema = action === 'create' ? createBookSchema : updateBookSchema;
-  const validatedFields = schema.safeParse(bookData);
+export async function createBookAction(prevState: FormState, formData: FormData): Promise<FormState> {
+  const rawData = Object.fromEntries(formData.entries());
+  
+  // The form sends an empty `id` field for new books, which we must remove before validation.
+  if ('id' in rawData) {
+    delete rawData.id;
+  }
+  
+  const validatedFields = createBookSchema.safeParse(rawData);
 
   if (!validatedFields.success) {
     return {
-      message: 'Failed to save book. Please check the errors.',
+      message: 'Failed to create book. Please check the errors.',
       errors: validatedFields.error.flatten().fieldErrors,
     };
   }
-  
-  const finalData = {
-    ...validatedFields.data,
-    comment: validatedFields.data.comment || '',
-  }
 
   try {
-    let books = await getBooksAction();
-    if (action === 'create') {
-      const newBook: Book = {
-        id: (Math.max(0, ...books.map(b => parseInt(b.id, 10) || 0)) + 1).toString(),
-        ...finalData as Omit<Book, 'id'>,
-      };
-      books.push(newBook);
-    } else {
-      const index = books.findIndex(book => book.id === (finalData as Book).id);
-      if (index !== -1) {
-        books[index] = finalData as Book;
-      } else {
-        throw new Error('Book not found for update');
-      }
-    }
+    const books = await getBooksAction();
+    const newBook: Book = {
+      id: (Math.max(0, ...books.map(b => parseInt(b.id, 10) || 0)) + 1).toString(),
+      ...validatedFields.data,
+      comment: validatedFields.data.comment || '',
+    };
+    books.push(newBook);
     await writeData('books.json', books);
-
   } catch (error) {
-    console.error("Error handling book action:", error);
+    console.error("Error creating book:", error);
     return {
       message: 'Database Error: Failed to save book.',
     };
@@ -97,21 +89,47 @@ async function handleBookAction(bookData: unknown, action: 'create' | 'update') 
 
   revalidatePath('/dashboard/books');
   revalidatePath('/dashboard');
-  return { message: `Book successfully ${action === 'create' ? 'added' : 'updated'}.`, errors: {} };
+  return { message: 'Book successfully added.', errors: {} };
 }
 
-export async function createBookAction(prevState: FormState, formData: FormData) {
+export async function updateBookAction(prevState: FormState, formData: FormData): Promise<FormState> {
   const rawData = Object.fromEntries(formData.entries());
-  if ('id' in rawData) {
-    delete rawData.id;
+  const validatedFields = updateBookSchema.safeParse(rawData);
+
+  if (!validatedFields.success) {
+    return {
+      message: 'Failed to update book. Please check the errors.',
+      errors: validatedFields.error.flatten().fieldErrors,
+    };
   }
-  return handleBookAction(rawData, 'create');
+  
+  const finalData = {
+    ...validatedFields.data,
+    comment: validatedFields.data.comment || '',
+  };
+
+  try {
+    let books = await getBooksAction();
+    const index = books.findIndex(book => book.id === finalData.id);
+
+    if (index !== -1) {
+      books[index] = finalData;
+      await writeData('books.json', books);
+    } else {
+      throw new Error('Book not found for update');
+    }
+  } catch (error) {
+    console.error("Error updating book:", error);
+    return {
+      message: 'Database Error: Failed to save book.',
+    };
+  }
+
+  revalidatePath('/dashboard/books');
+  revalidatePath('/dashboard');
+  return { message: 'Book successfully updated.', errors: {} };
 }
 
-export async function updateBookAction(prevState: FormState, formData: FormData) {
-  const rawData = Object.fromEntries(formData.entries());
-  return handleBookAction(rawData, 'update');
-}
 
 export async function deleteBookAction(prevState: any, formData: FormData) {
   const id = formData.get('id') as string;
