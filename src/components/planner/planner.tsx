@@ -14,9 +14,10 @@ import {
 } from '@/components/ui/table';
 import { Check, Edit, FileText, PlusCircle, Search, Trash2, Printer, Save } from 'lucide-react';
 import type { PlannerItem } from '@/lib/definitions';
-import { PlannerFormDialog, usePlannerDialog } from './planner-form-dialog';
+import { PlannerFormDialog } from './planner-form-dialog';
 import { getPlanner1ItemsAction, savePlanner1ItemsAction, getPlannerSignaturesAction, savePlannerSignaturesAction } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
+import { usePlannerDialogStore } from '@/hooks/use-planner-dialog-store';
 
 const quarters = {
   '1ኛ ሩብ ዓመት': ['ሐምሌ', 'ነሐሴ', 'መስከረም'],
@@ -29,7 +30,7 @@ export function Planner() {
   const [year, setYear] = useState(new Date().getFullYear());
   const [items, setItems] = useState<PlannerItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { onOpen } = usePlannerDialog();
+  const { onOpen } = usePlannerDialogStore();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   

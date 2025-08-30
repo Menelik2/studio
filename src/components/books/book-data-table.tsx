@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -15,9 +16,10 @@ import { PlusCircle } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { BookFormDialog, useBookDialog } from './book-form-dialog';
-import { DeleteBookDialog, useDeleteBookDialog } from './delete-book-dialog';
+import { BookFormDialog } from './book-form-dialog';
+import { DeleteBookDialog } from './delete-book-dialog';
 import type { Book } from '@/lib/definitions';
+import { useBookDialogStore } from '@/hooks/use-book-dialog-store';
 
 interface BookDataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -32,8 +34,7 @@ export function BookDataTable<TData extends Book, TValue>({
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
 
-  const { onOpen } = useBookDialog();
-  const { bookToDelete } = useDeleteBookDialog();
+  const { onOpen } = useBookDialogStore();
 
   const table = useReactTable({
     data,
@@ -55,7 +56,7 @@ export function BookDataTable<TData extends Book, TValue>({
   return (
     <div>
       <BookFormDialog />
-      <DeleteBookDialog book={bookToDelete} />
+      <DeleteBookDialog />
       <div className="flex items-center justify-between py-4">
         <Input
           placeholder="Filter by title..."
@@ -63,7 +64,7 @@ export function BookDataTable<TData extends Book, TValue>({
           onChange={(event) => table.getColumn('title')?.setFilterValue(event.target.value)}
           className="max-w-sm"
         />
-        <Button onClick={() => onOpen(null)}>
+        <Button onClick={() => onOpen(null, 'create')}>
           <PlusCircle className="mr-2 h-4 w-4" />
           Add Book
         </Button>

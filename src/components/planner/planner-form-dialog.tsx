@@ -16,62 +16,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '../ui/checkbox';
 import { Save } from 'lucide-react';
+import { usePlannerDialogStore } from '@/hooks/use-planner-dialog-store';
 
 const quarters = {
     '1ኛ ሩብ ዓመት': ['ሐምሌ', 'ነሐሴ', 'መስከረም'],
     '2ኛ ሩብ ዓመት': ['ጥቅምት', 'ህዳр', 'ታህሳс'],
     '3ኛ ሩብ ዓመት': ['ጥር', 'የካቲት', 'መጋቢት'],
     '4ኛ ሩብ ዓመት': ['ሚያዝያ', 'ግንቦት', 'ሰኔ'],
-};
-
-interface PlannerDialogState {
-  isOpen: boolean;
-  item: PlannerItem | null;
-  onSubmit: ((item: PlannerItem) => void) | null;
-}
-
-interface PlannerDialogStore extends PlannerDialogState {
-  onOpen: (item: PlannerItem | null, onSubmit: (item: PlannerItem) => void) => void;
-  onClose: () => void;
-}
-
-let state: PlannerDialogState = {
-    isOpen: false,
-    item: null,
-    onSubmit: null,
-};
-const listeners = new Set<(state: PlannerDialogState) => void>();
-
-const store = {
-    getState: () => state,
-    setState: (updater: (state: PlannerDialogState) => Partial<PlannerDialogState>) => {
-        state = { ...state, ...updater(state) };
-        listeners.forEach((listener) => listener(state));
-    },
-    subscribe: (listener: (state: PlannerDialogState) => void) => {
-        listeners.add(listener);
-        return () => listeners.delete(listener);
-    },
-    onOpen: (item: PlannerItem | null, onSubmit: (item: PlannerItem) => void) => {
-        store.setState(() => ({ isOpen: true, item, onSubmit }));
-    },
-    onClose: () => {
-        store.setState(() => ({ isOpen: false, item: null, onSubmit: null }));
-    }
-}
-
-export const usePlannerDialog = (): PlannerDialogStore => {
-  const [dialogState, setDialogState] = useState(store.getState());
-  useEffect(() => {
-    const unsubscribe = store.subscribe(setDialogState);
-    return unsubscribe;
-  }, []);
-  
-  return {
-    ...dialogState,
-    onOpen: store.onOpen,
-    onClose: store.onClose
-  };
 };
 
 const getInitialFormState = (): PlannerItem => ({
@@ -89,7 +40,7 @@ const getInitialFormState = (): PlannerItem => ({
 
 
 export function PlannerFormDialog() {
-  const { isOpen, item, onClose, onSubmit } = usePlannerDialog();
+  const { isOpen, item, onClose, onSubmit } = usePlannerDialogStore();
   const [formState, setFormState] = useState<PlannerItem>(getInitialFormState());
 
   const isEdit = !!item;

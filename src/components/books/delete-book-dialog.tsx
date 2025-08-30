@@ -1,11 +1,10 @@
 
 'use client';
 
-import { useEffect, useState, useActionState } from 'react';
+import { useEffect, useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -15,59 +14,9 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { deleteBookAction } from '@/lib/actions';
-import type { Book } from '@/lib/definitions';
+import { useDeleteBookDialogStore } from '@/hooks/use-delete-book-dialog-store';
 import { useToast } from '@/hooks/use-toast';
 import { Trash2 } from 'lucide-react';
-
-interface DeleteDialogState {
-  isOpen: boolean;
-  bookToDelete: Book | null;
-}
-
-interface DeleteBookDialogStore extends DeleteDialogState {
-  onOpen: (book: Book) => void;
-  onClose: () => void;
-}
-
-// Global store hack
-let state: DeleteDialogState = {
-    isOpen: false,
-    bookToDelete: null,
-};
-const listeners = new Set<(state: DeleteDialogState) => void>();
-
-const store = {
-    getState: () => state,
-    setState: (updater: (state: DeleteDialogState) => Partial<DeleteDialogState>) => {
-        state = { ...state, ...updater(state) };
-        listeners.forEach((listener) => listener(state));
-    },
-    subscribe: (listener: (state: DeleteDialogState) => void) => {
-        listeners.add(listener);
-        return () => listeners.delete(listener);
-    },
-    onOpen: (book: Book) => {
-        store.setState(() => ({ isOpen: true, bookToDelete: book }));
-    },
-    onClose: () => {
-        store.setState(() => ({ isOpen: false, bookToDelete: null }));
-    }
-}
-
-
-export const useDeleteBookDialog = (): DeleteBookDialogStore => {
-  const [dialogState, setDialogState] = useState(store.getState());
-  useEffect(() => {
-    const unsubscribe = store.subscribe(setDialogState);
-    return unsubscribe;
-  }, []);
-  
-  return {
-    ...dialogState,
-    onOpen: store.onOpen,
-    onClose: store.onClose
-  };
-};
 
 function DeleteButton() {
   const { pending } = useFormStatus();
@@ -80,7 +29,7 @@ function DeleteButton() {
 }
 
 export function DeleteBookDialog() {
-  const { isOpen, bookToDelete, onClose } = useDeleteBookDialog();
+  const { isOpen, bookToDelete, onClose } = useDeleteBookDialogStore();
   const { toast } = useToast();
   
   const [state, action] = useActionState(deleteBookAction, {

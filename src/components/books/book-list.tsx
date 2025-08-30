@@ -8,8 +8,9 @@ import { BookCard } from '@/components/books/book-card';
 import { PlusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { BookFormDialog, useBookDialog } from '@/components/books/book-form-dialog';
+import { BookFormDialog } from '@/components/books/book-form-dialog';
 import { DeleteBookDialog } from '@/components/books/delete-book-dialog';
+import { useBookDialogStore } from '@/hooks/use-book-dialog-store';
 import { motion } from 'framer-motion';
 
 export function BookList({ initialBooks }: { initialBooks: Book[] }) {
@@ -20,7 +21,7 @@ export function BookList({ initialBooks }: { initialBooks: Book[] }) {
   const [filter, setFilter] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   
-  const { onOpen } = useBookDialog();
+  const { onOpen } = useBookDialogStore();
 
   useEffect(() => {
     // Set the category from URL params only on the client-side

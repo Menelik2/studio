@@ -1,3 +1,4 @@
+
 'use client';
 
 import type { ColumnDef } from '@tanstack/react-table';
@@ -12,8 +13,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import type { Book } from '@/lib/definitions';
-import { useBookDialog } from './book-form-dialog';
-import { useDeleteBookDialog } from './delete-book-dialog';
+import { useBookDialogStore } from '@/hooks/use-book-dialog-store';
+import { useDeleteBookDialogStore } from '@/hooks/use-delete-book-dialog-store';
 import { Badge } from '@/components/ui/badge';
 
 export const columns: ColumnDef<Book>[] = [
@@ -46,8 +47,8 @@ export const columns: ColumnDef<Book>[] = [
     id: 'actions',
     cell: function Cell({ row }) {
       const book = row.original;
-      const { onOpen: onOpenEdit } = useBookDialog();
-      const { onOpen: onOpenDelete } = useDeleteBookDialog();
+      const { onOpen: onOpenEdit } = useBookDialogStore();
+      const { onOpen: onOpenDelete } = useDeleteBookDialogStore();
 
       return (
         <div className="text-right">
@@ -64,7 +65,7 @@ export const columns: ColumnDef<Book>[] = [
                 Copy Book ID
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => onOpenEdit(book)}>Edit Book</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onOpenEdit(book, 'edit')}>Edit Book</DropdownMenuItem>
               <DropdownMenuItem
                 className="text-red-500 focus:text-red-500"
                 onClick={() => onOpenDelete(book)}

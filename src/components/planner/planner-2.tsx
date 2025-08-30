@@ -14,9 +14,10 @@ import {
 } from '@/components/ui/table';
 import { Edit, FileText, PlusCircle, Printer, Trash2 } from 'lucide-react';
 import type { Planner2Item } from '@/lib/definitions';
-import { Planner2FormDialog, usePlanner2Dialog } from './planner-2-form-dialog';
+import { Planner2FormDialog } from './planner-2-form-dialog';
 import { getPlanner2ItemsAction, savePlanner2ItemsAction } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
+import { usePlanner2DialogStore } from '@/hooks/use-planner-2-dialog-store';
 
 export function Planner2() {
   const [items, setItems] = useState<Planner2Item[]>([]);
@@ -24,7 +25,7 @@ export function Planner2() {
   const [departmentName, setDepartmentName] = useState('');
   const [planMonth, setPlanMonth] = useState('');
   const [year, setYear] = useState(new Date().getFullYear());
-  const { onOpen } = usePlanner2Dialog();
+  const { onOpen } = usePlanner2DialogStore();
   const { toast } = useToast();
   
   useEffect(() => {
@@ -64,15 +65,6 @@ export function Planner2() {
   };
 
   const handleAddItem = () => {
-    const newItemTemplate: Omit<Planner2Item, 'id'> = {
-      activity: '',
-      measure: '',
-      annualPlan: '',
-      approvedBudget: '',
-      performance: '',
-      executionPercentage: '',
-      year: year.toString(),
-    };
     onOpen(null, (newItem) => {
       const newId = (Math.max(0, ...items.map(b => parseInt(b.id, 10) || 0)) + 1).toString();
       const updatedItems = [...items, { ...newItem, id: newId }];

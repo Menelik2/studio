@@ -16,57 +16,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Save } from 'lucide-react';
 import { Textarea } from '../ui/textarea';
+import { usePlanner2DialogStore } from '@/hooks/use-planner-2-dialog-store';
 
-
-interface Planner2DialogState {
-  isOpen: boolean;
-  item: Planner2Item | null;
-  onSubmit: ((item: Planner2Item) => void) | null;
-}
-
-interface Planner2DialogStore extends Planner2DialogState {
-  onOpen: (item: Planner2Item | null, onSubmit: (item: Planner2Item) => void) => void;
-  onClose: () => void;
-}
-
-let state: Planner2DialogState = {
-    isOpen: false,
-    item: null,
-    onSubmit: null,
-};
-const listeners = new Set<(state: Planner2DialogState) => void>();
-
-const store = {
-    getState: () => state,
-    setState: (updater: (state: Planner2DialogState) => Partial<Planner2DialogState>) => {
-        state = { ...state, ...updater(state) };
-        listeners.forEach((listener) => listener(state));
-    },
-    subscribe: (listener: (state: Planner2DialogState) => void) => {
-        listeners.add(listener);
-        return () => listeners.delete(listener);
-    },
-    onOpen: (item: Planner2Item | null, onSubmit: (item: Planner2Item) => void) => {
-        store.setState(() => ({ isOpen: true, item, onSubmit }));
-    },
-    onClose: () => {
-        store.setState(() => ({ isOpen: false, item: null, onSubmit: null }));
-    }
-}
-
-export const usePlanner2Dialog = (): Planner2DialogStore => {
-  const [dialogState, setDialogState] = useState(store.getState());
-  useEffect(() => {
-    const unsubscribe = store.subscribe(setDialogState);
-    return unsubscribe;
-  }, []);
-  
-  return {
-    ...dialogState,
-    onOpen: store.onOpen,
-    onClose: store.onClose
-  };
-};
 
 const getInitialFormState = (): Omit<Planner2Item, 'id'> => ({
     activity: '',
@@ -80,7 +31,7 @@ const getInitialFormState = (): Omit<Planner2Item, 'id'> => ({
 
 
 export function Planner2FormDialog() {
-  const { isOpen, item, onClose, onSubmit } = usePlanner2Dialog();
+  const { isOpen, item, onClose, onSubmit } = usePlanner2DialogStore();
   const [formState, setFormState] = useState<Planner2Item | Omit<Planner2Item, 'id'>>(getInitialFormState());
 
   const isEdit = !!item;

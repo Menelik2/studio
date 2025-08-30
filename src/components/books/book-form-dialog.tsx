@@ -1,9 +1,10 @@
 
 'use client';
 
-import { useActionState, useEffect, useState, useCallback, useTransition } from 'react';
+import React, { useActionState, useEffect, useState, useCallback, useTransition } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { updateBookAction, createBookAction, uploadPdfAction } from '@/lib/actions';
+import { useBookDialogStore } from '@/hooks/use-book-dialog-store';
 import type { Book } from '@/lib/definitions';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, Controller } from 'react-hook-form';
@@ -31,60 +32,6 @@ import { Save, UploadCloud, Loader2 } from 'lucide-react';
 import { useFormStatus } from 'react-dom';
 import { cn } from '@/lib/utils';
 
-
-interface BookDialogState {
-  isOpen: boolean;
-  book: Book | null;
-  mode: 'edit' | 'comment' | 'create';
-}
-
-interface BookDialogStore extends BookDialogState {
-  onOpen: (book: Book | null, mode: 'edit' | 'comment' | 'create') => void;
-  onClose: () => void;
-}
-
-// This is a bit of a hack to create a global store without Zustand
-// In a real app, you would use a state management library.
-let state: BookDialogState = {
-    isOpen: false,
-    book: null,
-    mode: 'create',
-};
-const listeners = new Set<(state: BookDialogState) => void>();
-
-const store = {
-    getState: () => state,
-    setState: (updater: (state: BookDialogState) => Partial<BookDialogState>) => {
-        state = { ...state, ...updater(state) };
-        listeners.forEach((listener) => listener(state));
-    },
-    subscribe: (listener: (state: BookDialogState) => void) => {
-        listeners.add(listener);
-        return () => listeners.delete(listener);
-    },
-    onOpen: (book: Book | null, mode: 'edit' | 'comment' | 'create') => {
-        store.setState(() => ({ isOpen: true, book, mode }));
-    },
-    onClose: () => {
-        store.setState(() => ({ isOpen: false, book: null, mode: 'create' }));
-    }
-}
-
-
-export const useBookDialog = (): BookDialogStore => {
-  const [dialogState, setDialogState] = useState(store.getState());
-  useEffect(() => {
-    const unsubscribe = store.subscribe(setDialogState);
-    return unsubscribe;
-  }, []);
-  
-  return {
-    ...dialogState,
-    onOpen: store.onOpen,
-    onClose: store.onClose
-  };
-};
-
 const bookSchema = z.object({
   id: z.string().optional(),
   title: z.string().min(1, 'Title is required'),
@@ -111,14 +58,11 @@ function SubmitButton({ mode }: { mode: 'create' | 'edit' | 'comment' }) {
 }
 
 export function BookFormDialog() {
-  const { isOpen, book, mode, onClose } = useBookDialog();
+  const { isOpen, book, mode, onClose } = useBookDialogStore();
   const { toast } = useToast();
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, startUploadTransition] = useTransition();
 
-  
-  const formRef = React.useRef<HTMLFormElement>(null);
-  
   const { register, handleSubmit, reset, control, formState: { errors }, setValue, watch } = useForm<BookFormValues>({
     resolver: zodResolver(bookSchema),
     defaultValues: {
@@ -131,14 +75,13 @@ export function BookFormDialog() {
         comment: '',
     },
   });
-  
+
   const action = mode === 'create' ? createBookAction : updateBookAction;
-  
+
   const [formState, formAction] = useActionState(action, {
     message: '',
     errors: {},
   });
-
 
   const currentFilePath = watch('filePath');
 
@@ -168,7 +111,7 @@ export function BookFormDialog() {
       toast({ variant: 'destructive', title: 'Error', description: formState.message });
     }
   }, [formState, toast, onClose, mode]);
-  
+
   const handleDragEnter = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
@@ -233,19 +176,19 @@ export function BookFormDialog() {
   });
 
   if (!isOpen) return null;
-  
+
   const getTitle = () => {
     if (mode === 'comment') return 'Add/Edit Comment';
     if (mode === 'edit') return 'Edit Book';
     return 'Add New Book';
   }
-  
+
   const getDescription = () => {
     if (mode === 'comment') return 'Add or update the comment for this book.';
     if (mode === 'edit') return 'Update the details of this book.';
     return 'Fill in the details for the new book.';
   }
-  
+
   const isCreate = mode === 'create';
 
   return (
@@ -262,9 +205,9 @@ export function BookFormDialog() {
             {getDescription()}
           </DialogDescription>
         </DialogHeader>
-        <form ref={formRef} action={formAction as any} onSubmit={onSubmit} className="grid gap-4 py-4">
+        <form onSubmit={onSubmit} className="grid gap-4 py-4">
           {book?.id && <input type="hidden" {...register('id')} value={book?.id ?? ''} />}
-          
+
           {mode !== 'comment' && (
             <>
               {isCreate ? (
@@ -324,7 +267,7 @@ export function BookFormDialog() {
                 {errors.description && <p className="col-span-4 text-red-500 text-xs text-right">{errors.description.message}</p>}
                 {formState.errors?.description && <p className="col-span-4 text-red-500 text-xs text-right">{formState.errors.description[0]}</p>}
               </div>
-              
+
               <div className="grid grid-cols-4 items-start gap-4">
                 <Label htmlFor="filePath" className="text-right pt-2">PDF File</Label>
                 <div className="col-span-3 space-y-2">
@@ -339,9 +282,9 @@ export function BookFormDialog() {
                       isDragging ? 'border-primary bg-muted/50' : 'border-input'
                     )}
                   >
-                    <input 
-                      type="file" 
-                      id="pdf-upload-input" 
+                    <input
+                      type="file"
+                      id="pdf-upload-input"
                       className="hidden"
                       accept="application/pdf"
                       onChange={(e) => e.target.files && handleFileUpload(e.target.files[0])}
@@ -390,7 +333,7 @@ export function BookFormDialog() {
               </div>
             </>
           )}
-          
+
           <DialogFooter>
             <Button variant="outline" type="button" onClick={() => {
                 reset();

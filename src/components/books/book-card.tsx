@@ -13,15 +13,15 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import type { Book } from '@/lib/definitions';
-import { useBookDialog } from './book-form-dialog';
-import { useDeleteBookDialog } from './delete-book-dialog';
+import { useBookDialogStore } from '@/hooks/use-book-dialog-store';
+import { useDeleteBookDialogStore } from '@/hooks/use-delete-book-dialog-store';
 import { Edit, Trash2, Eye, MessageSquareQuote, MessageSquarePlus } from 'lucide-react';
 import { Separator } from '../ui/separator';
 import { motion } from 'framer-motion';
 
 export function BookCard({ book }: { book: Book }) {
-  const { onOpen: onOpenDialog } = useBookDialog();
-  const { onOpen: onOpenDelete } = useDeleteBookDialog();
+  const { onOpen: onOpenDialog } = useBookDialogStore();
+  const { onOpen: onOpenDelete } = useDeleteBookDialogStore();
 
   const category = book.category;
   let variant: 'default' | 'secondary' | 'destructive' | 'outline' = 'secondary';
