@@ -55,12 +55,12 @@ export function Planner() {
     }
   }, [toast]);
 
-  const loadData = useCallback(async () => {
+  const loadData = useCallback(async (currentYear: number) => {
     setIsLoading(true);
     try {
       const loadedItems = await getPlanner1ItemsAction();
       setItems(loadedItems);
-      await loadSignatures(year);
+      await loadSignatures(currentYear);
     } catch (error) {
       toast({
           title: 'Error loading planner data',
@@ -70,11 +70,11 @@ export function Planner() {
     } finally {
       setIsLoading(false);
     }
-  }, [year, toast, loadSignatures]);
+  }, [toast, loadSignatures]);
 
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    loadData(year);
+  }, [year, loadData]);
 
   const handleSaveItems = async (updatedItems: PlannerItem[]) => {
     const result = await savePlanner1ItemsAction(updatedItems);

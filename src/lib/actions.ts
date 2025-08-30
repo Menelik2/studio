@@ -4,7 +4,7 @@
 import { z } from 'zod';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
-import { readDataFromBlob, writeDataToBlob, uploadPdfToBlob, getInitialData } from './blob';
+import { readData, writeData, uploadPdfToBlob } from './blob';
 import type { Book, PlannerItem, Planner2Item, PlannerSignatures } from './definitions';
 
 // Mock login action
@@ -86,7 +86,7 @@ async function handleBookAction(bookData: unknown, action: 'create' | 'update') 
         throw new Error('Book not found for update');
       }
     }
-    await writeDataToBlob('books.json', books);
+    await writeData('books.json', books);
 
   } catch (error) {
     console.error("Error handling book action:", error);
@@ -123,7 +123,7 @@ export async function deleteBookAction(prevState: any, formData: FormData) {
     const initialLength = books.length;
     books = books.filter(book => book.id !== id);
     if (books.length < initialLength) {
-        await writeDataToBlob('books.json', books);
+        await writeData('books.json', books);
     }
     revalidatePath('/dashboard/books');
     revalidatePath('/dashboard');
@@ -134,8 +134,14 @@ export async function deleteBookAction(prevState: any, formData: FormData) {
 }
 
 export async function getBooksAction(): Promise<Book[]> {
-    return getInitialData<Book>('books.json');
+    return readData<Book>('books.json');
 }
+
+export async function getBookById(id: string): Promise<Book | undefined> {
+  const books = await getBooksAction();
+  return books.find((book) => book.id === id);
+}
+
 
 export async function uploadPdfAction(formData: FormData) {
     const file = formData.get('file') as File | null;
@@ -148,12 +154,12 @@ export async function uploadPdfAction(formData: FormData) {
 
 // Planner 1 Actions
 export async function getPlanner1ItemsAction(): Promise<PlannerItem[]> {
-  return getInitialData<PlannerItem>('planner1.json');
+  return readData<PlannerItem>('planner1.json');
 }
 
 export async function savePlanner1ItemsAction(items: PlannerItem[]): Promise<{success: boolean}> {
   try {
-    await writeDataToBlob('planner1.json', items);
+    await writeData('planner1.json', items);
     revalidatePath('/dashboard/planner');
     return { success: true };
   } catch (error) {
@@ -163,7 +169,7 @@ export async function savePlanner1ItemsAction(items: PlannerItem[]): Promise<{su
 }
 
 export async function getPlannerSignaturesAction(year: number): Promise<Omit<PlannerSignatures, 'year'> | null> {
-    const allSignatures = await getInitialData<PlannerSignatures>('planner-signatures.json');
+    const allSignatures = await readData<PlannerSignatures>('planner-signatures.json');
     const signatures = allSignatures.find(sig => sig.year === year);
     if (signatures) {
         return { preparationOfficer: signatures.preparationOfficer, reviewOfficer: signatures.reviewOfficer };
@@ -173,14 +179,14 @@ export async function getPlannerSignaturesAction(year: number): Promise<Omit<Pla
 
 export async function savePlannerSignaturesAction(signatures: PlannerSignatures): Promise<{success: boolean}> {
     try {
-        let allSignatures = await getInitialData<PlannerSignatures>('planner-signatures.json');
+        let allSignatures = await readData<PlannerSignatures>('planner-signatures.json');
         const index = allSignatures.findIndex(sig => sig.year === signatures.year);
         if (index !== -1) {
             allSignatures[index] = signatures;
         } else {
             allSignatures.push(signatures);
         }
-        await writeDataToBlob('planner-signatures.json', allSignatures);
+        await writeData('planner-signatures.json', allSignatures);
         revalidatePath('/dashboard/planner');
         return { success: true };
     } catch (error) {
@@ -192,12 +198,12 @@ export async function savePlannerSignaturesAction(signatures: PlannerSignatures)
 
 // Planner 2 Actions
 export async function getPlanner2ItemsAction(): Promise<Planner2Item[]> {
-    return getInitialData<Planner2Item>('planner2.json');
+    return readData<Planner2Item>('planner2.json');
 }
 
 export async function savePlanner2ItemsAction(items: Planner2Item[]): Promise<{success:boolean}> {
   try {
-    await writeDataToBlob('planner2.json', items);
+    await writeData('planner2.json', items);
     revalidatePath('/dashboard/planner-2');
     return { success: true };
   } catch (error) {
