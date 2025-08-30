@@ -102,17 +102,15 @@ async function handleBookAction(bookData: unknown, action: 'create' | 'update') 
 
 export async function createBookAction(prevState: FormState, formData: FormData) {
   const rawData = Object.fromEntries(formData.entries());
-  // When creating a new book, the ID is empty, so we remove it.
-  // The data layer will generate a new one.
-  if ('id' in rawData && !rawData.id) {
+  if ('id' in rawData) {
     delete rawData.id;
   }
   return handleBookAction(rawData, 'create');
 }
 
 export async function updateBookAction(prevState: FormState, formData: FormData) {
-  const book = Object.fromEntries(formData.entries());
-  return handleBookAction(book, 'update');
+  const rawData = Object.fromEntries(formData.entries());
+  return handleBookAction(rawData, 'update');
 }
 
 export async function deleteBookAction(prevState: any, formData: FormData) {
