@@ -1,6 +1,30 @@
 
+'use client';
+
 import { LoginForm } from '@/components/auth/login-form';
-import { BookOpen } from 'lucide-react';
+import { BookOpen, AlertCircle } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Suspense } from 'react';
+
+function LoginError() {
+  const searchParams = useSearchParams();
+  const error = searchParams.get('error');
+
+  if (!error) {
+    return null;
+  }
+
+  return (
+    <Alert variant="destructive" className="bg-white/20 border-white/30 text-white backdrop-blur-sm">
+        <AlertCircle className="h-4 w-4 !text-white" />
+        <AlertTitle>Login Failed</AlertTitle>
+        <AlertDescription className="!text-white/90">
+            {error}
+        </AlertDescription>
+    </Alert>
+  );
+}
 
 export default function LoginPage() {
   return (
@@ -15,6 +39,9 @@ export default function LoginPage() {
             ባህር ዳር ፈ/ገ/ቅ/ጊዮርጊስ ካ/ሰ/ት/ቤት
           </p>
         </div>
+        <Suspense fallback={<div>Loading...</div>}>
+            <LoginError />
+        </Suspense>
         <LoginForm />
       </div>
     </main>

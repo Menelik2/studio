@@ -1,15 +1,13 @@
 
 'use client';
 
-import { useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { loginAction } from '@/lib/actions';
-import { LogIn, AlertCircle, Mail, KeyRound } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { LogIn, Mail, KeyRound } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Checkbox } from '../ui/checkbox';
 import Link from 'next/link';
@@ -25,8 +23,6 @@ function SubmitButton() {
 }
 
 export function LoginForm() {
-  const [state, formAction] = useActionState(loginAction, undefined);
-
   const formVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
@@ -51,21 +47,12 @@ export function LoginForm() {
         </CardHeader>
       <CardContent>
         <motion.form 
-          action={formAction} 
+          action={loginAction} 
           className="space-y-4"
           variants={formVariants}
           initial="hidden"
           animate="visible"
         >
-           {state?.error && (
-            <motion.div variants={itemVariants}>
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Login Failed</AlertTitle>
-                <AlertDescription>{state.error}</AlertDescription>
-              </Alert>
-            </motion.div>
-          )}
           <motion.div variants={itemVariants} className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <div className="relative">
@@ -115,5 +102,3 @@ export function LoginForm() {
     </Card>
   );
 }
-
-    

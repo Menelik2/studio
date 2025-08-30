@@ -10,13 +10,13 @@ import { collection, getDocs, doc, setDoc, deleteDoc, getDoc, writeBatch } from 
 import { put } from '@vercel/blob';
 
 // Mock login action
-export async function loginAction(prevState: { error?: string } | undefined, formData: FormData) {
+export async function loginAction(formData: FormData) {
   const password = formData.get('password');
   
   if (password === '123!@#admin') {
     redirect('/dashboard');
   } else {
-    return { error: 'Invalid password. Please try again.' };
+    redirect('/login?error=Invalid password. Please try again.');
   }
 }
 
