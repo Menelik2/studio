@@ -42,6 +42,18 @@ const bookSchema = z.object({
   comment: z.string().optional(),
 });
 
+const commentSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  author: z.string(),
+  category: z.enum(['ግጥም', 'ወግ', 'ድራማ', 'መነባንብ', 'መጣጥፍ', 'ሌሎች መፅሐፍት']),
+  year: z.coerce.number(),
+  description: z.string(),
+  filePath: z.string().url().or(z.literal('')),
+  comment: z.string().optional(),
+});
+
+
 type BookFormValues = z.infer<typeof bookSchema>;
 
 function SubmitButton({ isPending }: { isPending: boolean }) {
@@ -56,14 +68,14 @@ function SubmitButton({ isPending }: { isPending: boolean }) {
 export function BookFormDialog() {
   const { isOpen, book, mode, onClose } = useBookDialogStore();
   const { toast } = useToast();
-  const [isDragging, setIsDragging] = useState(false);
   const [isUploading, startUploadTransition] = useTransition();
   const [isSubmitting, startSubmitTransition] = useTransition();
   const [serverErrors, setServerErrors] = useState<FormState['errors'] | null>(null);
 
+  const isCommentMode = mode === 'comment';
 
-  const { register, handleSubmit, reset, control, formState: { errors }, setValue } = useForm<BookFormValues>({
-    resolver: zodResolver(bookSchema),
+  const { register, handleSubmit, reset, control, formState: { errors }, setValue, watch } = useForm<BookFormValues>({
+    resolver: zodResolver(isCommentMode ? commentSchema : bookSchema),
     defaultValues: {
         title: '',
         author: '',
@@ -127,7 +139,6 @@ export function BookFormDialog() {
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsDragging(false);
 
     const files = e.dataTransfer.files;
     if (files && files.length > 0) {
@@ -167,7 +178,6 @@ export function BookFormDialog() {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => {
       if(!open) {
-        reset();
         onClose();
       }
     }}>
@@ -179,9 +189,9 @@ export function BookFormDialog() {
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 py-4">
-          {book?.id && <input type="hidden" {...register('id')} value={book?.id ?? ''} />}
+          <input type="hidden" {...register('id')} />
 
-          {mode !== 'comment' && (
+          {mode !== 'comment' ? (
             <>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="title" className="text-right">Title</Label>
@@ -235,14 +245,13 @@ export function BookFormDialog() {
                 <Label htmlFor="filePath" className="text-right pt-2">PDF File</Label>
                 <div className="col-span-3 space-y-2">
                   <div
-                    onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
-                    onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); }}
+                    onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                    onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); }}
                     onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
                     onDrop={handleDrop}
                     onClick={() => document.getElementById('pdf-upload-input')?.click()}
                     className={cn(
-                      'relative flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50 transition-colors',
-                      isDragging ? 'border-primary bg-muted/50' : 'border-input'
+                      'relative flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50 transition-colors border-input'
                     )}
                   >
                     <input
@@ -277,16 +286,16 @@ export function BookFormDialog() {
                 </div>
               </div>
             </>
-          )}
-
-          {mode === 'comment' && (
+          ) : (
              <>
+              {/* These are hidden but registered so their values are preserved on submit */}
               <input type="hidden" {...register('title')} />
               <input type="hidden" {...register('author')} />
               <input type="hidden" {...register('category')} />
               <input type="hidden" {...register('year')} />
               <input type="hidden" {...register('description')} />
               <input type="hidden" {...register('filePath')} />
+              
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="comment" className="text-right">Comment</Label>
                 <Textarea id="comment" {...register('comment')} className="col-span-3" placeholder="Add a comment..."/>
@@ -296,10 +305,7 @@ export function BookFormDialog() {
           )}
 
           <DialogFooter>
-            <Button variant="outline" type="button" onClick={() => {
-                reset();
-                onClose();
-            }}>Cancel</Button>
+            <Button variant="outline" type="button" onClick={onClose}>Cancel</Button>
             <SubmitButton isPending={isSubmitting} />
           </DialogFooter>
         </form>
@@ -307,5 +313,3 @@ export function BookFormDialog() {
     </Dialog>
   );
 }
-
-    

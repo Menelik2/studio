@@ -13,6 +13,7 @@ import { put } from '@vercel/blob';
 export async function loginAction(prevState: { error?: string } | undefined, formData: FormData) {
   const password = formData.get('password');
   
+  // This is a mock authentication. In a real app, use a proper auth service.
   if (password === '123!@#admin') {
     redirect('/dashboard');
   } else {
@@ -36,11 +37,13 @@ const bookSchemaBase = z.object({
   comment: z.string().optional(),
 });
 
+// Schema for creating a new book. ID is not needed.
 const createBookSchema = bookSchemaBase;
+
+// Schema for updating. ID is required. All other fields are passed through.
 const updateBookSchema = bookSchemaBase.extend({
   id: z.string().min(1, { message: 'ID is required for updates' }),
 });
-
 
 export type FormState = {
   message: string;
@@ -98,16 +101,12 @@ export async function updateBookAction(rawData: unknown): Promise<FormState> {
   }
   
   const { id, ...bookData } = validatedFields.data;
-  const finalData: Book = {
-    id,
-    ...bookData,
-    comment: bookData.comment || '',
-    filePath: bookData.filePath || '',
-  };
 
   try {
     const bookRef = doc(db, 'books', id);
-    await setDoc(bookRef, finalData, { merge: true });
+    // Use `setDoc` with `merge: true` to update fields or create if it doesn't exist.
+    // This is safer and also handles partial updates (like just a comment) gracefully.
+    await setDoc(bookRef, bookData, { merge: true });
 
   } catch (error) {
     console.error("Error updating book in Firestore:", error);
@@ -118,6 +117,7 @@ export async function updateBookAction(rawData: unknown): Promise<FormState> {
 
   revalidatePath('/dashboard/books');
   revalidatePath('/dashboard');
+  revalidatePath(`/dashboard/books/${id}`);
   return { message: 'Book successfully updated.', errors: {} };
 }
 
@@ -144,6 +144,8 @@ export async function getBooksAction(): Promise<Book[]> {
         const booksCol = collection(db, 'books');
         const booksSnapshot = await getDocs(booksCol);
         const booksList = booksSnapshot.docs.map(doc => doc.data() as Book);
+        // Sort books by title alphabetically
+        booksList.sort((a, b) => a.title.localeCompare(b.title));
         return booksList;
     } catch (error) {
         console.error("Error fetching books from Firestore:", error);
@@ -200,13 +202,6 @@ export async function getPlanner1ItemsAction(): Promise<PlannerItem[]> {
 export async function savePlanner1ItemsAction(items: PlannerItem[]): Promise<{ success: boolean }> {
   try {
     const batch = writeBatch(db);
-    const itemsCol = collection(db, 'planner1');
-    
-    // First, delete all existing documents in the collection to handle removals
-    const existingDocs = await getDocs(itemsCol);
-    existingDocs.forEach(doc => batch.delete(doc.ref));
-
-    // Then, add the new/updated items
     items.forEach(item => {
       const docRef = doc(db, 'planner1', item.id);
       batch.set(docRef, item);
@@ -267,11 +262,6 @@ export async function getPlanner2ItemsAction(): Promise<Planner2Item[]> {
 export async function savePlanner2ItemsAction(items: Planner2Item[]): Promise<{ success: boolean }> {
   try {
     const batch = writeBatch(db);
-    const itemsCol = collection(db, 'planner2');
-
-    const existingDocs = await getDocs(itemsCol);
-    existingDocs.forEach(doc => batch.delete(doc.ref));
-
     items.forEach(item => {
       const docRef = doc(db, 'planner2', item.id);
       batch.set(docRef, item);
@@ -285,5 +275,3 @@ export async function savePlanner2ItemsAction(items: Planner2Item[]): Promise<{ 
     return { success: false };
   }
 }
-
-    
