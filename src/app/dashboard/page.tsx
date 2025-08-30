@@ -7,6 +7,8 @@ import Link from 'next/link';
 import { BookFormDialog } from '@/components/books/book-form-dialog';
 import { DeleteBookDialog } from '@/components/books/delete-book-dialog';
 
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardPage() {
   const books = await getBooksAction();
 

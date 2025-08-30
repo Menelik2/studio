@@ -56,19 +56,28 @@ async function writeDataToBlob<T>(fileName: string, data: T[]): Promise<void> {
 }
 
 export async function uploadPdfToBlob(file: File): Promise<{ success: boolean; path?: string; error?: string }> {
-  const blob = await put(file.name, file, {
-    access: 'public',
-    token: process.env.BLOB_READ_WRITE_TOKEN,
-  });
-  return { success: true, path: blob.url };
+  try {
+      const blob = await put(file.name, file, {
+        access: 'public',
+        token: process.env.BLOB_READ_WRITE_TOKEN,
+      });
+      return { success: true, path: blob.url };
+  } catch (error: any) {
+      console.error('Failed to upload PDF to blob:', error);
+      return { success: false, error: 'Server failed to upload file.'}
+  }
 }
 
 // --- Local File System Functions ---
 
+const getLocalFilePath = (fileName: string) => {
+    const dataDirectory = path.join(process.cwd(), 'src/lib');
+    return path.join(dataDirectory, fileName);
+}
+
 async function readLocalData<T>(fileName: string): Promise<T[]> {
   try {
-    const dataDirectory = path.join(process.cwd(), 'src/lib');
-    const filePath = path.join(dataDirectory, fileName);
+    const filePath = getLocalFilePath(fileName);
     const jsonData = await fs.readFile(filePath, 'utf-8');
     return JSON.parse(jsonData) as T[];
   } catch (error) {
@@ -77,14 +86,18 @@ async function readLocalData<T>(fileName: string): Promise<T[]> {
       return [];
     }
     console.error(`Could not read local file ${fileName}:`, error);
+    // Return empty array on other errors to avoid crashing.
     return [];
   }
 }
 
 async function writeLocalData<T>(fileName: string, data: T[]): Promise<void> {
-  const dataDirectory = path.join(process.cwd(), 'src/lib');
-  const filePath = path.join(dataDirectory, fileName);
-  await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');
+  const filePath = getLocalFilePath(fileName);
+  try {
+    await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');
+  } catch(error) {
+      console.error(`Could not write to local file ${fileName}:`, error);
+  }
 }
 
 
