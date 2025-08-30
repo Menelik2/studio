@@ -117,14 +117,9 @@ export function BookFormDialog() {
   const [isUploading, startUploadTransition] = useTransition();
 
   
-  const action = mode === 'create' ? createBookAction : updateBookAction;
+  const formRef = React.useRef<HTMLFormElement>(null);
   
-  const [formState, formAction] = useActionState(action, {
-    message: '',
-    errors: {},
-  });
-
-  const { register, reset, control, formState: { errors }, setValue, watch } = useForm<BookFormValues>({
+  const { register, handleSubmit, reset, control, formState: { errors }, setValue, watch } = useForm<BookFormValues>({
     resolver: zodResolver(bookSchema),
     defaultValues: {
         title: '',
@@ -136,6 +131,14 @@ export function BookFormDialog() {
         comment: '',
     },
   });
+  
+  const action = mode === 'create' ? createBookAction : updateBookAction;
+  
+  const [formState, formAction] = useActionState(action, {
+    message: '',
+    errors: {},
+  });
+
 
   const currentFilePath = watch('filePath');
 
@@ -183,19 +186,8 @@ export function BookFormDialog() {
     e.stopPropagation();
   }, []);
 
-  const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-
-    const files = e.dataTransfer.files;
-    if (files && files.length > 0) {
-      handleFileUpload(files[0]);
-    }
-  }, [setValue, toast]);
-
-  const handleFileUpload = (file: File) => {
-    if (file.type === 'application/pdf') {
+  const handleFileUpload = useCallback((file: File) => {
+    if (file && file.type === 'application/pdf') {
         const formData = new FormData();
         formData.append('file', file);
 
@@ -215,14 +207,36 @@ export function BookFormDialog() {
                 });
             }
         });
-      } else {
+      } else if (file) {
         toast({
           variant: 'destructive',
           title: 'Invalid File Type',
           description: 'Please drop a PDF file.',
         });
       }
-  }
+  }, [setValue, toast]);
+
+  const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      handleFileUpload(files[0]);
+    }
+  }, [handleFileUpload]);
+
+
+  const onSubmit = handleSubmit((data) => {
+    const formData = new FormData();
+    Object.entries(data).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        formData.append(key, String(value));
+      }
+    });
+    formAction(formData);
+  });
 
   if (!isOpen) return null;
   
@@ -254,8 +268,8 @@ export function BookFormDialog() {
             {getDescription()}
           </DialogDescription>
         </DialogHeader>
-        <form action={formAction} className="grid gap-4 py-4">
-          <input type="hidden" {...register('id')} value={book?.id ?? ''} />
+        <form ref={formRef} action={formAction} onSubmit={onSubmit} className="grid gap-4 py-4">
+          {book?.id && <input type="hidden" {...register('id')} value={book?.id ?? ''} />}
           
           {mode !== 'comment' && (
             <>

@@ -57,11 +57,6 @@ export type FormState = {
 export async function createBookAction(prevState: FormState, formData: FormData): Promise<FormState> {
   const rawData = Object.fromEntries(formData.entries());
   
-  // The form sends an empty `id` field for new books, which we must remove before validation.
-  if ('id' in rawData) {
-    delete rawData.id;
-  }
-  
   const validatedFields = createBookSchema.safeParse(rawData);
 
   if (!validatedFields.success) {
