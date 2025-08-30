@@ -45,13 +45,13 @@ const bookSchema = z.object({
 
 type BookFormValues = z.infer<typeof bookSchema>;
 
-function SubmitButton({ mode }: { mode: 'create' | 'edit' | 'comment' }) {
+function SubmitButton({ isPending }: { isPending: boolean }) {
   const { pending } = useFormStatus();
-  const isCreate = mode === 'create';
+  const isSubmitting = isPending || pending;
 
   return (
-    <Button type="submit" disabled={pending}>
-      {pending ? (isCreate ? 'Adding...' : 'Saving...') : (isCreate ? 'Add Book' : 'Save Changes')}
+    <Button type="submit" disabled={isSubmitting}>
+      {isSubmitting ? 'Saving...' : 'Save Changes'}
       <Save className="ml-2 h-4 w-4" />
     </Button>
   );
@@ -62,6 +62,7 @@ export function BookFormDialog() {
   const { toast } = useToast();
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, startUploadTransition] = useTransition();
+  const [isPending, startTransition] = useTransition();
 
   const { register, handleSubmit, reset, control, formState: { errors }, setValue, watch } = useForm<BookFormValues>({
     resolver: zodResolver(bookSchema),
@@ -171,9 +172,11 @@ export function BookFormDialog() {
   }, [handleFileUpload]);
 
 
-  const onSubmit = handleSubmit((data) => {
-    formAction(data);
-  });
+  const onSubmit = (data: BookFormValues) => {
+    startTransition(() => {
+        formAction(data);
+    });
+  };
 
   if (!isOpen) return null;
 
@@ -205,7 +208,7 @@ export function BookFormDialog() {
             {getDescription()}
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={onSubmit} className="grid gap-4 py-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 py-4">
           {book?.id && <input type="hidden" {...register('id')} value={book?.id ?? ''} />}
 
           {mode !== 'comment' && (
@@ -339,7 +342,7 @@ export function BookFormDialog() {
                 reset();
                 onClose();
             }}>Cancel</Button>
-            <SubmitButton mode={mode} />
+            <SubmitButton isPending={isPending} />
           </DialogFooter>
         </form>
       </DialogContent>
