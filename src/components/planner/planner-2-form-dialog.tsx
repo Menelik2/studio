@@ -17,9 +17,12 @@ import { Label } from '@/components/ui/label';
 import { Save } from 'lucide-react';
 import { Textarea } from '../ui/textarea';
 import { usePlanner2DialogStore } from '@/hooks/use-planner-2-dialog-store';
+import { db } from '@/lib/firebase';
+import { collection, doc } from 'firebase/firestore';
 
 
-const getInitialFormState = (): Omit<Planner2Item, 'id'> => ({
+const getInitialFormState = (): Planner2Item => ({
+    id: doc(collection(db, 'planner2')).id,
     activity: '',
     measure: '',
     annualPlan: '',
@@ -32,7 +35,7 @@ const getInitialFormState = (): Omit<Planner2Item, 'id'> => ({
 
 export function Planner2FormDialog() {
   const { isOpen, item, onClose, onSubmit } = usePlanner2DialogStore();
-  const [formState, setFormState] = useState<Planner2Item | Omit<Planner2Item, 'id'>>(getInitialFormState());
+  const [formState, setFormState] = useState<Planner2Item>(getInitialFormState());
 
   const isEdit = !!item;
 

@@ -45,6 +45,13 @@ const updateBookSchema = bookSchemaBase.extend({
   id: z.string().min(1, { message: 'ID is required for updates' }),
 });
 
+// Schema specifically for updating a comment. This ensures other fields aren't accidentally changed.
+const commentSchema = z.object({
+    id: z.string(),
+    comment: z.string().optional(),
+    __comment_update: z.literal(true), // Internal flag
+}).passthrough(); // Allow other fields to be present but not validated.
+
 export type FormState = {
   message: string;
   errors?: {
@@ -91,7 +98,10 @@ export async function createBookAction(rawData: unknown): Promise<FormState> {
 }
 
 export async function updateBookAction(rawData: unknown): Promise<FormState> {
-  const validatedFields = updateBookSchema.safeParse(rawData);
+  const isCommentUpdate = (rawData as any)?.__comment_update === true;
+  const schema = isCommentUpdate ? commentSchema : updateBookSchema;
+
+  const validatedFields = schema.safeParse(rawData);
 
   if (!validatedFields.success) {
     return {
@@ -104,8 +114,8 @@ export async function updateBookAction(rawData: unknown): Promise<FormState> {
 
   try {
     const bookRef = doc(db, 'books', id);
-    // Use `setDoc` with `merge: true` to update fields or create if it doesn't exist.
-    // This is safer and also handles partial updates (like just a comment) gracefully.
+    // Use `setDoc` with `merge: true` to update fields.
+    // This is perfect for partial updates like adding a comment.
     await setDoc(bookRef, bookData, { merge: true });
 
   } catch (error) {
@@ -202,9 +212,25 @@ export async function getPlanner1ItemsAction(): Promise<PlannerItem[]> {
 export async function savePlanner1ItemsAction(items: PlannerItem[]): Promise<{ success: boolean }> {
   try {
     const batch = writeBatch(db);
+    const existingIds = new Set<string>();
+
+    // Get all existing documents to determine which ones to delete
+    const querySnapshot = await getDocs(collection(db, 'planner1'));
+    querySnapshot.forEach(doc => existingIds.add(doc.id));
+    
+    const currentIds = new Set(items.map(item => item.id));
+
+    // Set/update current items
     items.forEach(item => {
       const docRef = doc(db, 'planner1', item.id);
       batch.set(docRef, item);
+    });
+
+    // Delete items that are no longer in the list
+    existingIds.forEach(id => {
+      if (!currentIds.has(id)) {
+        batch.delete(doc(db, 'planner1', id));
+      }
     });
     
     await batch.commit();
@@ -234,7 +260,7 @@ export async function getPlannerSignaturesAction(year: number): Promise<Omit<Pla
 export async function savePlannerSignaturesAction(signatures: PlannerSignatures): Promise<{ success: boolean }> {
   try {
     const docRef = doc(db, 'plannerSignatures', signatures.year.toString());
-    await setDoc(docRef, signatures);
+    await setDoc(docRef, signatures, { merge: true });
     revalidatePath('/dashboard/planner');
     return { success: true };
   } catch (error) {
@@ -262,9 +288,22 @@ export async function getPlanner2ItemsAction(): Promise<Planner2Item[]> {
 export async function savePlanner2ItemsAction(items: Planner2Item[]): Promise<{ success: boolean }> {
   try {
     const batch = writeBatch(db);
+    const existingIds = new Set<string>();
+
+    const querySnapshot = await getDocs(collection(db, 'planner2'));
+    querySnapshot.forEach(doc => existingIds.add(doc.id));
+    
+    const currentIds = new Set(items.map(item => item.id));
+
     items.forEach(item => {
       const docRef = doc(db, 'planner2', item.id);
       batch.set(docRef, item);
+    });
+
+    existingIds.forEach(id => {
+      if (!currentIds.has(id)) {
+        batch.delete(doc(db, 'planner2', id));
+      }
     });
 
     await batch.commit();

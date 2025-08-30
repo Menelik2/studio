@@ -18,6 +18,8 @@ import { Planner2FormDialog } from './planner-2-form-dialog';
 import { getPlanner2ItemsAction, savePlanner2ItemsAction } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { usePlanner2DialogStore } from '@/hooks/use-planner-2-dialog-store';
+import { collection, doc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 export function Planner2() {
   const [items, setItems] = useState<Planner2Item[]>([]);
@@ -66,7 +68,7 @@ export function Planner2() {
 
   const handleAddItem = () => {
     onOpen(null, (newItem) => {
-      const newId = (Math.max(0, ...items.map(b => parseInt(b.id, 10) || 0)) + 1).toString();
+      const newId = doc(collection(db, 'planner2')).id;
       const updatedItems = [...items, { ...newItem, id: newId }];
       handleSaveItems(updatedItems);
     });

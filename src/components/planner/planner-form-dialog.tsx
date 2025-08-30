@@ -17,6 +17,8 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '../ui/checkbox';
 import { Save } from 'lucide-react';
 import { usePlannerDialogStore } from '@/hooks/use-planner-dialog-store';
+import { db } from '@/lib/firebase';
+import { doc, collection } from 'firebase/firestore';
 
 const quarters = {
     '1ኛ ሩብ ዓመት': ['ሐምሌ', 'ነሐሴ', 'መስከረም'],
@@ -26,7 +28,7 @@ const quarters = {
 };
 
 const getInitialFormState = (): PlannerItem => ({
-    id: '',
+    id: doc(collection(db, 'planner1')).id,
     task: '',
     measure: '',
     quantity: '',
@@ -107,7 +109,7 @@ export function PlannerFormDialog() {
                             <div className="space-y-2">
                                 {months.map(month => (
                                     <div key={month} className="flex items-center gap-2">
-                                        <Checkbox id={`${month}-check`} checked={formState.months[month]} onCheckedChange={(checked) => handleMonthChange(month, !!checked)} />
+                                        <Checkbox id={`${month}-check`} checked={!!formState.months[month]} onCheckedChange={(checked) => handleMonthChange(month, !!checked)} />
                                         <Label htmlFor={`${month}-check`}>{month}</Label>
                                     </div>
                                 ))}

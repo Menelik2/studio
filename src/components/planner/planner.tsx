@@ -117,7 +117,7 @@ export function Planner() {
 
   const handleAddItem = () => {
     onOpen(null, (newItem) => {
-        const newId = (Math.max(0, ...items.map(b => parseInt(b.id, 10) || 0)) + 1).toString();
+        const newId = doc(collection(db, 'planner1')).id;
         const updatedItems = [...items, {...newItem, id: newId, year: year.toString()}];
         handleSaveItems(updatedItems);
     });

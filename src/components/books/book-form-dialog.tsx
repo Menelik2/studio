@@ -3,7 +3,7 @@
 
 import React, { useEffect, useState, useTransition } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { updateBookAction, createBookAction, uploadPdfAction } from '@/lib/actions';
+import { updateBookAction, createBookAction } from '@/lib/actions';
 import { useBookDialogStore } from '@/hooks/use-book-dialog-store';
 import type { Book, FormState } from '@/lib/definitions';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -30,8 +30,9 @@ import {
 } from '@/components/ui/select';
 import { Save, UploadCloud, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { uploadPdfAction } from '@/lib/actions';
 
-const bookSchema = z.object({
+const bookFormSchema = z.object({
   id: z.string().optional(),
   title: z.string().min(1, 'Title is required'),
   author: z.string().min(1, 'Author is required'),
@@ -42,19 +43,13 @@ const bookSchema = z.object({
   comment: z.string().optional(),
 });
 
-const commentSchema = z.object({
+const commentFormSchema = z.object({
   id: z.string(),
-  title: z.string(),
-  author: z.string(),
-  category: z.enum(['ግጥም', 'ወግ', 'ድራማ', 'መነባንብ', 'መጣጥፍ', 'ሌሎች መፅሐፍት']),
-  year: z.coerce.number(),
-  description: z.string(),
-  filePath: z.string().url().or(z.literal('')),
   comment: z.string().optional(),
 });
 
 
-type BookFormValues = z.infer<typeof bookSchema>;
+type BookFormValues = z.infer<typeof bookFormSchema>;
 
 function SubmitButton({ isPending }: { isPending: boolean }) {
   return (
@@ -73,9 +68,11 @@ export function BookFormDialog() {
   const [serverErrors, setServerErrors] = useState<FormState['errors'] | null>(null);
 
   const isCommentMode = mode === 'comment';
+  
+  const currentSchema = isCommentMode ? commentFormSchema : bookFormSchema;
 
   const { register, handleSubmit, reset, control, formState: { errors }, setValue, watch } = useForm<BookFormValues>({
-    resolver: zodResolver(isCommentMode ? commentSchema : bookSchema),
+    resolver: zodResolver(currentSchema),
     defaultValues: {
         title: '',
         author: '',
@@ -148,8 +145,24 @@ export function BookFormDialog() {
 
   const onSubmit = (data: BookFormValues) => {
     startSubmitTransition(async () => {
-        const action = mode === 'create' ? createBookAction : updateBookAction;
-        const result = await action(data);
+        let result: FormState;
+        
+        if (mode === 'create') {
+            result = await createBookAction(data);
+        } else {
+            // For edit and comment modes, we need the original book data.
+            if (!book) return; 
+
+            let payload;
+            if (mode === 'comment') {
+                // Merge original book data with the new comment.
+                payload = { ...book, comment: data.comment, __comment_update: true };
+            } else {
+                // For edit mode, just send the form data.
+                payload = data;
+            }
+            result = await updateBookAction(payload);
+        }
 
         if (result.message && !result.errors) {
             toast({ title: mode === 'create' ? 'Book Added' : 'Book Updated', description: result.message });
@@ -164,7 +177,7 @@ export function BookFormDialog() {
   if (!isOpen) return null;
 
   const getTitle = () => {
-    if (mode === 'comment') return 'Add/Edit Comment';
+    if (mode === 'comment') return `Comment on "${book?.title}"`;
     if (mode === 'edit') return 'Edit Book';
     return 'Add New Book';
   }
@@ -285,23 +298,18 @@ export function BookFormDialog() {
                    {(errors.filePath || serverErrors?.filePath) && <p className="text-red-500 text-xs text-right">{errors.filePath?.message || serverErrors?.filePath?.[0]}</p>}
                 </div>
               </div>
+               <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="comment" className="text-right">Comment</Label>
+                <Textarea id="comment" {...register('comment')} className="col-span-3" placeholder="Add an optional comment..."/>
+                {(errors.comment || serverErrors?.comment) && <p className="col-span-4 text-red-500 text-xs text-right">{errors.comment?.message || serverErrors?.comment?.[0]}</p>}
+              </div>
             </>
           ) : (
-             <>
-              {/* These are hidden but registered so their values are preserved on submit */}
-              <input type="hidden" {...register('title')} />
-              <input type="hidden" {...register('author')} />
-              <input type="hidden" {...register('category')} />
-              <input type="hidden" {...register('year')} />
-              <input type="hidden" {...register('description')} />
-              <input type="hidden" {...register('filePath')} />
-              
-              <div className="grid grid-cols-4 items-center gap-4">
+             <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="comment" className="text-right">Comment</Label>
                 <Textarea id="comment" {...register('comment')} className="col-span-3" placeholder="Add a comment..."/>
                 {(errors.comment || serverErrors?.comment) && <p className="col-span-4 text-red-500 text-xs text-right">{errors.comment?.message || serverErrors?.comment?.[0]}</p>}
               </div>
-            </>
           )}
 
           <DialogFooter>
