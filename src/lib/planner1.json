@@ -1,4 +1,3 @@
-
 [
   {
     "id": "1",
@@ -17,6 +16,31 @@
       "ጥቅምት": false,
       "ህዳር": false,
       "ታህሳስ": false,
+      "ጥር": false,
+      "የካቲት": false,
+      "መጋቢት": false,
+      "ሚያዝያ": false,
+      "ግንቦት": false,
+      "ሰኔ": false
+    }
+  },
+  {
+    "id": "2",
+    "task": "hhhhhhhhhhhhh",
+    "measure": "hgshghsg",
+    "quantity": "2",
+    "collaborator": "ghgdh",
+    "budgetRequested": "dgshdgs",
+    "approvedCost": "ghgsh",
+    "approvedIncome": "HJDHJS",
+    "year": "2025",
+    "months": {
+      "ሐምሌ": true,
+      "ነሐሴ": true,
+      "መስከረም": false,
+      "ጥቅምት": false,
+      "ህዳр": false,
+      "ታህሳс": false,
       "ጥር": false,
       "የካቲት": false,
       "መጋቢት": false,
