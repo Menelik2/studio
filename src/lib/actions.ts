@@ -30,7 +30,7 @@ const bookSchemaBase = z.object({
     .min(1000, { message: 'Year must be a valid year' })
     .max(new Date().getFullYear(), { message: 'Year cannot be in the future' }),
   description: z.string().min(1, { message: 'Description is required' }),
-  filePath: z.string().url({ message: 'A valid URL is required. Please upload a file to get a URL.' }),
+  filePath: z.string().url({ message: 'A valid URL is required. Please upload a file to get a URL.' }).or(z.literal('')),
   comment: z.string().optional(),
 });
 
@@ -54,9 +54,7 @@ export type FormState = {
   };
 };
 
-export async function createBookAction(prevState: FormState, formData: FormData): Promise<FormState> {
-  const rawData = Object.fromEntries(formData.entries());
-  
+export async function createBookAction(prevState: FormState, rawData: unknown): Promise<FormState> {
   const validatedFields = createBookSchema.safeParse(rawData);
 
   if (!validatedFields.success) {
@@ -72,6 +70,7 @@ export async function createBookAction(prevState: FormState, formData: FormData)
       id: (Math.max(0, ...books.map(b => parseInt(b.id, 10) || 0)) + 1).toString(),
       ...validatedFields.data,
       comment: validatedFields.data.comment || '',
+      filePath: validatedFields.data.filePath || '',
     };
     books.push(newBook);
     await writeData('books.json', books);
@@ -87,8 +86,7 @@ export async function createBookAction(prevState: FormState, formData: FormData)
   return { message: 'Book successfully added.', errors: {} };
 }
 
-export async function updateBookAction(prevState: FormState, formData: FormData): Promise<FormState> {
-  const rawData = Object.fromEntries(formData.entries());
+export async function updateBookAction(prevState: FormState, rawData: unknown): Promise<FormState> {
   const validatedFields = updateBookSchema.safeParse(rawData);
 
   if (!validatedFields.success) {
@@ -101,6 +99,7 @@ export async function updateBookAction(prevState: FormState, formData: FormData)
   const finalData = {
     ...validatedFields.data,
     comment: validatedFields.data.comment || '',
+    filePath: validatedFields.data.filePath || '',
   };
 
   try {

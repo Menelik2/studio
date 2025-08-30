@@ -92,7 +92,7 @@ const bookSchema = z.object({
   category: z.enum(['ግጥም', 'ወግ', 'ድራማ', 'መነባንብ', 'መጣጥፍ', 'ሌሎች መፅሐፍት']),
   year: z.coerce.number().int().min(1000).max(new Date().getFullYear()),
   description: z.string().min(1, 'Description is required'),
-  filePath: z.string().url({ message: 'A valid URL is required. Please upload a file to get a URL.' }),
+  filePath: z.string().url({ message: 'A valid PDF URL is required.' }).or(z.literal('')),
   comment: z.string().optional(),
 });
 
@@ -229,13 +229,7 @@ export function BookFormDialog() {
 
 
   const onSubmit = handleSubmit((data) => {
-    const formData = new FormData();
-    Object.entries(data).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        formData.append(key, String(value));
-      }
-    });
-    formAction(formData);
+    formAction(data);
   });
 
   if (!isOpen) return null;
@@ -268,7 +262,7 @@ export function BookFormDialog() {
             {getDescription()}
           </DialogDescription>
         </DialogHeader>
-        <form ref={formRef} action={formAction} onSubmit={onSubmit} className="grid gap-4 py-4">
+        <form ref={formRef} action={formAction as any} onSubmit={onSubmit} className="grid gap-4 py-4">
           {book?.id && <input type="hidden" {...register('id')} value={book?.id ?? ''} />}
           
           {mode !== 'comment' && (
