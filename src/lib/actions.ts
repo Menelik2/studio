@@ -4,8 +4,9 @@
 import { z } from 'zod';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
-import { readData, writeData, uploadPdfToBlob } from './blob';
+import { readData, writeData } from './blob';
 import type { Book, PlannerItem, Planner2Item, PlannerSignatures } from './definitions';
+import crypto from 'crypto';
 
 // Mock login action
 export async function loginAction(prevState: { error: string } | undefined, formData: FormData) {
@@ -67,7 +68,7 @@ export async function createBookAction(prevState: FormState, rawData: unknown): 
   try {
     const books = await getBooksAction();
     const newBook: Book = {
-      id: `${Date.now()}-${Math.floor(Math.random() * 1000)}`, // Robust unique ID
+      id: crypto.randomUUID(),
       ...validatedFields.data,
       comment: validatedFields.data.comment || '',
       filePath: validatedFields.data.filePath || '',
@@ -163,7 +164,17 @@ export async function uploadPdfAction(formData: FormData) {
     if (!file || file.size === 0) {
         return { success: false, error: 'No file provided.' };
     }
-    return uploadPdfToBlob(file);
+    const { head } = await import('@vercel/blob');
+    const blobCheck = await head(file.name).catch(() => null);
+    if (blobCheck) {
+      return { success: true, path: blobCheck.url };
+    }
+    const { put } = await import('@vercel/blob');
+    const blob = await put(file.name, file, {
+      access: 'public',
+      token: process.env.BLOB_READ_WRITE_TOKEN,
+    });
+    return { success: true, path: blob.url };
 }
 
 
