@@ -7,6 +7,7 @@ import { revalidatePath } from 'next/cache';
 import { readData, writeData } from './blob';
 import type { Book, PlannerItem, Planner2Item, PlannerSignatures } from './definitions';
 import crypto from 'crypto';
+import { BLOB_READ_WRITE_TOKEN } from './env';
 
 // Mock login action
 export async function loginAction(prevState: { error: string } | undefined, formData: FormData) {
@@ -164,20 +165,26 @@ export async function uploadPdfAction(formData: FormData) {
     if (!file || file.size === 0) {
         return { success: false, error: 'No file provided.' };
     }
-    const { head } = await import('@vercel/blob');
-    const blobCheck = await head(file.name, {
-        token: process.env.BLOB_READ_WRITE_TOKEN,
-    }).catch(() => null);
-
-    if (blobCheck) {
-      return { success: true, path: blobCheck.url };
+    const { head, put } = await import('@vercel/blob');
+    
+    try {
+        const blobCheck = await head(file.name, { token: BLOB_READ_WRITE_TOKEN });
+        return { success: true, path: blobCheck.url };
+    } catch (error: any) {
+        if (error.status !== 404) {
+            return { success: false, error: `Error checking for existing file: ${error.message}` };
+        }
     }
-    const { put } = await import('@vercel/blob');
-    const blob = await put(file.name, file, {
-      access: 'public',
-      token: process.env.BLOB_READ_WRITE_TOKEN,
-    });
-    return { success: true, path: blob.url };
+
+    try {
+        const blob = await put(file.name, file, {
+          access: 'public',
+          token: BLOB_READ_WRITE_TOKEN,
+        });
+        return { success: true, path: blob.url };
+    } catch (error: any) {
+         return { success: false, error: `Error uploading file: ${error.message}` };
+    }
 }
 
 

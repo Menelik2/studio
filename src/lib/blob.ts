@@ -1,20 +1,18 @@
 
 'use server';
 
-import { head, put, list } from '@vercel/blob';
+import { head, put } from '@vercel/blob';
+import { BLOB_READ_WRITE_TOKEN } from './env';
 
 // --- Vercel Blob Storage Functions ---
 
 async function readDataFromBlob<T>(fileName: string): Promise<T[] | null> {
   try {
     const blobCheck = await head(fileName, {
-      token: process.env.BLOB_READ_WRITE_TOKEN,
+      token: BLOB_READ_WRITE_TOKEN,
     });
 
     const response = await fetch(blobCheck.url, {
-      headers: {
-        'x-vercel-protection-bypass': process.env.VERCEL_PROTECTION_BYPASS_SECRET!,
-      },
       next: {
         // Revalidate frequently to keep data fresh, but not on every request.
         revalidate: 1,
@@ -29,13 +27,13 @@ async function readDataFromBlob<T>(fileName: string): Promise<T[] | null> {
     const data = await response.json();
     return data as T[];
   } catch (error: any) {
-    if (error.status === 404) {
+    if (error.status === 404 || (error.message && error.message.includes('404'))) {
       // File doesn't exist, which is a valid case on first run.
       console.log(`Blob ${fileName} not found. Returning empty array.`);
       return [];
     }
     console.error(`Error reading blob ${fileName}:`, error.message);
-    return null;
+    throw error;
   }
 }
 
@@ -43,7 +41,7 @@ async function writeDataToBlob<T>(fileName: string, data: T[]): Promise<void> {
   try {
     await put(fileName, JSON.stringify(data, null, 2), {
       access: 'public',
-      token: process.env.BLOB_READ_WRITE_TOKEN,
+      token: BLOB_READ_WRITE_TOKEN,
     });
   } catch (error) {
     console.error(`Error writing blob ${fileName}:`, error);
@@ -56,8 +54,6 @@ async function writeDataToBlob<T>(fileName: string, data: T[]): Promise<void> {
 
 /**
  * Reads data from Vercel Blob storage.
- * In local dev, it will fail gracefully and return an empty array if the blob doesn't exist.
- * The local JSON files are now only for reference or manual seeding.
  */
 export async function readData<T>(fileName: string): Promise<T[]> {
     const data = await readDataFromBlob<T>(fileName);
