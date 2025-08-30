@@ -67,13 +67,13 @@ export async function createBookAction(prevState: FormState, rawData: unknown): 
   try {
     const books = await getBooksAction();
     const newBook: Book = {
-      id: (Math.max(0, ...books.map(b => parseInt(b.id, 10) || 0)) + 1).toString(),
+      id: `${Date.now()}-${Math.floor(Math.random() * 1000)}`, // Robust unique ID
       ...validatedFields.data,
       comment: validatedFields.data.comment || '',
       filePath: validatedFields.data.filePath || '',
     };
-    books.push(newBook);
-    await writeData('books.json', books);
+    const updatedBooks = [...books, newBook];
+    await writeData('books.json', updatedBooks);
   } catch (error) {
     console.error("Error creating book:", error);
     return {
@@ -96,22 +96,25 @@ export async function updateBookAction(prevState: FormState, rawData: unknown): 
     };
   }
   
-  const finalData = {
+  const finalData: Book = {
     ...validatedFields.data,
     comment: validatedFields.data.comment || '',
     filePath: validatedFields.data.filePath || '',
   };
 
   try {
-    let books = await getBooksAction();
+    const books = await getBooksAction();
     const index = books.findIndex(book => book.id === finalData.id);
 
-    if (index !== -1) {
-      books[index] = finalData;
-      await writeData('books.json', books);
-    } else {
-      throw new Error('Book not found for update');
+    if (index === -1) {
+      return { message: 'Database Error: Book not found for update.' };
     }
+    
+    const updatedBooks = [...books];
+    updatedBooks[index] = finalData;
+    
+    await writeData('books.json', updatedBooks);
+
   } catch (error) {
     console.error("Error updating book:", error);
     return {
