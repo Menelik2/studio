@@ -30,7 +30,7 @@ const bookSchemaBase = z.object({
     .min(1000, { message: 'Year must be a valid year' })
     .max(new Date().getFullYear(), { message: 'Year cannot be in the future' }),
   description: z.string().min(1, { message: 'Description is required' }),
-  filePath: z.string().url({ message: 'A valid URL is required. Please upload a file to get a URL.' }).or(z.literal('')),
+  filePath: z.string().url({ message: 'A valid PDF URL is required.' }).or(z.literal('')),
   comment: z.string().optional(),
 });
 
