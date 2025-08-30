@@ -4,10 +4,10 @@
 import { z } from 'zod';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
-import { readData, writeData } from './blob';
 import type { Book, PlannerItem, Planner2Item, PlannerSignatures } from './definitions';
-import crypto from 'crypto';
-import { BLOB_READ_WRITE_TOKEN } from './env';
+import { db } from './firebase';
+import { collection, getDocs, doc, setDoc, deleteDoc, getDoc, query } from 'firebase/firestore';
+import { readData, writeData } from './blob'; // Keep for planners for now
 
 // Mock login action
 export async function loginAction(prevState: { error: string } | undefined, formData: FormData) {
@@ -67,19 +67,18 @@ export async function createBookAction(prevState: FormState, rawData: unknown): 
   }
 
   try {
-    const books = await getBooksAction();
+    const newDocRef = doc(collection(db, "books"));
     const newBook: Book = {
-      id: crypto.randomUUID(),
+      id: newDocRef.id,
       ...validatedFields.data,
       comment: validatedFields.data.comment || '',
       filePath: validatedFields.data.filePath || '',
     };
-    const updatedBooks = [...books, newBook];
-    await writeData('books.json', updatedBooks);
+    await setDoc(newDocRef, newBook);
   } catch (error) {
-    console.error("Error creating book:", error);
+    console.error("Error creating book in Firestore:", error);
     return {
-      message: 'Database Error: Failed to save book.',
+      message: 'Database Error: Failed to save book to Firestore.',
     };
   }
 
@@ -98,29 +97,22 @@ export async function updateBookAction(prevState: FormState, rawData: unknown): 
     };
   }
   
+  const { id, ...bookData } = validatedFields.data;
   const finalData: Book = {
-    ...validatedFields.data,
-    comment: validatedFields.data.comment || '',
-    filePath: validatedFields.data.filePath || '',
+    id,
+    ...bookData,
+    comment: bookData.comment || '',
+    filePath: bookData.filePath || '',
   };
 
   try {
-    const books = await getBooksAction();
-    const index = books.findIndex(book => book.id === finalData.id);
-
-    if (index === -1) {
-      return { message: 'Database Error: Book not found for update.' };
-    }
-    
-    const updatedBooks = [...books];
-    updatedBooks[index] = finalData;
-    
-    await writeData('books.json', updatedBooks);
+    const bookRef = doc(db, 'books', id);
+    await setDoc(bookRef, finalData, { merge: true });
 
   } catch (error) {
-    console.error("Error updating book:", error);
+    console.error("Error updating book in Firestore:", error);
     return {
-      message: 'Database Error: Failed to save book.',
+      message: 'Database Error: Failed to save book update to Firestore.',
     };
   }
 
@@ -136,46 +128,53 @@ export async function deleteBookAction(prevState: any, formData: FormData) {
     return { message: 'Error: Book ID is missing.' };
   }
   try {
-    let books = await getBooksAction();
-    const initialLength = books.length;
-    books = books.filter(book => book.id !== id);
-    if (books.length < initialLength) {
-        await writeData('books.json', books);
-    }
+    await deleteDoc(doc(db, 'books', id));
+    
     revalidatePath('/dashboard/books');
     revalidatePath('/dashboard');
     return { message: 'Book deleted successfully.' };
   } catch (error) {
-    return { message: 'Database Error: Failed to delete book.' };
+    console.error("Error deleting book from Firestore:", error);
+    return { message: 'Database Error: Failed to delete book from Firestore.' };
   }
 }
 
 export async function getBooksAction(): Promise<Book[]> {
-    return readData<Book>('books.json');
+    try {
+        const booksCol = collection(db, 'books');
+        const booksSnapshot = await getDocs(booksCol);
+        const booksList = booksSnapshot.docs.map(doc => doc.data() as Book);
+        return booksList;
+    } catch (error) {
+        console.error("Error fetching books from Firestore:", error);
+        return [];
+    }
 }
 
 export async function getBookById(id: string): Promise<Book | undefined> {
-  const books = await getBooksAction();
-  return books.find((book) => book.id === id);
+    try {
+        const bookRef = doc(db, 'books', id);
+        const bookSnap = await getDoc(bookRef);
+        if (bookSnap.exists()) {
+            return bookSnap.data() as Book;
+        }
+        return undefined;
+    } catch(error) {
+        console.error("Error fetching book by ID from Firestore:", error);
+        return undefined;
+    }
 }
 
 
 export async function uploadPdfAction(formData: FormData) {
+    const { put } = await import('@vercel/blob');
+    const { BLOB_READ_WRITE_TOKEN } = await import('./env');
+
     const file = formData.get('file') as File | null;
     if (!file || file.size === 0) {
         return { success: false, error: 'No file provided.' };
     }
-    const { head, put } = await import('@vercel/blob');
     
-    try {
-        const blobCheck = await head(file.name, { token: BLOB_READ_WRITE_TOKEN });
-        return { success: true, path: blobCheck.url };
-    } catch (error: any) {
-        if (error.status !== 404) {
-            return { success: false, error: `Error checking for existing file: ${error.message}` };
-        }
-    }
-
     try {
         const blob = await put(file.name, file, {
           access: 'public',

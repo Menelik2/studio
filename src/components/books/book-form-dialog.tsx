@@ -84,8 +84,6 @@ export function BookFormDialog() {
     errors: {},
   });
 
-  const currentFilePath = watch('filePath');
-
   useEffect(() => {
     if (isOpen) {
       if (book) {
