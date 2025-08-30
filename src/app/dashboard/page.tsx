@@ -4,8 +4,6 @@ import type { Book, Category } from '@/lib/definitions';
 import { StatCard } from '@/components/dashboard/stat-card';
 import { Book as BookIcon, Feather, Scroll, Theater, BookCopy, Folder, TrendingUp, Calendar, Library, BookText } from 'lucide-react';
 import Link from 'next/link';
-import { BookFormDialog } from '@/components/books/book-form-dialog';
-import { DeleteBookDialog } from '@/components/books/delete-book-dialog';
 
 export const dynamic = 'force-dynamic';
 
@@ -35,8 +33,6 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <BookFormDialog />
-      <DeleteBookDialog />
       <div className="w-full text-center">
         <h1 className="font-headline text-2xl md:text-3xl font-bold tracking-tight">ባህር ዳር ፈ/ገ/ቅ/ጊዮርጊስ ካ/ሰ/ት/ቤት</h1>
         <p className="text-muted-foreground animate-fade-in-up [text-shadow:1px_1px_2px_rgba(0,0,0,0.1)]">Welcome to your Dashboard</p>
@@ -78,3 +74,5 @@ export default async function DashboardPage() {
     </div>
   );
 }
+
+    

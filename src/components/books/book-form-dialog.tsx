@@ -1,11 +1,11 @@
 
 'use client';
 
-import React, { useActionState, useEffect, useState, useCallback, useTransition } from 'react';
+import React, { useEffect, useState, useTransition } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { updateBookAction, createBookAction, uploadPdfAction } from '@/lib/actions';
 import { useBookDialogStore } from '@/hooks/use-book-dialog-store';
-import type { Book } from '@/lib/definitions';
+import type { Book, FormState } from '@/lib/definitions';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, Controller } from 'react-hook-form';
 import { z } from 'zod';
@@ -29,7 +29,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Save, UploadCloud, Loader2 } from 'lucide-react';
-import { useFormStatus } from 'react-dom';
 import { cn } from '@/lib/utils';
 
 const bookSchema = z.object({
@@ -46,12 +45,9 @@ const bookSchema = z.object({
 type BookFormValues = z.infer<typeof bookSchema>;
 
 function SubmitButton({ isPending }: { isPending: boolean }) {
-  const { pending } = useFormStatus();
-  const isSubmitting = isPending || pending;
-
   return (
-    <Button type="submit" disabled={isSubmitting}>
-      {isSubmitting ? 'Saving...' : 'Save Changes'}
+    <Button type="submit" disabled={isPending}>
+      {isPending ? 'Saving...' : 'Save Changes'}
       <Save className="ml-2 h-4 w-4" />
     </Button>
   );
@@ -62,9 +58,11 @@ export function BookFormDialog() {
   const { toast } = useToast();
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, startUploadTransition] = useTransition();
-  const [isPending, startTransition] = useTransition();
+  const [isSubmitting, startSubmitTransition] = useTransition();
+  const [serverErrors, setServerErrors] = useState<FormState['errors'] | null>(null);
 
-  const { register, handleSubmit, reset, control, formState: { errors }, setValue, watch } = useForm<BookFormValues>({
+
+  const { register, handleSubmit, reset, control, formState: { errors }, setValue } = useForm<BookFormValues>({
     resolver: zodResolver(bookSchema),
     defaultValues: {
         title: '',
@@ -75,13 +73,6 @@ export function BookFormDialog() {
         filePath: '',
         comment: '',
     },
-  });
-
-  const action = mode === 'create' ? createBookAction : updateBookAction;
-
-  const [formState, formAction] = useActionState(action, {
-    message: '',
-    errors: {},
   });
 
   useEffect(() => {
@@ -99,36 +90,11 @@ export function BookFormDialog() {
           comment: '',
         });
       }
+      setServerErrors(null);
     }
   }, [book, reset, isOpen]);
 
-  useEffect(() => {
-    if (formState.message && !formState.errors) {
-      toast({ title: mode === 'create' ? 'Book Added' : 'Book Updated', description: formState.message });
-      onClose();
-    } else if (formState.message && formState.errors) {
-      toast({ variant: 'destructive', title: 'Error', description: formState.message });
-    }
-  }, [formState, toast, onClose, mode]);
-
-  const handleDragEnter = useCallback((e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(true);
-  }, []);
-
-  const handleDragLeave = useCallback((e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-  }, []);
-
-  const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-  }, []);
-
-  const handleFileUpload = useCallback((file: File) => {
+  const handleFileUpload = (file: File) => {
     if (file && file.type === 'application/pdf') {
         const formData = new FormData();
         formData.append('file', file);
@@ -156,9 +122,9 @@ export function BookFormDialog() {
           description: 'Please drop a PDF file.',
         });
       }
-  }, [setValue, toast]);
+  };
 
-  const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
@@ -167,12 +133,20 @@ export function BookFormDialog() {
     if (files && files.length > 0) {
       handleFileUpload(files[0]);
     }
-  }, [handleFileUpload]);
-
+  };
 
   const onSubmit = (data: BookFormValues) => {
-    startTransition(() => {
-        formAction(data);
+    startSubmitTransition(async () => {
+        const action = mode === 'create' ? createBookAction : updateBookAction;
+        const result = await action(data);
+
+        if (result.message && !result.errors) {
+            toast({ title: mode === 'create' ? 'Book Added' : 'Book Updated', description: result.message });
+            onClose();
+        } else if (result.message && result.errors) {
+            toast({ variant: 'destructive', title: 'Error', description: result.message });
+            setServerErrors(result.errors);
+        }
     });
   };
 
@@ -189,9 +163,7 @@ export function BookFormDialog() {
     if (mode === 'edit') return 'Update the details of this book.';
     return 'Fill in the details for the new book.';
   }
-
-  const isCreate = mode === 'create';
-
+  
   return (
     <Dialog open={isOpen} onOpenChange={(open) => {
       if(!open) {
@@ -211,23 +183,16 @@ export function BookFormDialog() {
 
           {mode !== 'comment' && (
             <>
-              {isCreate ? (
-                 <input type="hidden" {...register('comment')} value="" />
-              ) : (
-                 <input type="hidden" {...register('comment')} value={book?.comment ?? ''} />
-              )}
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="title" className="text-right">Title</Label>
                 <Input id="title" {...register('title')} className="col-span-3" />
-                {errors.title && <p className="col-span-4 text-red-500 text-xs text-right">{errors.title.message}</p>}
-                {formState.errors?.title && <p className="col-span-4 text-red-500 text-xs text-right">{formState.errors.title[0]}</p>}
+                {(errors.title || serverErrors?.title) && <p className="col-span-4 text-red-500 text-xs text-right">{errors.title?.message || serverErrors?.title?.[0]}</p>}
               </div>
 
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="author" className="text-right">Author</Label>
                 <Input id="author" {...register('author')} className="col-span-3" />
-                {errors.author && <p className="col-span-4 text-red-500 text-xs text-right">{errors.author.message}</p>}
-                {formState.errors?.author && <p className="col-span-4 text-red-500 text-xs text-right">{formState.errors.author[0]}</p>}
+                {(errors.author || serverErrors?.author) && <p className="col-span-4 text-red-500 text-xs text-right">{errors.author?.message || serverErrors?.author?.[0]}</p>}
               </div>
 
               <div className="grid grid-cols-4 items-center gap-4">
@@ -251,31 +216,28 @@ export function BookFormDialog() {
                     </Select>
                   )}
                 />
-                {errors.category && <p className="col-span-4 text-red-500 text-xs text-right">{errors.category.message}</p>}
-                {formState.errors?.category && <p className="col-span-4 text-red-500 text-xs text-right">{formState.errors.category[0]}</p>}
+                {(errors.category || serverErrors?.category) && <p className="col-span-4 text-red-500 text-xs text-right">{errors.category?.message || serverErrors?.category?.[0]}</p>}
               </div>
 
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="year" className="text-right">Year</Label>
                 <Input id="year" type="number" {...register('year')} className="col-span-3" />
-                {errors.year && <p className="col-span-4 text-red-500 text-xs text-right">{errors.year.message}</p>}
-                {formState.errors?.year && <p className="col-span-4 text-red-500 text-xs text-right">{formState.errors.year[0]}</p>}
+                {(errors.year || serverErrors?.year) && <p className="col-span-4 text-red-500 text-xs text-right">{errors.year?.message || serverErrors?.year?.[0]}</p>}
               </div>
 
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="description" className="text-right">Description</Label>
                 <Textarea id="description" {...register('description')} className="col-span-3" />
-                {errors.description && <p className="col-span-4 text-red-500 text-xs text-right">{errors.description.message}</p>}
-                {formState.errors?.description && <p className="col-span-4 text-red-500 text-xs text-right">{formState.errors.description[0]}</p>}
+                {(errors.description || serverErrors?.description) && <p className="col-span-4 text-red-500 text-xs text-right">{errors.description?.message || serverErrors?.description?.[0]}</p>}
               </div>
 
               <div className="grid grid-cols-4 items-start gap-4">
                 <Label htmlFor="filePath" className="text-right pt-2">PDF File</Label>
                 <div className="col-span-3 space-y-2">
                   <div
-                    onDragEnter={handleDragEnter}
-                    onDragLeave={handleDragLeave}
-                    onDragOver={handleDragOver}
+                    onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
+                    onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); }}
+                    onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
                     onDrop={handleDrop}
                     onClick={() => document.getElementById('pdf-upload-input')?.click()}
                     className={cn(
@@ -311,8 +273,7 @@ export function BookFormDialog() {
                     {...register('filePath')}
                     disabled={isUploading}
                   />
-                   {errors.filePath && <p className="text-red-500 text-xs text-right">{errors.filePath.message}</p>}
-                   {formState.errors?.filePath && <p className="text-red-500 text-xs text-right">{formState.errors.filePath[0]}</p>}
+                   {(errors.filePath || serverErrors?.filePath) && <p className="text-red-500 text-xs text-right">{errors.filePath?.message || serverErrors?.filePath?.[0]}</p>}
                 </div>
               </div>
             </>
@@ -329,8 +290,7 @@ export function BookFormDialog() {
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="comment" className="text-right">Comment</Label>
                 <Textarea id="comment" {...register('comment')} className="col-span-3" placeholder="Add a comment..."/>
-                {errors.comment && <p className="col-span-4 text-red-500 text-xs text-right">{errors.comment.message}</p>}
-                {formState.errors?.comment && <p className="col-span-4 text-red-500 text-xs text-right">{formState.errors.comment[0]}</p>}
+                {(errors.comment || serverErrors?.comment) && <p className="col-span-4 text-red-500 text-xs text-right">{errors.comment?.message || serverErrors?.comment?.[0]}</p>}
               </div>
             </>
           )}
@@ -340,10 +300,12 @@ export function BookFormDialog() {
                 reset();
                 onClose();
             }}>Cancel</Button>
-            <SubmitButton isPending={isPending} />
+            <SubmitButton isPending={isSubmitting} />
           </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
   );
 }
+
+    

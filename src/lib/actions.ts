@@ -6,11 +6,11 @@ import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import type { Book, PlannerItem, Planner2Item, PlannerSignatures } from './definitions';
 import { db } from './firebase';
-import { collection, getDocs, doc, setDoc, deleteDoc, getDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, setDoc, deleteDoc, getDoc, writeBatch } from 'firebase/firestore';
 import { put } from '@vercel/blob';
 
 // Mock login action
-export async function loginAction(prevState: { error: string } | undefined, formData: FormData) {
+export async function loginAction(prevState: { error?: string } | undefined, formData: FormData) {
   const password = formData.get('password');
   
   if (password === '123!@#admin') {
@@ -56,7 +56,7 @@ export type FormState = {
   };
 };
 
-export async function createBookAction(prevState: FormState, rawData: unknown): Promise<FormState> {
+export async function createBookAction(rawData: unknown): Promise<FormState> {
   const validatedFields = createBookSchema.safeParse(rawData);
 
   if (!validatedFields.success) {
@@ -87,7 +87,7 @@ export async function createBookAction(prevState: FormState, rawData: unknown): 
   return { message: 'Book successfully added.', errors: {} };
 }
 
-export async function updateBookAction(prevState: FormState, rawData: unknown): Promise<FormState> {
+export async function updateBookAction(rawData: unknown): Promise<FormState> {
   const validatedFields = updateBookSchema.safeParse(rawData);
 
   if (!validatedFields.success) {
@@ -182,41 +182,37 @@ export async function uploadPdfAction(formData: FormData) {
     }
 }
 
-
-async function readData<T>(fileName: string): Promise<T[]> {
-  try {
-      const docRef = doc(db, 'planners', fileName);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-          const data = docSnap.data();
-          return data.items || [];
-      }
-      return [];
-  } catch(error) {
-      console.error(`Error reading ${fileName} from Firestore:`, error);
-      return [];
-  }
-}
-
-async function writeData<T>(fileName: string, items: T[]): Promise<void> {
-  try {
-      const docRef = doc(db, 'planners', fileName);
-      await setDoc(docRef, { items });
-  } catch(error) {
-      console.error(`Error writing ${fileName} to Firestore:`, error);
-      throw new Error(`Failed to write to ${fileName}`);
-  }
-}
-
-
+// ===============================================
 // Planner 1 Actions
+// ===============================================
+
 export async function getPlanner1ItemsAction(): Promise<PlannerItem[]> {
-  return readData<PlannerItem>('planner1');
+  try {
+    const itemsCol = collection(db, 'planner1');
+    const itemsSnapshot = await getDocs(itemsCol);
+    return itemsSnapshot.docs.map(doc => doc.data() as PlannerItem);
+  } catch (error) {
+    console.error("Error fetching planner1 items:", error);
+    return [];
+  }
 }
 
-export async function savePlanner1ItemsAction(items: PlannerItem[]): Promise<{success: boolean}> {
+export async function savePlanner1ItemsAction(items: PlannerItem[]): Promise<{ success: boolean }> {
   try {
-    await writeData('planner1', items);
+    const batch = writeBatch(db);
+    const itemsCol = collection(db, 'planner1');
+    
+    // First, delete all existing documents in the collection to handle removals
+    const existingDocs = await getDocs(itemsCol);
+    existingDocs.forEach(doc => batch.delete(doc.ref));
+
+    // Then, add the new/updated items
+    items.forEach(item => {
+      const docRef = doc(db, 'planner1', item.id);
+      batch.set(docRef, item);
+    });
+    
+    await batch.commit();
     revalidatePath('/dashboard/planner');
     return { success: true };
   } catch (error) {
@@ -226,41 +222,62 @@ export async function savePlanner1ItemsAction(items: PlannerItem[]): Promise<{su
 }
 
 export async function getPlannerSignaturesAction(year: number): Promise<Omit<PlannerSignatures, 'year'> | null> {
-    const allSignatures = await readData<PlannerSignatures>('planner-signatures');
-    const signatures = allSignatures.find(sig => sig.year === year);
-    if (signatures) {
-        return { preparationOfficer: signatures.preparationOfficer, reviewOfficer: signatures.reviewOfficer };
+  try {
+    const docRef = doc(db, 'plannerSignatures', year.toString());
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      const data = docSnap.data() as PlannerSignatures;
+      return { preparationOfficer: data.preparationOfficer, reviewOfficer: data.reviewOfficer };
     }
     return null;
+  } catch (error) {
+    console.error('Error fetching signatures:', error);
+    return null;
+  }
 }
 
-export async function savePlannerSignaturesAction(signatures: PlannerSignatures): Promise<{success: boolean}> {
-    try {
-        let allSignatures = await readData<PlannerSignatures>('planner-signatures');
-        const index = allSignatures.findIndex(sig => sig.year === signatures.year);
-        if (index !== -1) {
-            allSignatures[index] = signatures;
-        } else {
-            allSignatures.push(signatures);
-        }
-        await writeData('planner-signatures', allSignatures);
-        revalidatePath('/dashboard/planner');
-        return { success: true };
-    } catch (error) {
-        console.error('Failed to save planner signatures:', error);
-        return { success: false };
-    }
-}
-
-
-// Planner 2 Actions
-export async function getPlanner2ItemsAction(): Promise<Planner2Item[]> {
-    return readData<Planner2Item>('planner2');
-}
-
-export async function savePlanner2ItemsAction(items: Planner2Item[]): Promise<{success:boolean}> {
+export async function savePlannerSignaturesAction(signatures: PlannerSignatures): Promise<{ success: boolean }> {
   try {
-    await writeData('planner2', items);
+    const docRef = doc(db, 'plannerSignatures', signatures.year.toString());
+    await setDoc(docRef, signatures);
+    revalidatePath('/dashboard/planner');
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to save planner signatures:', error);
+    return { success: false };
+  }
+}
+
+
+// ===============================================
+// Planner 2 Actions
+// ===============================================
+
+export async function getPlanner2ItemsAction(): Promise<Planner2Item[]> {
+  try {
+    const itemsCol = collection(db, 'planner2');
+    const itemsSnapshot = await getDocs(itemsCol);
+    return itemsSnapshot.docs.map(doc => doc.data() as Planner2Item);
+  } catch (error) {
+    console.error("Error fetching planner2 items:", error);
+    return [];
+  }
+}
+
+export async function savePlanner2ItemsAction(items: Planner2Item[]): Promise<{ success: boolean }> {
+  try {
+    const batch = writeBatch(db);
+    const itemsCol = collection(db, 'planner2');
+
+    const existingDocs = await getDocs(itemsCol);
+    existingDocs.forEach(doc => batch.delete(doc.ref));
+
+    items.forEach(item => {
+      const docRef = doc(db, 'planner2', item.id);
+      batch.set(docRef, item);
+    });
+
+    await batch.commit();
     revalidatePath('/dashboard/planner-2');
     return { success: true };
   } catch (error) {
@@ -268,3 +285,5 @@ export async function savePlanner2ItemsAction(items: Planner2Item[]): Promise<{s
     return { success: false };
   }
 }
+
+    

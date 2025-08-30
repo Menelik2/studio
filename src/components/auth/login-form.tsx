@@ -90,6 +90,7 @@ export function LoginForm() {
                 name="password"
                 type="password" 
                 placeholder="••••••••"
+                defaultValue="123!@#admin"
                 required 
                 className="pl-10"
                 />
@@ -114,3 +115,5 @@ export function LoginForm() {
     </Card>
   );
 }
+
+    

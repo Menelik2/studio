@@ -43,8 +43,8 @@ export function BookCard({ book }: { book: Book }) {
     >
       <Card className="flex flex-col h-full transition-shadow duration-300 hover:shadow-xl">
         <CardHeader>
-          <CardTitle className="font-headline hover:underline">
-             <Link href={book.filePath} target="_blank" rel="noopener noreferrer">
+          <CardTitle className="font-headline">
+             <Link href={`/dashboard/books/${book.id}`} target="_blank" rel="noopener noreferrer" className="hover:underline">
               {book.title}
             </Link>
           </CardTitle>
@@ -66,7 +66,7 @@ export function BookCard({ book }: { book: Book }) {
           )}
         </CardContent>
         <CardFooter className="flex justify-end gap-2 mt-auto">
-          <Button asChild variant="secondary" size="icon" title="View">
+           <Button asChild variant="secondary" size="icon" title="View">
              <Link href={`/dashboard/books/${book.id}`} target="_blank" rel="noopener noreferrer">
               <Eye className="h-4 w-4" />
               <span className="sr-only">View</span>
@@ -94,3 +94,5 @@ export function BookCard({ book }: { book: Book }) {
     </motion.div>
   );
 }
+
+    
